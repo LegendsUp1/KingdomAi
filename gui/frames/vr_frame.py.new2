@@ -1,0 +1,187 @@
+    def _sync_initialize(self):
+        """Synchronous wrapper around initialize to be called from __init__"""
+        self._setup_ui()
+        self._subscribe_to_events_sync()
+        self._request_initial_data_sync()
+        self._add_status_message("VR Frame initialized", "info")
+    
+    async def initialize(self):
+        """Asynchronously initialize the VR frame."""
+        self._setup_ui()
+        await self._subscribe_to_events()
+        await self._request_initial_data()
+        self._add_status_message("VR Frame initialized asynchronously", "info")
+    
+    def _setup_ui(self):
+        """Set up the UI components."""
+        # Initialize control buttons and status indicators dictionaries
+        self.control_buttons = {}
+        self.status_indicators = {}
+        
+        # Main container
+        main_container = ttk.Frame(self)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Create panels
+        left_panel = ttk.Frame(main_container)
+        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+        
+        right_panel = ttk.Frame(main_container)
+        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
+        
+        # Create control panels on left
+        self._create_connection_panel(left_panel)
+        self._create_tracking_panel(left_panel)
+        self._create_environment_panel(left_panel)
+        self._create_status_panel(left_panel)
+        
+        # Create visualization on right
+        self._create_visualization_panel(right_panel)
+        
+        # Setup status bar
+        self._setup_status_bar()
+        
+        # Initialize UI state based on current data
+        self._refresh_status()
+        self._refresh_visualization()
+    
+    def _create_connection_panel(self, parent):
+        """Create the connection panel.
+        
+        Args:
+            parent: Parent widget
+        """
+        # Create panel frame
+        panel = ttk.LabelFrame(parent, text="VR Connection")
+        panel.pack(fill=tk.X, pady=5)
+        self.connection_panel = panel
+        
+        # Device selection
+        device_frame = ttk.Frame(panel)
+        device_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(device_frame, text="Device:").pack(side=tk.LEFT, padx=5)
+        self.device_var = tk.StringVar(value=self.vr_device)
+        self.device_dropdown = ttk.Combobox(device_frame, textvariable=self.device_var, 
+                                            values=["meta_quest_3", "meta_quest_2", "meta_quest_pro"])
+        self.device_dropdown.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.device_dropdown.bind("<<ComboboxSelected>>", self._on_device_changed)
+        
+        refresh_button = ttk.Button(device_frame, text="Detect", command=self._detect_devices)
+        refresh_button.pack(side=tk.RIGHT, padx=5)
+        
+        # Wireless mode
+        wireless_frame = ttk.Frame(panel)
+        wireless_frame.pack(fill=tk.X, pady=5)
+        
+        self.wireless_var = tk.BooleanVar(value=self.wireless_mode)
+        self.wireless_checkbox = ttk.Checkbutton(wireless_frame, text="Wireless Mode", 
+                                               variable=self.wireless_var,
+                                               command=self._toggle_wireless_mode)
+        self.wireless_checkbox.pack(side=tk.LEFT, padx=5)
+        
+        ttk.Label(wireless_frame, text="IP:").pack(side=tk.LEFT, padx=(15, 5))
+        self.ip_entry = ttk.Entry(wireless_frame)
+        self.ip_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.ip_entry.insert(0, self.device_ip)
+        # Disable initially if not in wireless mode
+        if not self.wireless_mode:
+            self.ip_entry.configure(state='disabled')
+        
+        # ADB Path
+        adb_frame = ttk.Frame(panel)
+        adb_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(adb_frame, text="ADB Path:").pack(side=tk.LEFT, padx=5)
+        self.adb_entry = ttk.Entry(adb_frame)
+        self.adb_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.adb_entry.insert(0, self.adb_path)
+        
+        browse_button = ttk.Button(adb_frame, text="Browse", command=self._browse_adb_path)
+        browse_button.pack(side=tk.RIGHT, padx=5)
+        
+        # Connection buttons
+        button_frame = ttk.Frame(panel)
+        button_frame.pack(fill=tk.X, pady=5)
+        
+        connect_button = ttk.Button(button_frame, text="Connect", command=self._on_connect_clicked)
+        connect_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.control_buttons["connect"] = connect_button
+        
+        disconnect_button = ttk.Button(button_frame, text="Disconnect", command=self._on_disconnect_clicked)
+        disconnect_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.control_buttons["disconnect"] = disconnect_button
+        
+        # Status indicator
+        status_frame = ttk.Frame(panel)
+        status_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT, padx=5)
+        
+        status_indicator = ttk.Label(status_frame, text="Disconnected", foreground="red")
+        status_indicator.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["connection"] = status_indicator
+        
+        refresh_button = ttk.Button(status_frame, text="Refresh", command=self._refresh_status)
+        refresh_button.pack(side=tk.RIGHT, padx=5)
+    
+    def _create_tracking_panel(self, parent):
+        """Create the tracking control panel.
+        
+        Args:
+            parent: Parent widget
+        """
+        # Create panel frame
+        panel = ttk.LabelFrame(parent, text="Tracking Controls")
+        panel.pack(fill=tk.X, pady=5)
+        self.tracking_panel = panel
+        
+        # Tracking toggle
+        tracking_frame = ttk.Frame(panel)
+        tracking_frame.pack(fill=tk.X, pady=5)
+        
+        self.tracking_var = tk.BooleanVar(value=self.tracking_enabled)
+        self.tracking_checkbox = ttk.Checkbutton(tracking_frame, text="Enable Tracking", 
+                                               variable=self.tracking_var,
+                                               command=self._on_tracking_toggled)
+        self.tracking_checkbox.pack(side=tk.LEFT, padx=5)
+        
+        # Tracking quality indicator
+        quality_frame = ttk.Frame(panel)
+        quality_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(quality_frame, text="Quality:").pack(side=tk.LEFT, padx=5)
+        
+        quality_indicator = ttk.Label(quality_frame, text="Unknown", foreground="gray")
+        quality_indicator.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["quality"] = quality_indicator
+        
+        # Tracking control buttons
+        button_frame = ttk.Frame(panel)
+        button_frame.pack(fill=tk.X, pady=5)
+        
+        calibrate_button = ttk.Button(button_frame, text="Calibrate", command=self._on_calibrate_clicked)
+        calibrate_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.control_buttons["calibrate"] = calibrate_button
+        
+        reset_button = ttk.Button(button_frame, text="Reset", command=self._reset_tracking)
+        reset_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.control_buttons["reset"] = reset_button
+        
+        # Battery status
+        battery_frame = ttk.Frame(panel)
+        battery_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(battery_frame, text="Battery:").pack(side=tk.LEFT, padx=5)
+        
+        headset_indicator = ttk.Label(battery_frame, text="Headset: 0%", foreground="gray")
+        headset_indicator.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["battery_headset"] = headset_indicator
+        
+        left_indicator = ttk.Label(battery_frame, text="Left: 0%", foreground="gray")
+        left_indicator.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["battery_left"] = left_indicator
+        
+        right_indicator = ttk.Label(battery_frame, text="Right: 0%", foreground="gray")
+        right_indicator.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["battery_right"] = right_indicator

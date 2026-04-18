@@ -1,0 +1,158 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "data_dir": "trading/copy_trading/data",
+    "max_open_positions": 25,
+    "default_risk_level": "medium",
+    "auto_adjust_risk": true,
+    "markets": ["spot", "futures"],
+    "exchanges": [
+        {
+            "name": "binance",
+            "enabled": true,
+            "weight": 1.0,
+            "api_base": "https://api.binance.com"
+        },
+        {
+            "name": "kucoin",
+            "enabled": true,
+            "weight": 0.8,
+            "api_base": "https://api.kucoin.com"
+        },
+        {
+            "name": "bybit",
+            "enabled": true,
+            "weight": 0.7,
+            "api_base": "https://api.bybit.com"
+        }
+    ],
+    "providers": [
+        {
+            "name": "leaderboard_api",
+            "enabled": true,
+            "url": "https://api.leaderboard.com",
+            "update_frequency_minutes": 15,
+            "max_traders": 50
+        },
+        {
+            "name": "signals_provider",
+            "enabled": true,
+            "url": "https://api.signals.com",
+            "update_frequency_minutes": 5,
+            "subscription_level": "premium"
+        },
+        {
+            "name": "internal_strategy",
+            "enabled": true,
+            "strategy_ids": ["btc_trend_follower", "eth_scalper", "defi_momentum"]
+        }
+    ],
+    "traders": [
+        {
+            "id": "top_trader_1",
+            "name": "CryptoWhale",
+            "enabled": true,
+            "weight": 1.0,
+            "max_risk_per_trade": 0.02,
+            "copy_delay_seconds": 2,
+            "markets": ["spot", "futures"],
+            "pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT"]
+        },
+        {
+            "id": "top_trader_2",
+            "name": "AlphaMaster",
+            "enabled": true,
+            "weight": 0.8,
+            "max_risk_per_trade": 0.015,
+            "copy_delay_seconds": 3,
+            "markets": ["spot"],
+            "pairs": ["BTC/USDT", "ETH/USDT", "ADA/USDT", "DOT/USDT", "LINK/USDT"]
+        },
+        {
+            "id": "top_trader_3",
+            "name": "FuturesKing",
+            "enabled": true,
+            "weight": 0.7,
+            "max_risk_per_trade": 0.02,
+            "copy_delay_seconds": 1,
+            "markets": ["futures"],
+            "pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
+        }
+    ],
+    "risk_management": {
+        "max_account_risk_percent": 15,
+        "max_position_size_percent": 10,
+        "max_daily_drawdown_percent": 5,
+        "stop_trading_at_drawdown_percent": 10,
+        "use_stop_loss": true,
+        "default_stop_loss_percent": 5,
+        "use_take_profit": true,
+        "default_take_profit_percent": 10,
+        "use_trailing_stop": true,
+        "trailing_stop_activation_percent": 2,
+        "trailing_stop_callback_percent": 1
+    },
+    "position_sizing": {
+        "method": "fixed_risk",
+        "options": {
+            "fixed_risk": {
+                "risk_per_trade_percent": 1.5
+            },
+            "kelly_criterion": {
+                "fraction_multiplier": 0.5,
+                "max_fraction": 0.1
+            },
+            "fixed_ratio": {
+                "base_position_size": 100,
+                "delta": 500,
+                "step_size": 1
+            }
+        }
+    },
+    "filtering": {
+        "min_win_rate": 0.55,
+        "min_profit_factor": 1.5,
+        "min_trades_history": 100,
+        "max_drawdown_percent": 35,
+        "min_trade_duration_seconds": 60,
+        "max_trade_duration_hours": 168,
+        "required_verification": true
+    },
+    "execution": {
+        "order_types": ["market", "limit"],
+        "default_order_type": "market",
+        "slippage_tolerance_percent": 0.5,
+        "max_retry_attempts": 3,
+        "retry_delay_seconds": 1,
+        "timeout_seconds": 10
+    },
+    "schedule": {
+        "active_hours": {
+            "enable_time_filter": false,
+            "timezone": "UTC",
+            "start_time": "00:00",
+            "end_time": "23:59",
+            "exclude_weekends": false
+        },
+        "data_sync_interval_minutes": 10,
+        "performance_update_interval_hours": 4
+    },
+    "notifications": {
+        "enabled": true,
+        "channels": ["system", "email"],
+        "types": ["trade_opened", "trade_closed", "error", "warning", "daily_summary"],
+        "trade_notifications": true,
+        "error_notifications": true,
+        "performance_notifications": true,
+        "summary_interval_hours": 24
+    },
+    "advanced": {
+        "use_ai_filter": true,
+        "use_sentiment_analysis": true,
+        "log_all_signals": true,
+        "backtest_new_traders": true,
+        "backtest_period_days": 30,
+        "auto_adjust_based_on_performance": true,
+        "performance_review_interval_days": 7
+    }
+}

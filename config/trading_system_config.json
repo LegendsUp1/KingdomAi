@@ -1,0 +1,143 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "auto_trading": true,
+    "market_api": "multi_market_api",
+    "risk_management": {
+        "max_open_positions": 15,
+        "max_position_size": 0.1,
+        "stop_loss_required": true,
+        "default_stop_loss_pct": 0.05,
+        "max_daily_drawdown": 0.03,
+        "max_risk_per_trade": 0.02,
+        "cross_asset_exposure_limit": 0.25,
+        "volatility_based_sizing": true,
+        "market_correlation_monitoring": true,
+        "circuit_breakers": {
+            "enabled": true,
+            "max_drawdown_trigger": 0.08,
+            "volatility_spike_trigger": 3.0,
+            "liquidity_threshold": 0.4
+        }
+    },
+    "redis_quantum_nexus": {
+        "host": "localhost",
+        "port": 6380,
+        "password": "QuantumNexus2025",
+        "allow_fallback": false,
+        "health_check_interval_seconds": 30,
+        "halt_on_failure": true,
+        "persistent_storage": true
+    },
+    "connection_verification": {
+        "enabled": true,
+        "verify_on_startup": true,
+        "verify_interval_seconds": 60,
+        "timeout_seconds": 10,
+        "required_connections": ["redis", "websocket", "blockchain", "api_key"],
+        "halt_on_failure": true
+    },
+    "strategies": {
+        "moving_average_crossover": {
+            "enabled": true,
+            "fast_ma": 9,
+            "slow_ma": 21,
+            "signal_threshold": 0.0,
+            "pairs": ["BTC/USDT", "ETH/USDT"],
+            "asset_classes": ["CRYPTOCURRENCY"]
+        },
+        "rsi": {
+            "enabled": true,
+            "period": 14,
+            "overbought": 70,
+            "oversold": 30,
+            "pairs": ["BTC/USDT", "ETH/USDT"],
+            "asset_classes": ["CRYPTOCURRENCY"]
+        },
+        "macd": {
+            "enabled": true,
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9,
+            "pairs": ["BTC/USDT", "ETH/USDT"],
+            "asset_classes": ["CRYPTOCURRENCY"]
+        },
+        "mean_reversion": {
+            "enabled": true,
+            "lookback_period": 20,
+            "z_score_threshold": 2.0,
+            "asset_classes": ["STOCK", "ETF", "FOREX"],
+            "pairs": ["AAPL/USD", "MSFT/USD", "GOOGL/USD", "EUR/USD", "GBP/USD", "SPY/USD"]
+        },
+        "statistical_arbitrage": {
+            "enabled": true,
+            "pairs": ["AAPL/MSFT", "GOOGL/META", "GLD/SLV", "EUR/USD/JPY"],
+            "correlation_threshold": 0.7,
+            "z_score_threshold": 2.5,
+            "asset_classes": ["STOCK", "FOREX", "COMMODITY"]
+        },
+        "yield_curve_strategy": {
+            "enabled": true,
+            "curve_inversion_threshold": -0.05,
+            "duration_points": [2, 5, 10, 30],
+            "asset_classes": ["BOND"],
+            "instruments": ["US10Y", "US2Y", "US30Y", "US5Y", "BUND", "GILT"]
+        },
+        "volatility_surface": {
+            "enabled": true,
+            "vol_skew_threshold": 0.15,
+            "term_structure_points": [30, 60, 90, 180],
+            "asset_classes": ["OPTIONS"],
+            "instruments": ["VIX", "SVXY", "SPX_OPTIONS", "QQQ_OPTIONS"]
+        },
+        "sentiment_analysis": {
+            "enabled": true,
+            "data_sources": ["news", "social_media", "earnings_calls"],
+            "sentiment_threshold": 0.6,
+            "asset_classes": ["STOCK", "CRYPTOCURRENCY", "FOREX"],
+            "update_frequency_seconds": 300
+        },
+        "cross_asset_momentum": {
+            "enabled": true,
+            "lookback_periods": [20, 60, 120],
+            "momentum_threshold": 0.05,
+            "asset_classes": ["STOCK", "BOND", "FOREX", "COMMODITY", "CRYPTOCURRENCY"],
+            "instruments": [
+                "SPY", "QQQ", "IWM", "TLT", "GLD", "SLV", "USO", 
+                "EUR/USD", "GBP/USD", "USD/JPY", "BTC/USD", "ETH/USD"
+            ]
+        },
+        "liquidity_provision": {
+            "enabled": true,
+            "max_spread": 0.005,
+            "min_depth": 100000,
+            "rebalance_threshold": 0.02,
+            "asset_classes": ["STOCK", "CRYPTOCURRENCY", "FOREX"],
+            "instruments": ["AAPL", "MSFT", "BTC/USD", "ETH/USD", "EUR/USD"]
+        },
+        "earnings_volatility": {
+            "enabled": true,
+            "pre_earnings_days": 5,
+            "post_earnings_days": 3,
+            "volatility_increase_threshold": 1.5,
+            "asset_classes": ["STOCK", "OPTIONS"],
+            "market_cap_min": 1000000000
+        },
+        "futures_basis_trading": {
+            "enabled": true,
+            "contango_threshold": 0.03,
+            "backwardation_threshold": -0.02,
+            "roll_yield_min": 0.01,
+            "asset_classes": ["FUTURES", "COMMODITY"],
+            "instruments": ["ES", "NQ", "CL", "GC", "BTC-PERP", "ETH-PERP"]
+        }
+    },
+    "exchanges": {
+        "binance": {
+            "enabled": true,
+            "pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT"],
+            "asset_classes": ["CRYPTOCURRENCY"],
+            "market_types": ["SPOT", "FUTURES", "MARGIN", "OPTIONS"]
+        }
+    }
+}

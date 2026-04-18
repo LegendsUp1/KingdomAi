@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: gitleaks (creator-data leak guard)
+        args: ["--config=.gitleaks.toml", "--verbose"]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=20000"]
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+        exclude: "^mobile_build/build/"
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: never-ship-files
+        name: never-ship file blacklist
+        entry: bash -c 'for f in "$@"; do case "$f" in config/.secrets.env|config/mobile_config_creator.json|config/account_link.json|config/api_keys.env|config/api_keys.json|config/COMPLETE_SYSTEM_CONFIG.json|.env|AUTONOMOUS_*.md) echo "refusing to commit: $f"; exit 1;; esac; done' --
+        language: system
+        stages: [commit]

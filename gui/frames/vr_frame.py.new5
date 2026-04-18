@@ -1,0 +1,323 @@
+    def _browse_adb_path(self):
+        """Open file browser to select ADB executable path."""
+        try:
+            path = filedialog.askopenfilename(
+                title="Select ADB Executable",
+                filetypes=[("Executable", "*.exe"), ("All Files", "*.*")]
+            )
+            
+            if path:
+                self.adb_path = path
+                if hasattr(self, 'adb_entry') and self.adb_entry:
+                    self.adb_entry.delete(0, tk.END)
+                    self.adb_entry.insert(0, self.adb_path)
+                
+                # Save to configuration
+                self._publish_event("vr.config.update", {
+                    "adb_path": self.adb_path
+                })
+                
+                self._add_status_message(f"ADB path set to: {self.adb_path}", "info")
+        except Exception as e:
+            self.logger.error(f"Error browsing for ADB path: {e}")
+            self._add_status_message(f"Error setting ADB path: {e}", "error")
+    
+    def _on_device_changed(self, event=None):
+        """Handle device selection change."""
+        try:
+            self.vr_device = self.device_var.get()
+            self._add_status_message(f"Device changed to: {self.vr_device}", "info")
+            
+            # Update device-specific settings
+            self._publish_event("vr.device.change", {
+                "device": self.vr_device
+            })
+        except Exception as e:
+            self.logger.error(f"Error handling device change: {e}")
+    
+    def _toggle_wireless_mode(self):
+        """Handle wireless mode toggle."""
+        try:
+            self.wireless_mode = self.wireless_var.get()
+            
+            # Enable/disable IP entry based on wireless mode
+            if hasattr(self, 'ip_entry') and self.ip_entry:
+                if self.wireless_mode:
+                    self.ip_entry.configure(state='normal')
+                else:
+                    self.ip_entry.configure(state='disabled')
+            
+            mode_text = "enabled" if self.wireless_mode else "disabled"
+            self._add_status_message(f"Wireless mode {mode_text}", "info")
+            
+            # Update configuration
+            self._publish_event("vr.config.update", {
+                "wireless_mode": self.wireless_mode
+            })
+        except Exception as e:
+            self.logger.error(f"Error toggling wireless mode: {e}")
+    
+    def _on_environment_changed(self, event=None):
+        """Handle environment selection change."""
+        try:
+            self.environment = self.environment_var.get()
+            self._add_status_message(f"Environment changed to: {self.environment}", "info")
+            
+            # Update environment configuration
+            self._publish_event("vr.environment.change", {
+                "environment": self.environment
+            })
+        except Exception as e:
+            self.logger.error(f"Error handling environment change: {e}")
+    
+    def _update_passthrough(self, value):
+        """Update passthrough visibility.
+        
+        Args:
+            value: Slider value (0-100)
+        """
+        try:
+            # Update label
+            if "passthrough" in self.status_indicators:
+                self.status_indicators["passthrough"].config(text=f"{int(float(value))}%")
+            
+            # Send update to VR system if connected
+            if self.connected:
+                self._publish_event("vr.passthrough.update", {
+                    "value": int(float(value))
+                })
+        except Exception as e:
+            self.logger.error(f"Error updating passthrough: {e}")
+    
+    def _on_connect_clicked(self):
+        """Handle connect button click."""
+        try:
+            # Get current settings
+            device = self.device_var.get()
+            wireless = self.wireless_var.get()
+            ip = self.ip_entry.get() if wireless else ""
+            adb_path = self.adb_entry.get()
+            
+            # Validate settings
+            if wireless and not ip:
+                messagebox.showerror("Connection Error", "IP address is required for wireless mode.")
+                return
+            
+            if not adb_path:
+                messagebox.showerror("Connection Error", "ADB path is required.")
+                return
+            
+            # Update status
+            self._add_status_message(f"Connecting to {device}...", "info")
+            
+            # Send connection request
+            self._publish_event("vr.connection.request", {
+                "device": device,
+                "wireless": wireless,
+                "ip": ip,
+                "adb_path": adb_path
+            })
+            
+            # Disable connect button temporarily
+            if "connect" in self.control_buttons:
+                self.control_buttons["connect"].config(state="disabled")
+        except Exception as e:
+            self.logger.error(f"Error handling connect: {e}")
+            self._add_status_message(f"Connection error: {e}", "error")
+    
+    def _on_disconnect_clicked(self):
+        """Handle disconnect button click."""
+        try:
+            if not self.connected:
+                messagebox.showinfo("Disconnect", "No active connection to disconnect.")
+                return
+            
+            # Update status
+            self._add_status_message("Disconnecting from VR device...", "info")
+            
+            # Send disconnect request
+            self._publish_event("vr.connection.disconnect", {
+                "device": self.vr_device
+            })
+            
+            # Disable disconnect button temporarily
+            if "disconnect" in self.control_buttons:
+                self.control_buttons["disconnect"].config(state="disabled")
+        except Exception as e:
+            self.logger.error(f"Error handling disconnect: {e}")
+            self._add_status_message(f"Disconnect error: {e}", "error")
+    
+    def _refresh_status(self):
+        """Refresh all status indicators."""
+        try:
+            # Connection status
+            if "connection" in self.status_indicators:
+                status_text = "Connected" if self.connected else "Disconnected"
+                status_color = "green" if self.connected else "red"
+                self.status_indicators["connection"].config(text=status_text, foreground=status_color)
+            
+            if "status_connection" in self.status_indicators:
+                status_text = "Connected" if self.connected else "Disconnected"
+                status_color = "green" if self.connected else "red"
+                self.status_indicators["status_connection"].config(text=status_text, foreground=status_color)
+            
+            # Tracking status
+            if "status_tracking" in self.status_indicators:
+                status_text = "Enabled" if self.tracking_enabled else "Disabled"
+                status_color = "green" if self.tracking_enabled else "gray"
+                self.status_indicators["status_tracking"].config(text=status_text, foreground=status_color)
+            
+            # Environment status
+            if "status_environment" in self.status_indicators:
+                status_text = "Loaded" if self.environment_loaded else "Not Loaded"
+                status_color = "green" if self.environment_loaded else "red"
+                self.status_indicators["status_environment"].config(text=status_text, foreground=status_color)
+            
+            # Update control buttons state
+            self._update_controls_state()
+            
+            # Request fresh data if connected
+            if self.connected:
+                self._publish_event("vr.status.request", {"source": "vr_frame"})
+        except Exception as e:
+            self.logger.error(f"Error refreshing status: {e}")
+    
+    def _update_controls_state(self):
+        """Update the state of control buttons based on current status."""
+        try:
+            # Connection controls
+            if "connect" in self.control_buttons:
+                self.control_buttons["connect"].config(
+                    state="normal" if not self.connected else "disabled"
+                )
+            
+            if "disconnect" in self.control_buttons:
+                self.control_buttons["disconnect"].config(
+                    state="normal" if self.connected else "disabled"
+                )
+            
+            # Tracking controls
+            if "calibrate" in self.control_buttons:
+                self.control_buttons["calibrate"].config(
+                    state="normal" if self.connected else "disabled"
+                )
+            
+            if "reset" in self.control_buttons:
+                self.control_buttons["reset"].config(
+                    state="normal" if self.connected and self.tracking_enabled else "disabled"
+                )
+            
+            # Environment controls
+            if "load" in self.control_buttons:
+                self.control_buttons["load"].config(
+                    state="normal" if self.connected else "disabled"
+                )
+            
+            if "customize" in self.control_buttons:
+                self.control_buttons["customize"].config(
+                    state="normal" if self.connected and self.environment_loaded else "disabled"
+                )
+            
+            # Checkboxes
+            if hasattr(self, 'tracking_checkbox') and self.tracking_checkbox:
+                self.tracking_checkbox.config(
+                    state="normal" if self.connected else "disabled"
+                )
+            
+            # Sliders
+            if hasattr(self, 'passthrough_slider') and self.passthrough_slider:
+                self.passthrough_slider.config(
+                    state="normal" if self.connected and self.environment_loaded else "disabled"
+                )
+        except Exception as e:
+            self.logger.error(f"Error updating control states: {e}")
+    
+    def _on_tracking_toggled(self):
+        """Handle tracking toggle checkbox."""
+        try:
+            enabled = self.tracking_var.get()
+            
+            # Send tracking request
+            self._publish_event("vr.tracking.request", {
+                "enable": enabled
+            })
+            
+            status_text = "enable" if enabled else "disable"
+            self._add_status_message(f"Requesting to {status_text} tracking...", "info")
+        except Exception as e:
+            self.logger.error(f"Error toggling tracking: {e}")
+            self._add_status_message(f"Error toggling tracking: {e}", "error")
+    
+    def _on_calibrate_clicked(self):
+        """Handle calibrate button click."""
+        try:
+            if not self.connected:
+                messagebox.showinfo("Calibration", "Connect to a VR device first.")
+                return
+            
+            self._add_status_message("Starting calibration...", "info")
+            
+            # Send calibration request
+            self._publish_event("vr.tracking.calibrate", {
+                "device": self.vr_device
+            })
+        except Exception as e:
+            self.logger.error(f"Error starting calibration: {e}")
+            self._add_status_message(f"Calibration error: {e}", "error")
+    
+    def _reset_tracking(self):
+        """Handle reset tracking button click."""
+        try:
+            if not self.connected or not self.tracking_enabled:
+                messagebox.showinfo("Reset Tracking", "Tracking must be enabled first.")
+                return
+            
+            self._add_status_message("Resetting tracking...", "info")
+            
+            # Send reset request
+            self._publish_event("vr.tracking.reset", {
+                "device": self.vr_device
+            })
+        except Exception as e:
+            self.logger.error(f"Error resetting tracking: {e}")
+            self._add_status_message(f"Reset error: {e}", "error")
+    
+    def _on_load_environment(self):
+        """Handle load environment button click."""
+        try:
+            if not self.connected:
+                messagebox.showinfo("Environment", "Connect to a VR device first.")
+                return
+            
+            environment = self.environment_var.get()
+            self._add_status_message(f"Loading environment: {environment}...", "info")
+            
+            # Send load request
+            self._publish_event("vr.environment.load", {
+                "environment": environment
+            })
+        except Exception as e:
+            self.logger.error(f"Error loading environment: {e}")
+            self._add_status_message(f"Environment load error: {e}", "error")
+    
+    def _customize_environment(self):
+        """Handle customize environment button click."""
+        try:
+            if not self.connected or not self.environment_loaded:
+                messagebox.showinfo("Customize", "Environment must be loaded first.")
+                return
+            
+            # Show customization dialog (simplified for now)
+            messagebox.showinfo("Customize Environment", 
+                               f"Customization options for '{self.environment}' would be shown here.")
+            
+            self._add_status_message(f"Customizing environment: {self.environment}", "info")
+            
+            # Send customize request
+            self._publish_event("vr.environment.customize", {
+                "environment": self.environment,
+                "options": {}  # Would be populated from dialog in a real implementation
+            })
+        except Exception as e:
+            self.logger.error(f"Error customizing environment: {e}")
+            self._add_status_message(f"Customization error: {e}", "error")

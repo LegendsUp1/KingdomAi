@@ -1,0 +1,44 @@
+{
+  "blockchain": {
+    "api_key": "your_blockchain_api_key",
+    "api_secret": "your_blockchain_api_secret",
+    "infura_project_id": "your_infura_project_id",
+    "alchemy_api_key": "your_alchemy_api_key"
+  },
+  "exchanges": {
+    "binance": {
+      "api_key": "your_binance_api_key",
+      "api_secret": "your_binance_api_secret"
+    },
+    "kucoin": {
+      "api_key": "your_kucoin_api_key",
+      "api_secret": "your_kucoin_api_secret",
+      "passphrase": "your_kucoin_passphrase"
+    },
+    "bybit": {
+      "api_key": "your_bybit_api_key",
+      "api_secret": "your_bybit_api_secret"
+    }
+  },
+  "services": {
+    "google_tpu": {
+      "enabled": true,
+      "api_key": "your_google_api_key",
+      "project_id": "your_gcp_project_id",
+      "location": "us-central1",
+      "endpoint": "https://REGION-aiplatform.googleapis.com/v1/projects/PROJECT/locations/REGION/endpoints/ENDPOINT_ID:predict",
+      "use_adc": true
+    },
+    "etherscan": {
+      "api_key": "your_etherscan_api_key"
+    },
+    "infura": {
+      "project_id": "your_infura_project_id",
+      "project_secret": "your_infura_project_secret"
+    },
+    "alchemy": {
+      "api_key": "your_alchemy_api_key"
+    }
+  },
+  "security_note": "NEVER commit this file with real API keys to version control. Add it to .gitignore"
+}

@@ -1,0 +1,79 @@
+[project]
+name = "kingdom-ai-mobile"
+version = "2.2.0"
+description = "Kingdom AI — Cross-platform mobile crypto trading, mining, and AI assistant"
+requires-python = ">=3.11"
+dependencies = [
+    "flet>=0.80.0",
+    "flet-webview>=0.80.0",
+    "qrcode[pil]>=7.4",
+    "websockets>=12.0",
+    "aiohttp>=3.9.0",
+    "gTTS>=2.5.0",
+    "edge-tts>=6.1.0",
+]
+
+[tool.flet]
+# App metadata
+org = "network.kingdomai"
+product = "Kingdom AI"
+company = "Kingdom AI Network"
+copyright = "Copyright 2026 Kingdom AI Network"
+
+# Entry point
+module = "kingdom_mobile"
+
+# Build targets
+[tool.flet.app]
+# Assets directory
+assets = "assets"
+
+# ── iOS Configuration ──
+[tool.flet.ios]
+team_id = ""  # Fill with your Apple Developer Team ID
+bundle_id = "network.kingdomai.mobile"
+
+[tool.flet.ios.info]
+NSCameraUsageDescription = "Kingdom AI uses the camera to scan QR codes for account linking."
+NSMicrophoneUsageDescription = "Kingdom AI uses the microphone for voice commands."
+NSFaceIDUsageDescription = "Kingdom AI uses Face ID for secure authentication."
+NSLocationWhenInUseUsageDescription = "Kingdom AI uses location for NFC tap-to-pay security verification."
+ITSAppUsesNonExemptEncryption = false
+UIBackgroundModes = ["fetch", "processing"]
+
+# ── Android Configuration ──
+[tool.flet.android]
+# Adaptive icon background color
+adaptive_icon_background = "#0A0E17"
+
+[tool.flet.android.manifest_application]
+usesCleartextTraffic = "true"
+
+[tool.flet.android.permission]
+"android.permission.INTERNET" = true
+"android.permission.CAMERA" = true
+"android.permission.RECORD_AUDIO" = true
+"android.permission.NFC" = true
+"android.permission.ACCESS_FINE_LOCATION" = true
+"android.permission.ACCESS_COARSE_LOCATION" = true
+"android.permission.VIBRATE" = true
+"android.permission.FOREGROUND_SERVICE" = true
+"android.permission.WAKE_LOCK" = true
+"android.permission.WRITE_EXTERNAL_STORAGE" = true
+"android.permission.READ_EXTERNAL_STORAGE" = true
+
+[tool.flet.android.feature]
+"android.hardware.camera" = false
+"android.hardware.camera.any" = false
+"android.hardware.nfc" = false
+"android.hardware.location.gps" = false
+
+# ── Splash / Theme ──
+[tool.flet.splash]
+color = "#0A0E17"
+dark = true
+
+# ── Deep Linking ──
+[tool.flet.deep_linking]
+scheme = "kingdomai"
+host = "kingdomai.network"

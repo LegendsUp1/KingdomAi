@@ -1,0 +1,401 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Kingdom AI Tab Manager Module.
+Manages the various tab components (trading, mining, voice, VR) in the Kingdom AI GUI.
+"""
+
+# Standard library imports
+import asyncio
+import datetime
+import importlib
+import inspect
+import json
+import logging
+import os
+import sys
+import time
+import traceback
+from decimal import Decimal
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+
+# Third-party imports
+try:
+    import redis
+    from redis import Redis
+    from redis.exceptions import RedisError
+    HAS_REDIS = True
+except ImportError as e:
+    logging.critical("Redis module not found. Please install with: pip install redis")
+    raise RuntimeError("Redis is required for Kingdom AI") from e
+
+# PyQt6 imports - required for Kingdom AI
+try:
+    from PyQt6.QtWidgets import (
+        QWidget, QVBoxLayout, QLabel, QTabWidget, QApplication, QSplitter,
+        QComboBox, QPushButton, QLineEdit, QTextEdit, QToolBar, QMenu,
+        QMainWindow, QMessageBox, QDialog, QScrollArea, QHBoxLayout, QFrame,
+        QGridLayout, QSizePolicy
+    )
+    from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QThread
+    from PyQt6.QtGui import QFont, QIcon, QAction
+    HAS_PYQT6 = True
+except ImportError as e:
+    logging.critical(f"PyQt6 import failed: {e} - Kingdom AI requires PyQt6")
+    raise RuntimeError("PyQt6 is required for Kingdom AI GUI") from e
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('tab_manager.log')
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Core imports
+from core.base_component import BaseComponent
+from core.event_bus import EventBus
+from core.redis_connector import RedisConnector as CoreRedisConnector
+
+# First-party imports
+from gui.kingdom_style import KingdomStyles
+
+# Matplotlib imports - REQUIRED for Kingdom AI's charting functionality
+try:
+    import matplotlib
+    import matplotlib.pyplot as plt
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    HAS_MATPLOTLIB = True
+except ImportError as e:
+    error_msg = "Matplotlib not available - Kingdom AI requires charting functionality"
+    logger.critical(error_msg)
+    raise RuntimeError(f"{error_msg} - system halting") from e
+
+# Verify critical components are available
+if not all([HAS_PYQT6, HAS_REDIS, HAS_MATPLOTLIB]):
+    logger.critical("Critical dependencies not available - system halting")
+    sys.exit(1)
+
+class TabManager(QWidget):
+    """
+    Tab Manager for Kingdom AI.
+    
+    Manages tabs for different components of the Kingdom AI system.
+    Enforces strict security policies for all components including Redis.
+    """
+    
+    def __init__(self, parent: Optional[QWidget] = None, 
+                 event_bus: Optional[EventBus] = None,
+                 redis_connector: Optional[CoreRedisConnector] = None):
+        """Initialize the TabManager.
+        
+        Args:
+            parent: Parent widget
+            event_bus: EventBus instance for inter-component communication
+            redis_connector: Redis connector instance
+        """
+        super().__init__(parent)
+        
+        # Initialize instance variables
+        self.tabs: Dict[str, QWidget] = {}
+        self.tab_frames: Dict[str, QWidget] = {}
+        self.current_tab: Optional[str] = None
+        self.wallet_addresses: Dict[str, str] = {}
+        self._initialized = False
+        self.active_threads: List[QThread] = []
+        self.dashboard_data: Dict[str, Any] = {}
+        self.trading_data: Dict[str, Any] = {}
+        self.mining_data: Dict[str, Any] = {}
+        self.wallet_data: Dict[str, Any] = {}
+        self.ai_data: Dict[str, Any] = {}
+        self.transaction_history: List[Dict[str, Any]] = []
+        self.threads: List[QThread] = []
+        
+        # Set up event bus and Redis
+        self.event_bus = event_bus or EventBus.get_instance()
+        self.redis_connector = redis_connector or CoreRedisConnector()
+        
+        # Set up UI
+        self.setup_ui()
+        
+        # Verify Redis connection
+        self._verify_redis_connection()
+        
+        # Initialize tabs
+        self.initialize_tabs()
+        
+        # Connect signals
+        self.setup_connections()
+        
+        self._initialized = True
+        logger.info("TabManager initialized successfully")
+    
+    def setup_ui(self) -> None:
+        """Set up the user interface components."""
+        self.layout = QVBoxLayout(self)
+        self.tab_widget = QTabWidget()
+        self.layout.addWidget(self.tab_widget)
+        
+        # Apply Kingdom AI styles
+        self.setStyleSheet(KingdomStyles.get_stylesheet())
+    
+    def setup_connections(self) -> None:
+        """Set up signal connections."""
+        self.tab_widget.currentChanged.connect(self._on_tab_changed)
+        
+        # Connect to event bus
+        if self.event_bus:
+            self.event_bus.subscribe('wallet_transaction', self._handle_wallet_transaction_event)
+    
+    def _verify_redis_connection(self) -> None:
+        """Verify Redis connection meets Kingdom AI security requirements."""
+        try:
+            if not self.redis_connector or not self.redis_connector.is_connected():
+                raise RuntimeError("Redis connection not established")
+                
+            # Verify Redis port is 6380 (strict requirement)
+            if self.redis_connector.port != 6380:
+                raise RuntimeError(f"Invalid Redis port {self.redis_connector.port}. "
+                                  "Kingdom AI requires port 6380 for security.")
+                
+            logger.info("Redis connection verified with Kingdom AI security requirements")
+            
+        except Exception as e:
+            logger.critical(f"Redis connection verification failed: {e}")
+            raise RuntimeError("Failed to verify Redis connection - system halting") from e
+    
+    def add_tab(self, name: str, label: str, widget: Optional[QWidget] = None) -> bool:
+        """Add a tab to the tab manager.
+        
+        Args:
+            name: Unique identifier for the tab
+            label: Display text for the tab
+            widget: Optional widget to use as tab content
+            
+        Returns:
+            bool: True if tab was added successfully
+        """
+        try:
+            if not widget:
+                widget = QWidget()
+                layout = QVBoxLayout()
+                widget.setLayout(layout)
+            
+            self.tabs[name] = widget
+            self.tab_widget.addTab(widget, label)
+            logger.debug(f"Added tab: {name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to add tab {name}: {e}")
+            return False
+    
+    def initialize_tabs(self) -> bool:
+        """Initialize all tabs with their default content."""
+        try:
+            # Add main tabs
+            self.add_tab("dashboard", "Dashboard")
+            self.add_tab("trading", "Trading")
+            self.add_tab("mining", "Mining")
+            self.add_tab("wallet", "Wallet")
+            self.add_tab("ai_assistant", "AI Assistant")
+            
+            logger.info("All tabs initialized successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize tabs: {e}")
+            return False
+    
+    def update_tab_data(self, tab_name: str, data: Optional[Dict] = None) -> bool:
+        """Update the content of a specific tab with new data."""
+        if tab_name not in self.tabs:
+            logger.warning(f"Tab {tab_name} not found")
+            return False
+            
+        try:
+            tab = self.tabs[tab_name]
+            
+            # Store the data based on tab type
+            if tab_name == "dashboard":
+                self.dashboard_data = data or {}
+                self._update_dashboard_tab(tab, data)
+            elif tab_name == "trading":
+                self.trading_data = data or {}
+                self._update_trading_tab(tab, data)
+            elif tab_name == "mining":
+                self.mining_data = data or {}
+                self._update_mining_tab(tab, data)
+            elif tab_name == "wallet":
+                self.wallet_data = data or {}
+                self._update_wallet_tab(tab, data)
+            elif tab_name == "ai_assistant":
+                self.ai_data = data or {}
+                self._update_ai_tab(tab, data)
+                
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to update tab {tab_name}: {e}")
+            return False
+    
+    # Aliases for compatibility
+    initialize_all_tabs = initialize_tabs
+    update_tab = update_tab_data
+    populate_tab_with_data = update_tab_data
+    
+    def _update_dashboard_tab(self, widget: QWidget, data: Optional[Dict]) -> None:
+        """Update the dashboard tab with data."""
+        # Clear existing content
+        if widget.layout():
+            while widget.layout().count():
+                item = widget.layout().takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+        
+        layout = QVBoxLayout()
+        
+        # Add title
+        title = QLabel("Kingdom AI Dashboard")
+        title.setStyleSheet("font-size: 24px; font-weight: bold;")
+        layout.addWidget(title)
+        
+        # Add status indicators
+        status_layout = QHBoxLayout()
+        
+        # Redis status
+        redis_status = QLabel("Redis: Connected" if self.redis_connector and self.redis_connector.is_connected() else "Redis: Disconnected")
+        redis_status.setStyleSheet("color: green;" if self.redis_connector and self.redis_connector.is_connected() else "color: red;")
+        status_layout.addWidget(redis_status)
+        
+        # Event bus status
+        event_bus_status = QLabel("Event Bus: Active" if self.event_bus and self.event_bus.is_running() else "Event Bus: Inactive")
+        event_bus_status.setStyleSheet("color: green;" if self.event_bus and self.event_bus.is_running() else "color: red;")
+        status_layout.addWidget(event_bus_status)
+        
+        layout.addLayout(status_layout)
+        
+        # Add data summary
+        if data:
+            summary = QLabel("Data Summary:")
+            layout.addWidget(summary)
+            
+            for key, value in data.items():
+                item = QLabel(f"{key}: {value}")
+                layout.addWidget(item)
+        
+        widget.setLayout(layout)
+    
+    def _update_trading_tab(self, widget: QWidget, data: Optional[Dict]) -> None:
+        """Update the trading tab with data."""
+        # Implementation for trading tab updates
+        pass
+    
+    def _update_mining_tab(self, widget: QWidget, data: Optional[Dict]) -> None:
+        """Update the mining tab with data."""
+        # Implementation for mining tab updates
+        pass
+    
+    def _update_wallet_tab(self, widget: QWidget, data: Optional[Dict]) -> None:
+        """Update the wallet tab with data."""
+        # Implementation for wallet tab updates
+        pass
+    
+    def _update_ai_tab(self, widget: QWidget, data: Optional[Dict]) -> None:
+        """Update the AI assistant tab with data."""
+        # Implementation for AI assistant tab updates
+        pass
+    
+    def _on_tab_changed(self, index: int) -> None:
+        """Handle tab change events."""
+        tab_name = self.tab_widget.tabText(index).lower().replace(" ", "_")
+        self.current_tab = tab_name
+        logger.debug(f"Tab changed to: {tab_name}")
+        
+        # Trigger update for the selected tab
+        if tab_name in self.tabs:
+            self.update_tab_data(tab_name)
+    
+    def check_dependencies(self) -> Dict[str, bool]:
+        """Check for optional dependencies like Web3 and ThothAI."""
+        deps = {
+            'web3': False,
+            'thoth_ai': False,
+            'numpy': False,
+            'pandas': False
+        }
+        
+        for dep in deps:
+            try:
+                importlib.import_module(dep)
+                deps[dep] = True
+            except ImportError:
+                logger.warning(f"Optional dependency not found: {dep}")
+        
+        return deps
+    
+    def refresh_all(self) -> bool:
+        """Refresh all tabs with current data."""
+        try:
+            for tab_name in self.tabs:
+                self.update_tab_data(tab_name)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to refresh tabs: {e}")
+            return False
+    
+    def _handle_wallet_transaction_event(self, data: Optional[Dict] = None) -> bool:
+        """Handle wallet transaction events."""
+        try:
+            if not data:
+                return False
+                
+            logger.info(f"Processing wallet transaction: {data}")
+            self.transaction_history.append(data)
+            
+            # Update wallet tab if it exists
+            if 'wallet' in self.tabs:
+                self.update_tab_data('wallet')
+                
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to process wallet transaction: {e}")
+            return False
+    
+    def update_data_with_dependencies(self) -> None:
+        """Update data structures based on dependency availability."""
+        deps = self.check_dependencies()
+        
+        # Update data based on available dependencies
+        if deps.get('pandas', False):
+            # Use pandas for data processing if available
+            import pandas as pd
+            # Process data here
+            pass
+    
+    def create_notebook(self) -> QTabWidget:
+        """Create a notebook (tab container) if one doesn't already exist."""
+        if not hasattr(self, 'tab_widget') or not self.tab_widget:
+            self.tab_widget = QTabWidget()
+            if hasattr(self, 'layout') and self.layout():
+                self.layout().addWidget(self.tab_widget)
+        return self.tab_widget
+    
+    def cleanup(self) -> None:
+        """Clean up resources."""
+        # Stop any active threads
+        for thread in self.active_threads:
+            if thread.isRunning():
+                thread.quit()
+                thread.wait()
+        
+        # Clear references
+        self.tabs.clear()
+        self.tab_frames.clear()
+        
+        logger.info("TabManager cleaned up successfully")

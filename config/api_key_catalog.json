@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "notes": "Consumer-safe metadata. Tells the mobile and desktop consumer apps which API keys the user can plug in for full functionality. Contains NO secrets. Shipping this file with the consumer build is safe.",
+  "categories": [
+    {
+      "id": "exchanges",
+      "label": "Trading exchanges",
+      "summary": "Optional. Connect your own exchange accounts to trade and view balances from inside the app.",
+      "providers": [
+        {"id": "kraken", "name": "Kraken", "signup_url": "https://www.kraken.com/u/security/api", "env_keys": ["KRAKEN_API_KEY", "KRAKEN_API_SECRET"]},
+        {"id": "binance", "name": "Binance", "signup_url": "https://www.binance.com/en/my/settings/api-management", "env_keys": ["BINANCE_API_KEY", "BINANCE_SECRET_KEY"]},
+        {"id": "binanceus", "name": "Binance.US", "signup_url": "https://www.binance.us/settings/api-management", "env_keys": ["BINANCEUS_API_KEY", "BINANCEUS_SECRET_KEY"]},
+        {"id": "coinbase", "name": "Coinbase Advanced", "signup_url": "https://www.coinbase.com/settings/api", "env_keys": ["COINBASE_API_KEY", "COINBASE_API_SECRET"]},
+        {"id": "bitstamp", "name": "Bitstamp", "signup_url": "https://www.bitstamp.net/account/security/api/", "env_keys": ["BITSTAMP_API_KEY", "BITSTAMP_API_SECRET"]},
+        {"id": "kucoin", "name": "KuCoin", "signup_url": "https://www.kucoin.com/account/api", "env_keys": ["KUCOIN_API_KEY", "KUCOIN_API_SECRET", "KUCOIN_PASSPHRASE"]},
+        {"id": "okx", "name": "OKX", "signup_url": "https://www.okx.com/account/my-api", "env_keys": ["OKX_API_KEY", "OKX_API_SECRET", "OKX_PASSPHRASE"]},
+        {"id": "bybit", "name": "Bybit", "signup_url": "https://www.bybit.com/app/user/api-management", "env_keys": ["BYBIT_API_KEY", "BYBIT_API_SECRET"]}
+      ]
+    },
+    {
+      "id": "stock_brokers",
+      "label": "Stock brokers",
+      "summary": "Optional. Connect a stock/forex broker for equities trading features.",
+      "providers": [
+        {"id": "alpaca", "name": "Alpaca", "signup_url": "https://app.alpaca.markets/account/profile", "env_keys": ["ALPACA_API_KEY", "ALPACA_API_SECRET"]},
+        {"id": "oanda", "name": "OANDA", "signup_url": "https://www.oanda.com/account/tpa/personal_token", "env_keys": ["OANDA_API_KEY"]}
+      ]
+    },
+    {
+      "id": "market_data",
+      "label": "Market data & news",
+      "summary": "Optional. Free tiers are enough for most users.",
+      "providers": [
+        {"id": "alphavantage", "name": "Alpha Vantage", "signup_url": "https://www.alphavantage.co/support/#api-key", "env_keys": ["ALPHA_VANTAGE_API_KEY"]},
+        {"id": "finnhub", "name": "Finnhub", "signup_url": "https://finnhub.io/dashboard", "env_keys": ["FINNHUB_KEY"]},
+        {"id": "coingecko", "name": "CoinGecko", "signup_url": "https://www.coingecko.com/en/developers/dashboard", "env_keys": ["COINGECKO_API_KEY"]},
+        {"id": "coinmarketcap", "name": "CoinMarketCap", "signup_url": "https://pro.coinmarketcap.com/account", "env_keys": ["COINMARKETCAP_API_KEY"]},
+        {"id": "cryptocompare", "name": "CryptoCompare", "signup_url": "https://www.cryptocompare.com/cryptopian/api-keys", "env_keys": ["CRYPTOCOMPARE_API_KEY"]},
+        {"id": "newsapi", "name": "NewsAPI", "signup_url": "https://newsapi.org/register", "env_keys": ["NEWSAPI_API_KEY"]},
+        {"id": "fred", "name": "FRED (US Fed data)", "signup_url": "https://fred.stlouisfed.org/docs/api/api_key.html", "env_keys": ["FRED_API_KEY"]}
+      ]
+    },
+    {
+      "id": "ai",
+      "label": "AI assistants",
+      "summary": "Optional. Adds cloud LLM assistants to the KAI chat. Kingdom AI still works fully without any of these -- the local Ollama brain handles everything.",
+      "providers": [
+        {"id": "openai", "name": "OpenAI (ChatGPT)", "signup_url": "https://platform.openai.com/api-keys", "env_keys": ["OPENAI_API_KEY"]},
+        {"id": "anthropic", "name": "Anthropic (Claude)", "signup_url": "https://console.anthropic.com/settings/keys", "env_keys": ["ANTHROPIC_API_KEY"]},
+        {"id": "groq", "name": "Groq", "signup_url": "https://console.groq.com/keys", "env_keys": ["GROQ_API_KEY"]},
+        {"id": "huggingface", "name": "HuggingFace", "signup_url": "https://huggingface.co/settings/tokens", "env_keys": ["HUGGINGFACE_API_KEY"]},
+        {"id": "mistral", "name": "Mistral", "signup_url": "https://console.mistral.ai/api-keys", "env_keys": ["MISTRAL_API_KEY"]}
+      ]
+    },
+    {
+      "id": "web3",
+      "label": "Blockchain / Web3",
+      "summary": "Optional. Needed only if you want live blockchain RPC access inside the wallet.",
+      "providers": [
+        {"id": "infura", "name": "Infura", "signup_url": "https://app.infura.io/dashboard", "env_keys": ["INFURA_PROJECT_ID"]},
+        {"id": "alchemy", "name": "Alchemy", "signup_url": "https://dashboard.alchemy.com/", "env_keys": ["ALCHEMY_API_KEY"]},
+        {"id": "etherscan", "name": "Etherscan", "signup_url": "https://etherscan.io/myapikey", "env_keys": ["ETHERSCAN_API_KEY"]}
+      ]
+    }
+  ]
+}

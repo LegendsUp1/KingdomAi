@@ -1,0 +1,53 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "auth_enabled": true,
+    "session_timeout": 30,
+    "failed_attempts_threshold": 5,
+    "lockout_duration": 15,
+    "password_policy": {
+        "min_length": 8,
+        "require_uppercase": true,
+        "require_lowercase": true,
+        "require_numbers": true,
+        "require_special_chars": true,
+        "max_age_days": 90,
+        "history_count": 5
+    },
+    "encryption": {
+        "algorithm": "AES-256-CBC",
+        "key_rotation_days": 30
+    },
+    "api_protection": {
+        "rate_limiting": {
+            "enabled": true,
+            "requests_per_minute": 100,
+            "burst_size": 25
+        },
+        "ip_blacklist": [
+            "1.2.3.4",
+            "5.6.7.8"
+        ],
+        "require_auth_for_paths": [
+            "/api/private/*",
+            "/admin/*"
+        ]
+    },
+    "monitoring": {
+        "log_failed_logins": true,
+        "log_access_to_sensitive_data": true,
+        "alert_on_suspicious_activity": true,
+        "alert_thresholds": {
+            "failed_logins_per_hour": 10,
+            "api_requests_per_minute": 100,
+            "new_connections_per_minute": 50
+        }
+    },
+    "session_management": {
+        "cookie_secure": true,
+        "cookie_http_only": true,
+        "same_site": "strict",
+        "regenerate_id_on_login": true,
+        "single_session_per_user": false
+    }
+}

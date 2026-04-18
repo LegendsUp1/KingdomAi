@@ -1,0 +1,9 @@
+{
+    "host": "localhost",
+    "port": 6380,
+    "password": "QuantumNexus2025",
+    "db": 0,
+    "fallback_mode": false,
+    "health_check_interval": 30,
+    "max_retries": 3
+}

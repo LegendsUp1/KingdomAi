@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kingdom AI — Free Crypto Trading, Mining & AI Assistant</title>
+    <meta name="description" content="Kingdom AI is a 100% free, open-source crypto trading, mining, and AI assistant app. No hidden fees. No data collection. Built for the people.">
+    <meta name="theme-color" content="#0A0E17">
+    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kingdom AI">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0E17;
+            color: #E0E0E0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .gradient-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.04) 0%, transparent 50%),
+                        #0A0E17;
+            z-index: -1;
+        }
+
+        .container { max-width: 720px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+        .header .crown { font-size: 48px; }
+        .header h1 {
+            font-size: 36px; font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+            margin: 8px 0;
+        }
+        .header .tagline {
+            font-size: 16px; color: #00D4FF; font-weight: 500;
+        }
+
+        /* Referral banner */
+        .referral-banner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px; padding: 14px 20px;
+            text-align: center; margin: 16px 0;
+            display: none;
+        }
+        .referral-banner.active { display: block; }
+        .referral-banner span { color: #FFD700; font-weight: 700; }
+
+        /* Trust section */
+        .trust-section {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 180, 220, 0.04));
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px; padding: 24px; margin: 24px 0;
+        }
+        .trust-section h2 {
+            color: #00D4FF; font-size: 20px; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .trust-item {
+            display: flex; gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .trust-item:last-child { border-bottom: none; }
+        .trust-icon { font-size: 22px; min-width: 30px; text-align: center; }
+        .trust-item h3 { color: #FFD700; font-size: 14px; margin-bottom: 2px; }
+        .trust-item p { color: #AAA; font-size: 12px; line-height: 1.5; }
+
+        /* Download buttons */
+        .download-section {
+            text-align: center; margin: 30px 0;
+        }
+        .download-section h2 {
+            color: #FFD700; font-size: 22px; margin-bottom: 20px;
+        }
+        .store-buttons {
+            display: flex; flex-direction: column; gap: 12px;
+            align-items: center;
+        }
+        .store-btn {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 280px; padding: 14px 24px;
+            border-radius: 12px; border: 2px solid;
+            font-size: 16px; font-weight: 600;
+            text-decoration: none; transition: all 0.2s;
+            cursor: pointer;
+        }
+        .store-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        .store-btn.android {
+            background: linear-gradient(135deg, #34A853, #2D8F47);
+            border-color: #34A853; color: white;
+        }
+        .store-btn.ios {
+            background: linear-gradient(135deg, #333, #1a1a1a);
+            border-color: #555; color: white;
+        }
+        .store-btn.desktop {
+            background: linear-gradient(135deg, #0078D4, #005A9E);
+            border-color: #0078D4; color: white;
+        }
+        .store-btn .btn-icon { font-size: 24px; }
+        .store-btn .btn-text { text-align: left; }
+        .store-btn .btn-text small { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; }
+
+        /* Features */
+        .features {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            margin: 24px 0;
+        }
+        @media (max-width: 480px) { .features { grid-template-columns: 1fr; } }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 16px;
+        }
+        .feature-card .icon { font-size: 28px; margin-bottom: 8px; }
+        .feature-card h3 { color: #FFD700; font-size: 14px; margin-bottom: 4px; }
+        .feature-card p { color: #888; font-size: 12px; line-height: 1.4; }
+
+        /* Open source badge */
+        .open-source {
+            text-align: center; padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 30px;
+        }
+        .open-source a {
+            color: #00D4FF; text-decoration: none; font-weight: 600;
+        }
+        .open-source p { color: #666; font-size: 11px; margin-top: 8px; }
+
+        /* Coming soon badge */
+        .coming-soon {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700; font-size: 10px; font-weight: 700;
+            padding: 3px 8px; border-radius: 4px;
+            margin-left: 8px; vertical-align: middle;
+        }
+
+        /* Highlight for detected platform */
+        .recommended {
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        .recommended::after {
+            content: 'RECOMMENDED';
+            position: absolute; top: -10px; right: 16px;
+            background: #FFD700; color: #0A0E17;
+            font-size: 9px; font-weight: 800;
+            padding: 2px 8px; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="crown">👑</div>
+            <h1>KINGDOM AI</h1>
+            <p class="tagline">Free Crypto Trading · Mining · AI Assistant</p>
+        </div>
+
+        <!-- Referral Banner (shown when ref code in URL) -->
+        <div class="referral-banner" id="referralBanner">
+            You've been invited! Your referral code <span id="refCode"></span> is applied automatically.
+        </div>
+
+        <!-- Trust & Transparency -->
+        <div class="trust-section">
+            <h2>🔒 Your Security & Privacy</h2>
+            <div class="trust-item">
+                <div class="trust-icon">🚫</div>
+                <div>
+                    <h3>No Data Collection</h3>
+                    <p>Kingdom AI does NOT collect, store, or transmit any personal data. No analytics, no tracking, no telemetry. Your data stays on YOUR device — always.</p>
+                </div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">🔑</div>
+                <div>
+                    <h3>No Access to Your Keys or Funds</h3>
+                    <p>We have zero ability to access your wallets, private keys, or funds. All crypto keys are generated and stored locally on your device. We physically cannot steal anything — the app was purposely built this way.</p>
+                </div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">📖</div>
+                <div>
+                    <h3>100% Open Source</h3>
+                    <p>Every line of code is publicly auditable. You can inspect exactly what the app does. No hidden processes, no secret servers, no backdoors.</p>
+                </div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">🏠</div>
+                <div>
+                    <h3>Runs Locally on Your Device</h3>
+                    <p>All AI, trading, and mining runs on YOUR hardware. No cloud dependency. No external servers controlling your experience. You own everything.</p>
+                </div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">💰</div>
+                <div>
+                    <h3>100% Free — No Hidden Fees</h3>
+                    <p>No subscription, no in-app purchases, no premium tiers. Every feature is free for everyone. Built by the community, for the community.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Section -->
+        <div class="download-section">
+            <h2>Download Kingdom AI</h2>
+            <div class="store-buttons">
+                <a class="store-btn android" id="androidBtn" href="/downloads/KingdomAI.apk" download>
+                    <span class="btn-icon">🤖</span>
+                    <span class="btn-text">
+                        <small>Download APK for</small>
+                        Android
+                    </span>
+                </a>
+                <a class="store-btn ios" id="iosBtn" href="#" onclick="installPWA()">
+                    <span class="btn-icon">🍎</span>
+                    <span class="btn-text">
+                        <small>Install Web App on</small>
+                        iPhone / iPad
+                    </span>
+                </a>
+                <a class="store-btn desktop" href="https://github.com/KingdomAI/kingdom-ai/releases">
+                    <span class="btn-icon">💻</span>
+                    <span class="btn-text">
+                        <small>Download for</small>
+                        Windows / Mac / Linux
+                    </span>
+                </a>
+            </div>
+            <!-- Install instructions (shown dynamically) -->
+            <div id="installGuide" style="display:none; margin-top: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 16px; text-align: left;">
+                <p id="guideTitle" style="color: #FFD700; font-size: 14px; font-weight: 700; margin-bottom: 8px;"></p>
+                <ol id="guideSteps" style="color: #CCC; font-size: 13px; padding-left: 20px; line-height: 1.8;"></ol>
+            </div>
+            <p style="color: #666; font-size: 11px; margin-top: 12px;">
+                No app store required. Direct download — free, safe, and open source.
+            </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="icon">📈</div>
+                <h3>Live Crypto Trading</h3>
+                <p>Connect to Kraken, Binance, Coinbase, and 7+ exchanges. AI-powered signals and copy trading.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⛏️</div>
+                <h3>Mine 82+ Coins</h3>
+                <p>Collective mining pool across all your devices. BTC, ETH, XMR, KAS, ERG, FLUX, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🤖</div>
+                <h3>AI Assistant (KAI)</h3>
+                <p>Trade from chat — just type "buy 0.01 BTC on binance". Voice control, market analysis, portfolio advice — all private.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💳</div>
+                <h3>Wallet & Pay</h3>
+                <p>Multi-coin wallet with QR payments. Send, receive, and manage crypto right from your phone.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🪙</div>
+                <h3>$KAIG Token</h3>
+                <p>Earn KAI Gold through trading, mining, and referrals. The native reward token of Kingdom AI.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔗</div>
+                <h3>Phone + Desktop Sync</h3>
+                <p>Link your phone to your desktop for GPU mining, VR trading, AI code generation, and more.</p>
+            </div>
+        </div>
+
+        <!-- Open Source -->
+        <div class="open-source">
+            <p style="color: #888; font-size: 13px;">
+                Built by <strong style="color: #FFD700;">Isaiah Marck Wright &mdash; King Zilla</strong>
+            </p>
+            <p>Kingdom AI is free, open-source software.<br>No accounts required. No data ever leaves your device.</p>
+            <p style="margin-top: 12px;">
+                <a href="/privacy.html">Privacy Policy</a> &middot;
+                <a href="https://github.com/KingdomAI">Source Code</a>
+            </p>
+            <p id="versionBadge" style="color: #444; font-size: 10px; margin-top: 12px;">Loading version&hellip;</p>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // SOTA 2026: Service Worker Registration
+        // ═══════════════════════════════════════════════════════════════
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+                .catch(err => console.warn('SW registration failed:', err));
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // URL Params: Referral codes + Mode detection (creator/consumer)
+        // ═══════════════════════════════════════════════════════════════
+        const params = new URLSearchParams(window.location.search);
+        const refCode = params.get('ref');
+        const fromDevice = params.get('from');
+        const appMode = params.get('mode'); // "creator" or default "consumer"
+
+        // Store mode in localStorage so the PWA remembers after install
+        if (appMode) {
+            localStorage.setItem('kingdom_app_mode', appMode);
+        }
+        const storedMode = localStorage.getItem('kingdom_app_mode') || 'consumer';
+
+        // Show referral banner if ref code present
+        if (refCode) {
+            document.getElementById('referralBanner').classList.add('active');
+            document.getElementById('refCode').textContent = refCode;
+            localStorage.setItem('kingdom_referral', refCode);
+            localStorage.setItem('kingdom_referrer', fromDevice || '');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Platform Detection + Install Guides
+        // ═══════════════════════════════════════════════════════════════
+        const ua = navigator.userAgent || '';
+        const isAndroid = /android/i.test(ua);
+        const isIOS = /iphone|ipad|ipod/i.test(ua);
+        const isInStandalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+
+        // If already installed as PWA, show welcome instead of install guides
+        if (isInStandalone) {
+            const dlSection = document.querySelector('.download-section');
+            if (dlSection) {
+                dlSection.innerHTML = '<div style="text-align:center;padding:24px;">'
+                    + '<p style="font-size:18px;color:#FFD700;font-weight:700;">👑 Kingdom AI Installed</p>'
+                    + '<p style="color:#999;margin-top:8px;">Mode: <strong style="color:#00D4FF;">'
+                    + storedMode.toUpperCase() + '</strong></p>'
+                    + '<p style="color:#666;font-size:13px;margin-top:12px;">You\'re running Kingdom AI as an app. Full features coming soon!</p>'
+                    + '</div>';
+            }
+        } else {
+            // Show platform-specific install guide
+            if (isAndroid) {
+                document.getElementById('androidBtn').classList.add('recommended');
+                showGuide('android');
+            } else if (isIOS) {
+                document.getElementById('iosBtn').classList.add('recommended');
+                showGuide('ios');
+            }
+        }
+
+        function showGuide(platform) {
+            const guide = document.getElementById('installGuide');
+            const title = document.getElementById('guideTitle');
+            const steps = document.getElementById('guideSteps');
+            guide.style.display = 'block';
+            steps.innerHTML = '';
+
+            if (platform === 'android') {
+                title.textContent = '🤖 Android Install Guide:';
+                const s = [
+                    'Tap <strong>Download APK</strong> above',
+                    'If prompted, tap <strong>"Download anyway"</strong> — the file is safe and open source',
+                    'Open the downloaded <strong>KingdomAI.apk</strong> file',
+                    'Tap <strong>"Install"</strong> (you may need to enable "Install from unknown sources" in Settings)',
+                    'Open Kingdom AI and start trading!',
+                    '<em style="color:#00D4FF;">Tip: You can also install this page as a Web App — tap ⋮ menu → "Add to Home Screen"</em>'
+                ];
+                s.forEach(t => { const li = document.createElement('li'); li.innerHTML = t; steps.appendChild(li); });
+            } else if (platform === 'ios') {
+                title.textContent = '🍎 iPhone / iPad Install Guide (PWA):';
+                const s = [
+                    'Tap the <strong>Share button</strong> <span style="font-size:18px;">⬆️</span> at the bottom of Safari',
+                    'Scroll down and tap <strong>"Add to Home Screen"</strong> ➕',
+                    'Tap <strong>"Add"</strong> in the top right corner',
+                    'Kingdom AI now appears as a <strong>real app</strong> on your home screen!',
+                    'It runs in full-screen, works offline, and has no browser toolbar',
+                    '<strong style="color:#FFD700;">No App Store needed — free, instant install</strong>'
+                ];
+                s.forEach(t => { const li = document.createElement('li'); li.innerHTML = t; steps.appendChild(li); });
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // PWA Install Prompt (Android/Chrome/Edge — not supported on iOS)
+        // ═══════════════════════════════════════════════════════════════
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show a custom install button for Android/Chrome users
+            const iosBtn = document.getElementById('iosBtn');
+            if (iosBtn) {
+                iosBtn.innerHTML = '<span class="btn-icon">📲</span>'
+                    + '<span class="btn-text"><small>Install App on</small>This Device</span>';
+                iosBtn.onclick = function(ev) {
+                    ev.preventDefault();
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(choice => {
+                            if (choice.outcome === 'accepted') {
+                                console.log('✅ PWA installed');
+                            }
+                            deferredPrompt = null;
+                        });
+                    }
+                };
+            }
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choice => {
+                    deferredPrompt = null;
+                });
+            } else {
+                // iOS fallback — show Add to Home Screen guide
+                showGuide('ios');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // iOS Safari: Re-cache on launch (mitigate 7-day cache expiry)
+        // ═══════════════════════════════════════════════════════════════
+        if (isInStandalone && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg.active) {
+                    reg.active.postMessage({ type: 'KEEP_ALIVE' });
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Version badge + APK availability probe (Phase G / Phase K)
+        // ═══════════════════════════════════════════════════════════════
+        fetch('/version.json', { cache: 'no-store' })
+            .then(r => r.ok ? r.json() : null)
+            .then(v => {
+                const el = document.getElementById('versionBadge');
+                if (v && el) {
+                    el.textContent = 'Kingdom AI v' + (v.app_version || '?') + ' \u00b7 protocol ' + (v.protocol_version || '?');
+                }
+            })
+            .catch(() => {});
+
+        // Check if the Android APK is actually available before offering the download.
+        // (If the creator has just done a security rebuild the APK may briefly be absent --
+        // the page should gracefully steer Android users to PWA install instead.)
+        fetch('/downloads/KingdomAI.apk', { method: 'HEAD' })
+            .then(r => {
+                if (!r.ok) throw new Error('apk ' + r.status);
+            })
+            .catch(() => {
+                const btn = document.getElementById('androidBtn');
+                if (btn) {
+                    btn.removeAttribute('download');
+                    btn.setAttribute('href', '#');
+                    btn.onclick = function(ev) {
+                        ev.preventDefault();
+                        alert('The Android APK is being rebuilt after a security update. '
+                            + 'In the meantime, install the web app: tap the Chrome menu \u22ee and choose '
+                            + '"Add to Home screen". The web app includes all the core Kingdom AI features.');
+                    };
+                    btn.innerHTML = '<span class="btn-icon">\ud83d\udd04</span>'
+                        + '<span class="btn-text"><small>Android APK rebuild in progress</small>Install Web App instead</span>';
+                }
+            });
+    </script>
+</body>
+</html>

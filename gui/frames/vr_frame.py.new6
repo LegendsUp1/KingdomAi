@@ -1,0 +1,348 @@
+    def _detect_devices(self):
+        """Detect available VR devices."""
+        try:
+            self._add_status_message("Detecting VR devices...", "info")
+            
+            # Send device detection request
+            self._publish_event("vr.device.detect", {
+                "adb_path": self.adb_entry.get()
+            })
+        except Exception as e:
+            self.logger.error(f"Error detecting devices: {e}")
+            self._add_status_message(f"Device detection error: {e}", "error")
+    
+    def _refresh_visualization(self):
+        """Refresh the visualization canvas."""
+        try:
+            if not hasattr(self, 'visualization_canvas') or not self.visualization_canvas:
+                return
+            
+            # Clear canvas
+            self.visualization_canvas.delete("all")
+            
+            # Get canvas dimensions
+            width = self.visualization_canvas.winfo_width()
+            height = self.visualization_canvas.winfo_height()
+            
+            # If width or height is 1, the canvas hasn't been fully initialized yet
+            if width <= 1 or height <= 1:
+                width = 400  # Default width
+                height = 300  # Default height
+            
+            # Draw connection status
+            self._draw_connection_status(width, height)
+            
+            # Draw tracking data if connected and tracking enabled
+            if self.connected and self.tracking_enabled:
+                self._draw_tracking_data(width, height)
+            
+            # Draw environment status
+            self._draw_environment_status(width, height)
+        except Exception as e:
+            self.logger.error(f"Error refreshing visualization: {e}")
+    
+    def _draw_connection_status(self, width, height):
+        """Draw connection status visualization.
+        
+        Args:
+            width: Canvas width
+            height: Canvas height
+        """
+        # Connection status text
+        status_text = f"Connection: {self.connection_status.capitalize()}"
+        status_color = "green" if self.connected else "red"
+        
+        self.visualization_canvas.create_text(
+            10, 10,
+            text=status_text,
+            fill=status_color,
+            anchor=tk.NW,
+            tags="connection"
+        )
+        
+        # Device info
+        device_text = f"Device: {self.vr_device.replace('_', ' ').title()}"
+        self.visualization_canvas.create_text(
+            10, 30,
+            text=device_text,
+            fill="black",
+            anchor=tk.NW,
+            tags="connection"
+        )
+        
+        # Battery status
+        headset_battery = self.battery_level["headset"]
+        left_battery = self.battery_level["left"]
+        right_battery = self.battery_level["right"]
+        
+        battery_text = f"Battery: Headset {headset_battery}% | Left {left_battery}% | Right {right_battery}%"
+        battery_color = "black"
+        if min(headset_battery, left_battery, right_battery) < 20:
+            battery_color = "red"
+        elif min(headset_battery, left_battery, right_battery) < 50:
+            battery_color = "orange"
+        
+        self.visualization_canvas.create_text(
+            10, 50,
+            text=battery_text,
+            fill=battery_color,
+            anchor=tk.NW,
+            tags="connection"
+        )
+    
+    def _draw_tracking_data(self, width, height):
+        """Draw tracking data visualization.
+        
+        Args:
+            width: Canvas width
+            height: Canvas height
+        """
+        # Draw headset position
+        head_x, head_y, head_z = self.tracking_data["head"]
+        
+        # Draw controllers
+        left_x, left_y, left_z = self.tracking_data["left"]
+        right_x, right_y, right_z = self.tracking_data["right"]
+        
+        # Draw simple visualization (normalized to canvas)
+        center_x = width / 2
+        center_y = height / 2
+        
+        # Draw tracking quality indicator
+        quality_text = f"Tracking Quality: {self.tracking_quality.capitalize()}"
+        quality_color = "gray"
+        if self.tracking_quality == "good":
+            quality_color = "green"
+        elif self.tracking_quality == "fair":
+            quality_color = "orange"
+        elif self.tracking_quality == "poor":
+            quality_color = "red"
+            
+        self.visualization_canvas.create_text(
+            10, 70,
+            text=quality_text,
+            fill=quality_color,
+            anchor=tk.NW,
+            tags="tracking"
+        )
+        
+        # Draw headset
+        headset_x = center_x + (head_x * 50)
+        headset_y = center_y + (head_y * 50)
+        self.visualization_canvas.create_oval(
+            headset_x - 15, headset_y - 15,
+            headset_x + 15, headset_y + 15,
+            fill="blue", tags="tracking"
+        )
+        self.visualization_canvas.create_text(
+            headset_x, headset_y,
+            text="H", fill="white", tags="tracking"
+        )
+        
+        # Draw left controller
+        left_x = center_x + (left_x * 50)
+        left_y = center_y + (left_y * 50)
+        self.visualization_canvas.create_oval(
+            left_x - 10, left_y - 10,
+            left_x + 10, left_y + 10,
+            fill="green", tags="tracking"
+        )
+        self.visualization_canvas.create_text(
+            left_x, left_y,
+            text="L", fill="white", tags="tracking"
+        )
+        
+        # Draw right controller
+        right_x = center_x + (right_x * 50)
+        right_y = center_y + (right_y * 50)
+        self.visualization_canvas.create_oval(
+            right_x - 10, right_y - 10,
+            right_x + 10, right_y + 10,
+            fill="red", tags="tracking"
+        )
+        self.visualization_canvas.create_text(
+            right_x, right_y,
+            text="R", fill="white", tags="tracking"
+        )
+        
+        # Draw connecting lines
+        self.visualization_canvas.create_line(
+            headset_x, headset_y, left_x, left_y,
+            fill="green", width=2, tags="tracking"
+        )
+        self.visualization_canvas.create_line(
+            headset_x, headset_y, right_x, right_y,
+            fill="red", width=2, tags="tracking"
+        )
+        
+        # Draw Z position indicators (depth)
+        depth_text = f"Depth (Z): Headset {head_z:.2f} | Left {left_z:.2f} | Right {right_z:.2f}"
+        self.visualization_canvas.create_text(
+            10, 90,
+            text=depth_text,
+            fill="black", anchor=tk.NW, tags="tracking"
+        )
+    
+    def _draw_environment_status(self, width, height):
+        """Draw environment status visualization.
+        
+        Args:
+            width: Canvas width
+            height: Canvas height
+        """
+        # Draw environment info at the bottom
+        env_status = "Loaded" if self.environment_loaded else "Not Loaded"
+        env_color = "green" if self.environment_loaded else "red"
+        
+        self.visualization_canvas.create_text(
+            10, height - 30,
+            text=f"Environment: {self.environment.replace('_', ' ').title()}", 
+            fill="black", anchor=tk.NW, tags="environment"
+        )
+        
+        self.visualization_canvas.create_text(
+            10, height - 10,
+            text=f"Status: {env_status}", 
+            fill=env_color, anchor=tk.NW, tags="environment"
+        )
+        
+        # Draw passthrough value if applicable
+        if hasattr(self, 'passthrough_var') and self.passthrough_var is not None:
+            passthrough_value = self.passthrough_var.get()
+            
+            self.visualization_canvas.create_text(
+                width - 10, height - 10,
+                text=f"Passthrough: {passthrough_value}%", 
+                fill="black", anchor=tk.NE, tags="environment"
+            )
+    
+    def _add_status_message(self, message, level="info"):
+        """Add a status message to the status text widget.
+        
+        Args:
+            message: The message to add
+            level: Message level (info, warning, error)
+        """
+        try:
+            if hasattr(self, 'status_text') and self.status_text:
+                # Add timestamp
+                timestamp = time.strftime("%H:%M:%S")
+                formatted_message = f"[{timestamp}] {message}\n"
+                
+                # Set tag based on level
+                self.status_text.configure(state="normal")
+                self.status_text.insert(tk.END, formatted_message)
+                
+                if level == "warning":
+                    self.status_text.tag_add("warning", "end-2l", "end-1c")
+                elif level == "error":
+                    self.status_text.tag_add("error", "end-2l", "end-1c")
+                
+                # Auto-scroll to end and make read-only again
+                self.status_text.see(tk.END)
+                self.status_text.configure(state="disabled")
+            else:
+                # Log message if status text not available
+                log_func = getattr(logger, level) if hasattr(logger, level) else logger.info
+                log_func(f"VR Frame: {message}")
+        except Exception as e:
+            logger.error(f"Error adding status message: {e}")
+    
+    def _check_low_battery(self):
+        """Check if any battery is low and show warning if needed."""
+        try:
+            low_threshold = 20  # 20% battery level
+            
+            # Check each battery level
+            warnings = []
+            if self.battery_level["headset"] < low_threshold:
+                warnings.append(f"Headset battery low ({self.battery_level['headset']}%)")
+            
+            if self.battery_level["left"] < low_threshold:
+                warnings.append(f"Left controller battery low ({self.battery_level['left']}%)")
+            
+            if self.battery_level["right"] < low_threshold:
+                warnings.append(f"Right controller battery low ({self.battery_level['right']}%)")
+            
+            # Show warnings if any
+            if warnings:
+                warning_message = " | ".join(warnings)
+                self._add_status_message(warning_message, "warning")
+                
+                # Also publish event for system-wide notification
+                self._publish_event("vr.battery.warning", {
+                    "warnings": warnings,
+                    "levels": self.battery_level
+                })
+        except Exception as e:
+            logger.error(f"Error checking battery levels: {e}")
+    
+    def _get_battery_color(self, level):
+        """Get color for battery level indicator.
+        
+        Args:
+            level: Battery level percentage
+        
+        Returns:
+            Color string for the battery indicator
+        """
+        if level < 20:
+            return "red"
+        elif level < 50:
+            return "orange"
+        else:
+            return "green"
+    
+    def _publish_event(self, event_type, data=None):
+        """Publish an event to the event bus.
+        
+        Args:
+            event_type: Type of the event
+            data: Event data
+        """
+        try:
+            if not hasattr(self, 'event_bus') or not self.event_bus:
+                self.logger.warning(f"Cannot publish {event_type}: No event bus available")
+                return
+            
+            if data is None:
+                data = {}
+            
+            # Add source identifier if not present
+            if "source" not in data:
+                data["source"] = "vr_frame"
+            
+            # Add timestamp if not present
+            if "timestamp" not in data:
+                data["timestamp"] = time.time()
+            
+            self.event_bus.publish(event_type, data)
+        except Exception as e:
+            self.logger.error(f"Error publishing event {event_type}: {e}")
+    
+    async def _publish_event_async(self, event_type, data=None):
+        """Publish an event to the event bus asynchronously.
+        
+        Args:
+            event_type: Type of the event
+            data: Event data
+        """
+        try:
+            if not hasattr(self, 'event_bus') or not self.event_bus:
+                self.logger.warning(f"Cannot publish {event_type}: No event bus available")
+                return
+            
+            if data is None:
+                data = {}
+            
+            # Add source identifier if not present
+            if "source" not in data:
+                data["source"] = "vr_frame"
+            
+            # Add timestamp if not present
+            if "timestamp" not in data:
+                data["timestamp"] = time.time()
+            
+            await self.event_bus.publish_async(event_type, data)
+        except Exception as e:
+            self.logger.error(f"Error publishing event {event_type} asynchronously: {e}")

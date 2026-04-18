@@ -1,0 +1,77 @@
+"""PyQt6 implementation of the Kingdom-AI Dashboard tab.
+
+This widget displays the status of core Kingdom AI system components
+using LED indicators for quick visual feedback.
+
+IMPORTANT: This implementation enforces strict Redis connection on port 6380
+with password 'QuantumNexus2025'. No fallback connections are allowed.
+If Redis connection fails, the system will halt immediately.
+"""
+from __future__ import annotations
+
+import logging
+import redis
+import threading
+import sys
+import time
+import asyncio
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional, List, Union, Tuple, Callable, Type
+
+# Configure logger
+logger = logging.getLogger(__name__)
+
+# PyQt imports - try PyQt6 first, fall back to PyQt5 if necessary
+try:
+    from PyQt6.QtCore import QTimer, Qt, pyqtSignal, pyqtSlot, QRectF, QPointF, QSize, QPoint, QThread, QEventLoop
+    from PyQt6.QtWidgets import (
+        QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+        QLabel, QPushButton, QTextEdit, QFrame, QSplitter, QTabWidget,
+        QGroupBox, QSizePolicy, QScrollArea, QStatusBar, QFormLayout,
+        QGridLayout, QMessageBox, QProgressBar
+    )
+    from PyQt6.QtGui import (
+        QColor, QPainter, QLinearGradient, QPainterPath, QFont,
+        QFontMetrics, QPen, QBrush, QPalette, QTextCursor, QPaintEvent
+    )
+    PYQT6_AVAILABLE = True
+except ImportError:
+    try:
+        from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QRectF, QPointF, QSize, QPoint, QThread, QEventLoop
+        from PyQt5.QtCore import pyqtSlot as Slot
+        from PyQt5.QtWidgets import (
+            QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+            QLabel, QPushButton, QTextEdit, QFrame, QSplitter, QTabWidget,
+            QGroupBox, QSizePolicy, QScrollArea, QStatusBar, QFormLayout,
+            QGridLayout, QMessageBox, QProgressBar
+        )
+        from PyQt5.QtGui import (
+            QColor, QPainter, QLinearGradient, QPainterPath, QFont,
+            QFontMetrics, QPen, QBrush, QPalette, QTextCursor, QPaintEvent
+        )
+        PYQT6_AVAILABLE = False
+    except ImportError as e:
+        raise ImportError("PyQt6 or PyQt5 is required for the dashboard.") from e
+
+# Local imports
+from gui.widgets.led_indicator import QLedIndicator
+from gui.widgets.system_indicator import SystemStatusIndicator
+from utils.event_bus import EventBus
+
+# Redis configuration - STRICTLY enforce port 6380 with no fallbacks
+REDIS_CONFIG = {
+    'host': 'localhost', 
+    'port': 6380,  # MUST be 6380 - system will halt if different
+    'password': 'QuantumNexus2025',  # Required password
+    'db': 0,
+    'socket_timeout': 5,
+    'socket_connect_timeout': 5,
+    'retry_on_timeout': True,
+    'health_check_interval': 30,
+    'decode_responses': True
+}
+
+
+class DashboardQt(QWidget):
+    # Class implementation goes here
+    pass

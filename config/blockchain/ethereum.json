@@ -1,0 +1,62 @@
+{
+    "network": "mainnet",
+    "version": "1.0.0",
+    "common": {
+        "timeout": 30,
+        "retry_attempts": 3,
+        "retry_delay": 5,
+        "gas_limit": 2000000,
+        "gas_price": "auto",
+        "max_fee_per_gas": "${ETHEREUM_MAX_FEE:50}",
+        "max_priority_fee": "${ETHEREUM_PRIORITY_FEE:1.5}",
+        "public_nodes": [
+            "https://eth.llamarpc.com",
+            "https://cloudflare-eth.com",
+            "https://ethereum.publicnode.com"
+        ]
+    },
+    "mainnet": {
+        "rpc_url": "${ETHEREUM_MAINNET_RPC:https://eth.llamarpc.com}",
+        "ws_url": "${ETHEREUM_MAINNET_WS_URL:wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY:}}",
+        "chain_id": 1,
+        "use_ssl": true,
+        "verify_ssl": true,
+        "public_rpc": [
+            "https://eth.llamarpc.com",
+            "https://cloudflare-eth.com",
+            "https://ethereum.publicnode.com",
+            "https://mainnet.infura.io/v3/${INFURA_API_KEY:}",
+            "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY:}"
+        ]
+    },
+    "optimism": {
+        "rpc_url": "${OPTIMISM_RPC:https://mainnet.optimism.io}",
+        "chain_id": 10,
+        "use_ssl": true,
+        "verify_ssl": true
+    },
+    "arbitrum": {
+        "rpc_url": "${ARBITRUM_RPC:https://arb1.arbitrum.io/rpc}",
+        "chain_id": 42161,
+        "use_ssl": true,
+        "verify_ssl": true
+    },
+    "api_keys": {
+        "infura": "${INFURA_API_KEY:}",
+        "alchemy": "${ALCHEMY_API_KEY:}",
+        "etherscan": "${ETHERSCAN_API_KEY:39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP}",
+        "pocket": "${POKT_API_KEY:}",
+        "ankr": "${ANKR_API_KEY:}"
+    },
+    "contracts": {
+        "multicall": "0xcA11bde05977b3631167028862bE2a173976CA11",
+        "ens_registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+        "ens_resolver": "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
+        "weth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+    },
+    "ens": {
+        "registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+        "public_resolver": "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
+        "reverse_registrar": "0x084b1c3C81545d370f3634392De611CaaBFf8148"
+    }
+}

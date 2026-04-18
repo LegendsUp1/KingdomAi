@@ -1,0 +1,54 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "db_type": "sqlite",
+    "default_db": "kingdom_data.db",
+    "db_dir": "database/data",
+    "tables": {
+        "market_data": {
+            "schema": {
+                "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+                "symbol": "TEXT NOT NULL",
+                "price": "REAL NOT NULL",
+                "volume": "REAL",
+                "timestamp": "INTEGER NOT NULL",
+                "source": "TEXT"
+            }
+        },
+        "trading_history": {
+            "schema": {
+                "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+                "symbol": "TEXT NOT NULL",
+                "side": "TEXT NOT NULL",
+                "quantity": "REAL NOT NULL",
+                "price": "REAL NOT NULL",
+                "timestamp": "INTEGER NOT NULL",
+                "strategy": "TEXT",
+                "status": "TEXT NOT NULL"
+            }
+        },
+        "user_settings": {
+            "schema": {
+                "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+                "setting_key": "TEXT UNIQUE NOT NULL",
+                "setting_value": "TEXT",
+                "setting_type": "TEXT",
+                "last_updated": "INTEGER"
+            }
+        },
+        "system_logs": {
+            "schema": {
+                "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+                "level": "TEXT NOT NULL",
+                "component": "TEXT NOT NULL",
+                "message": "TEXT NOT NULL",
+                "timestamp": "INTEGER NOT NULL",
+                "details": "TEXT"
+            }
+        }
+    },
+    "connection_pooling": true,
+    "max_connections": 5,
+    "timeout": 30,
+    "retry_attempts": 3
+}

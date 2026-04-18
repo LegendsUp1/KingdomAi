@@ -1,0 +1,44 @@
+/* Kingdom AI Dashboard Dark Theme Stylesheet */
+
+QTabWidget::pane {
+    border: 1px solid #555555;
+    background-color: #2D2D2D;
+}
+QTabBar::tab {
+    background-color: #3D3D3D;
+    color: #AAAAAA;
+    padding: 8px 15px;
+    border: 1px solid #555555;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+QTabBar::tab:selected {
+    background-color: #2D2D2D;
+    color: #FFFFFF;
+}
+QWidget {
+    background-color: #2D2D2D;
+    color: #EAEAEA;
+}
+QPushButton {
+    background-color: #3D3D3D;
+    color: #FFFFFF;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+QPushButton:hover {
+    background-color: #4D4D4D;
+}
+QPushButton:pressed {
+    background-color: #2D2D2D;
+}
+QLabel {
+    color: #EAEAEA;
+}
+QGroupBox {
+    border: 1px solid #555555;
+    border-radius: 5px;
+    margin-top: 10px;
+}

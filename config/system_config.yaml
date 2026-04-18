@@ -1,0 +1,91 @@
+# Kingdom AI System Configuration
+# This configuration file defines system-wide settings and component configurations
+
+# System Settings
+system:
+  name: "Kingdom AI"
+  hebrew_name: "Malkhut"
+  hebrew_name_script: "מַלְכוּת"
+  version: "1.0.0"
+  log_level: "INFO"
+  debug_mode: false
+  max_threads: 8
+  auto_recovery: true
+  
+  # System paths
+  paths:
+    logs: "./logs"
+    data: "./data"
+    models: "./models"
+    temp: "./temp"
+    # SOTA 2026: All backups on D: drive (updated after complete fixes)
+    backup: "D:/kingdom/backups"
+    backup_logs: "D:/kingdom/logs"
+  
+  # SOTA 2026: Storage management — purge unnecessary data, retain learning & operational knowledge
+  storage:
+    purge_unnecessary: true
+    retain_md_reference: true
+    retain_test_files: true
+    exclude_duplicate_redundant_outdated_md: true
+    reserve_categories: ["kingdom_ai", "ollama_brain", "unified_system", "voice", "logic", "tabs"]
+  
+  # Security settings
+  security:
+    auth_required: true
+    encryption_enabled: true
+    token_expiry: 3600  # seconds
+    trusted_sources: ["localhost", "127.0.0.1"]
+
+# Component Configurations
+components:
+  # Event Bus configuration
+  event_bus:
+    max_history_size: 1000
+    history_enabled: true
+    num_worker_threads: 3
+    
+  # Error Resolution System configuration
+  error_resolution:
+    monitoring_interval: 60  # seconds
+    auto_healing: true
+    critical_packages:
+      - numpy
+      - pandas
+      - matplotlib
+      - requests
+      - psutil
+    trusted_packages:
+      - numpy
+      - pandas
+      - matplotlib
+      - requests
+      - psutil
+      - aiohttp
+      - sqlalchemy
+      - black
+    
+  # Trading System configuration
+  trading:
+    max_concurrent_trades: 5
+    default_risk_level: "medium"
+    trading_strategies:
+      - name: "momentum"
+        enabled: true
+        timeframe: "1h"
+      - name: "mean_reversion"
+        enabled: true
+        timeframe: "4h"
+        
+  # Mining System configuration
+  mining:
+    auto_optimization: true
+    power_management: true
+    profit_analysis: true
+    monitoring_interval: 300  # seconds
+
+# Global Flags and Settings
+flags:
+  maintenance_mode: false
+  allow_remote: false
+  record_metrics: true

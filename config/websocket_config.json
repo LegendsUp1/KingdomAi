@@ -1,0 +1,132 @@
+{
+  "trading_exchanges": {
+    "coinbase": {
+      "enabled": true,
+      "uri": "wss://ws-feed.exchange.coinbase.com",
+      "channels": ["ticker"],
+      "symbols": ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "ADA-USD"],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 1
+    },
+    "kraken": {
+      "enabled": true,
+      "uri": "wss://ws.kraken.com",
+      "channels": ["ticker"],
+      "symbols": ["BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "ADA/USD"],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 2
+    },
+    "bitstamp": {
+      "enabled": true,
+      "uri": "wss://ws.bitstamp.net",
+      "channels": ["live_trades"],
+      "symbols": ["btcusd", "ethusd", "solusd", "xrpusd", "adausd"],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 3
+    },
+    "gemini": {
+      "enabled": true,
+      "uri": "wss://api.gemini.com/v1/marketdata",
+      "channels": ["market_data"],
+      "symbols": ["BTCUSD", "ETHUSD", "SOLUSD"],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 4,
+      "note": "Gemini uses separate WebSocket per symbol"
+    },
+    "binance": {
+      "enabled": false,
+      "uri": "wss://stream.binance.com:9443/ws",
+      "channels": ["ticker"],
+      "symbols": [],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 99,
+      "disabled_reason": "HTTP 451 - Geo-blocked"
+    }
+  },
+  "blockchain_networks": {
+    "ethereum": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}",
+        "wss://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+        "wss://ethereum.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 1
+    },
+    "polygon": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+        "wss://polygon-bor.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 2
+    },
+    "bsc": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://bsc-ws-node.nariox.org:443",
+        "wss://bsc.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 3
+    },
+    "arbitrum": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://arb1.arbitrum.io/rpc",
+        "wss://arbitrum-one.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 4
+    },
+    "optimism": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://mainnet.optimism.io/ws",
+        "wss://optimism.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 5
+    },
+    "base": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://base.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 6
+    },
+    "avalanche": {
+      "enabled": true,
+      "ws_endpoints": [
+        "wss://avalanche-c-chain.publicnode.com"
+      ],
+      "reconnect_delay": 5,
+      "timeout": 30,
+      "priority": 7
+    }
+  },
+  "websocket_settings": {
+    "max_reconnect_attempts": -1,
+    "reconnect_exponential_backoff": true,
+    "max_reconnect_delay": 300,
+    "ping_interval": 20,
+    "ping_timeout": 10,
+    "close_timeout": 10,
+    "max_message_size": 1048576,
+    "compression": "deflate"
+  }
+}

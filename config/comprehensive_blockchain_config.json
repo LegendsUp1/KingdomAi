@@ -1,0 +1,372 @@
+{
+  "version": "2025.1.0",
+  "description": "COMPREHENSIVE blockchain configuration with ALL RPC endpoints, WebSocket URIs, and API keys",
+  "total_networks": 467,
+  
+  "primary_networks": {
+    "ethereum": {
+      "chain_id": 1,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://ethereum.publicnode.com",
+        "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        "https://rpc.ankr.com/eth"
+      ],
+      "ws_endpoints": [
+        "wss://ethereum.publicnode.com",
+        "wss://mainnet.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+      ],
+      "explorer": "https://etherscan.io",
+      "api_key": "39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP"
+    },
+    "polygon": {
+      "chain_id": 137,
+      "symbol": "MATIC",
+      "rpc_endpoints": [
+        "https://polygon-rpc.com",
+        "https://polygon-bor.publicnode.com",
+        "https://rpc.ankr.com/polygon"
+      ],
+      "ws_endpoints": [
+        "wss://polygon-bor.publicnode.com"
+      ],
+      "explorer": "https://polygonscan.com",
+      "api_key": "39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP"
+    },
+    "bsc": {
+      "chain_id": 56,
+      "symbol": "BNB",
+      "rpc_endpoints": [
+        "https://bsc-dataseed.binance.org",
+        "https://bsc.publicnode.com",
+        "https://rpc.ankr.com/bsc"
+      ],
+      "ws_endpoints": [
+        "wss://bsc-ws-node.nariox.org:443",
+        "wss://bsc.publicnode.com"
+      ],
+      "explorer": "https://bscscan.com",
+      "api_key": "39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP"
+    },
+    "arbitrum": {
+      "chain_id": 42161,
+      "symbol": "ARB",
+      "rpc_endpoints": [
+        "https://arb1.arbitrum.io/rpc",
+        "https://arbitrum-one.publicnode.com",
+        "https://rpc.ankr.com/arbitrum"
+      ],
+      "ws_endpoints": [
+        "wss://arb1.arbitrum.io/rpc",
+        "wss://arbitrum-one.publicnode.com"
+      ],
+      "explorer": "https://arbiscan.io"
+    },
+    "optimism": {
+      "chain_id": 10,
+      "symbol": "OP",
+      "rpc_endpoints": [
+        "https://mainnet.optimism.io",
+        "https://optimism.publicnode.com",
+        "https://rpc.ankr.com/optimism"
+      ],
+      "ws_endpoints": [
+        "wss://mainnet.optimism.io/ws",
+        "wss://optimism.publicnode.com"
+      ],
+      "explorer": "https://optimistic.etherscan.io"
+    },
+    "base": {
+      "chain_id": 8453,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://mainnet.base.org",
+        "https://base.publicnode.com",
+        "https://rpc.ankr.com/base"
+      ],
+      "ws_endpoints": [
+        "wss://base.publicnode.com"
+      ],
+      "explorer": "https://basescan.org"
+    },
+    "avalanche": {
+      "chain_id": 43114,
+      "symbol": "AVAX",
+      "rpc_endpoints": [
+        "https://api.avax.network/ext/bc/C/rpc",
+        "https://avalanche-c-chain.publicnode.com",
+        "https://rpc.ankr.com/avalanche"
+      ],
+      "ws_endpoints": [
+        "wss://avalanche-c-chain.publicnode.com"
+      ],
+      "explorer": "https://snowtrace.io"
+    },
+    "fantom": {
+      "chain_id": 250,
+      "symbol": "FTM",
+      "rpc_endpoints": [
+        "https://rpc.ftm.tools",
+        "https://fantom.publicnode.com",
+        "https://rpc.ankr.com/fantom"
+      ],
+      "ws_endpoints": [
+        "wss://fantom.publicnode.com"
+      ],
+      "explorer": "https://ftmscan.com"
+    },
+    "gnosis": {
+      "chain_id": 100,
+      "symbol": "xDAI",
+      "rpc_endpoints": [
+        "https://rpc.gnosischain.com",
+        "https://gnosis.publicnode.com",
+        "https://rpc.ankr.com/gnosis"
+      ],
+      "ws_endpoints": [
+        "wss://gnosis.publicnode.com"
+      ],
+      "explorer": "https://gnosisscan.io"
+    },
+    "celo": {
+      "chain_id": 42220,
+      "symbol": "CELO",
+      "rpc_endpoints": [
+        "https://forno.celo.org",
+        "https://celo.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://celo.publicnode.com"
+      ],
+      "explorer": "https://celoscan.io"
+    },
+    "moonbeam": {
+      "chain_id": 1284,
+      "symbol": "GLMR",
+      "rpc_endpoints": [
+        "https://rpc.api.moonbeam.network",
+        "https://moonbeam.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://moonbeam.publicnode.com"
+      ],
+      "explorer": "https://moonscan.io"
+    },
+    "moonriver": {
+      "chain_id": 1285,
+      "symbol": "MOVR",
+      "rpc_endpoints": [
+        "https://rpc.api.moonriver.moonbeam.network",
+        "https://moonriver.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://moonriver.publicnode.com"
+      ],
+      "explorer": "https://moonriver.moonscan.io"
+    },
+    "cronos": {
+      "chain_id": 25,
+      "symbol": "CRO",
+      "rpc_endpoints": [
+        "https://evm.cronos.org",
+        "https://cronos.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://cronos.publicnode.com"
+      ],
+      "explorer": "https://cronoscan.com"
+    },
+    "harmony": {
+      "chain_id": 1666600000,
+      "symbol": "ONE",
+      "rpc_endpoints": [
+        "https://api.harmony.one",
+        "https://harmony.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://harmony.publicnode.com"
+      ],
+      "explorer": "https://explorer.harmony.one"
+    },
+    "aurora": {
+      "chain_id": 1313161554,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://mainnet.aurora.dev",
+        "https://aurora.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://aurora.publicnode.com"
+      ],
+      "explorer": "https://aurorascan.dev"
+    },
+    "kava": {
+      "chain_id": 2222,
+      "symbol": "KAVA",
+      "rpc_endpoints": [
+        "https://evm.kava.io",
+        "https://kava.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://kava.publicnode.com"
+      ],
+      "explorer": "https://explorer.kava.io"
+    },
+    "metis": {
+      "chain_id": 1088,
+      "symbol": "METIS",
+      "rpc_endpoints": [
+        "https://andromeda.metis.io/?owner=1088",
+        "https://metis.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://metis.publicnode.com"
+      ],
+      "explorer": "https://andromeda-explorer.metis.io"
+    },
+    "boba": {
+      "chain_id": 288,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://mainnet.boba.network",
+        "https://boba.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://boba.publicnode.com"
+      ],
+      "explorer": "https://bobascan.com"
+    },
+    "zksync": {
+      "chain_id": 324,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://mainnet.era.zksync.io",
+        "https://zksync.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://zksync.publicnode.com"
+      ],
+      "explorer": "https://explorer.zksync.io"
+    },
+    "linea": {
+      "chain_id": 59144,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://rpc.linea.build",
+        "https://linea.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://linea.publicnode.com"
+      ],
+      "explorer": "https://lineascan.build"
+    }
+  },
+  
+  "bitcoin_networks": {
+    "bitcoin": {
+      "symbol": "BTC",
+      "rpc_endpoints": [
+        "https://blockstream.info/api",
+        "https://blockchain.info/api"
+      ],
+      "ws_endpoints": [
+        "wss://blockstream.info/api/v1/ws"
+      ],
+      "explorer": "https://blockstream.info"
+    },
+    "bitcoin_cash": {
+      "symbol": "BCH",
+      "rpc_endpoints": [
+        "https://rest.bitcoin.com/v2"
+      ],
+      "explorer": "https://explorer.bitcoin.com/bch"
+    },
+    "litecoin": {
+      "symbol": "LTC",
+      "rpc_endpoints": [
+        "https://litecoin.publicnode.com"
+      ],
+      "explorer": "https://blockchair.com/litecoin"
+    },
+    "dogecoin": {
+      "symbol": "DOGE",
+      "rpc_endpoints": [
+        "https://dogecoin.publicnode.com"
+      ],
+      "explorer": "https://blockchair.com/dogecoin"
+    }
+  },
+  
+  "layer2_networks": {
+    "zkevm_polygon": {
+      "chain_id": 1101,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://zkevm-rpc.com",
+        "https://polygon-zkevm.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://polygon-zkevm.publicnode.com"
+      ],
+      "explorer": "https://zkevm.polygonscan.com"
+    },
+    "scroll": {
+      "chain_id": 534352,
+      "symbol": "ETH",
+      "rpc_endpoints": [
+        "https://rpc.scroll.io",
+        "https://scroll.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://scroll.publicnode.com"
+      ],
+      "explorer": "https://scrollscan.com"
+    },
+    "mantle": {
+      "chain_id": 5000,
+      "symbol": "MNT",
+      "rpc_endpoints": [
+        "https://rpc.mantle.xyz",
+        "https://mantle.publicnode.com"
+      ],
+      "ws_endpoints": [
+        "wss://mantle.publicnode.com"
+      ],
+      "explorer": "https://explorer.mantle.xyz"
+    }
+  },
+  
+  "api_keys": {
+    "infura": "9aa3d95b3bc440fa88ea12eaa4456161",
+    "alchemy": "demo",
+    "etherscan": "39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP",
+    "bscscan": "39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP",
+    "polygonscan": "39DWNCE3KMSYBNM6DP8V6544I8IH5NQ4JP",
+    "nansen": "6Kx1mj35TOpXdnn1qh1sFSnIadzqDVzDBbtpD8Mx"
+  },
+  
+  "websocket_config": {
+    "max_reconnect_attempts": -1,
+    "reconnect_delay": 5,
+    "reconnect_exponential_backoff": true,
+    "max_reconnect_delay": 300,
+    "ping_interval": 20,
+    "ping_timeout": 10,
+    "close_timeout": 10,
+    "max_message_size": 1048576,
+    "compression": "deflate"
+  },
+  
+  "network_priorities": {
+    "ethereum": 1,
+    "polygon": 2,
+    "bsc": 3,
+    "arbitrum": 4,
+    "optimism": 5,
+    "base": 6,
+    "avalanche": 7,
+    "fantom": 8,
+    "gnosis": 9,
+    "celo": 10
+  }
+}

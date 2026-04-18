@@ -1,0 +1,10 @@
+# Coqui TTS (Black Panther XTTS v2) — **voice-isolated env only** (NOT kingdom-venv).
+# Use: conda env kingdom-voice (setup_voice_isolated_env.sh) OR
+#      scripts/bootstrap_voice_runtime_venv.sh → voice_runtime_env/
+# Install: pip install -r requirements-voice.txt
+#
+# setuptools<81: librosa needs pkg_resources
+# transformers<4.40: newer transformers expect torch>=2.4 and drop BeamSearchScorer imports XTTS needs with torch 2.2
+TTS>=0.22.0
+setuptools>=69.0,<81
+transformers>=4.33.0,<4.40.0

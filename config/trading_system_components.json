@@ -1,0 +1,14 @@
+{
+  "components": [
+    "main_trading_system",
+    "market_data_processor",
+    "order_executor",
+    "risk_manager",
+    "strategy_manager",
+    "trading_signal_generator",
+    "position_manager",
+    "portfolio_manager"
+  ],
+  "initialized": true,
+  "timestamp": 80377.154099393
+}

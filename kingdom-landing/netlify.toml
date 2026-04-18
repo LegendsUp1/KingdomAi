@@ -1,0 +1,27 @@
+[build]
+  publish = "public"
+  command = "echo 'Kingdom AI landing page - static site, no build step needed'"
+
+# SPA-style catch-all redirects for referral deep-links.
+[[redirects]]
+  from = "/join"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/join/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/link"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/link/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers are defined in public/_headers; netlify.toml headers
+# would be shadowed by it. Listing them here only as documentation.

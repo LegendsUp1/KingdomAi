@@ -1,0 +1,43 @@
+{
+    "redis": {
+        "data_dir": "~/.kingdom_ai/redis/data",
+        "log_dir": "~/.kingdom_ai/redis/logs",
+        "config_file": "~/.kingdom_ai/redis/redis.conf"
+    },
+    "mining": {
+        "data_dir": "~/.kingdom_ai/mining",
+        "logs_dir": "~/.kingdom_ai/mining/logs",
+        "stats_dir": "~/.kingdom_ai/mining/stats"
+    },
+    "wallet": {
+        "backups_dir": "~/.kingdom_ai/wallets/backups",
+        "keys_dir": "~/.kingdom_ai/wallets/keys",
+        "data_dir": "~/.kingdom_ai/wallets/data"
+    },
+    "ai_cache": {
+        "models_dir": "~/.kingdom_ai/ai/models",
+        "embeddings_dir": "~/.kingdom_ai/ai/embeddings",
+        "cache_dir": "~/.kingdom_ai/ai/cache"
+    },
+    "logs": {
+        "system_logs": "~/.kingdom_ai/logs/system",
+        "error_logs": "~/.kingdom_ai/logs/errors",
+        "trading_logs": "~/.kingdom_ai/logs/trading"
+    },
+    "exports": {
+        "base_dir": "~/.kingdom_ai/exports",
+        "ai_creations": "~/.kingdom_ai/exports/ai_creations",
+        "maps": "~/.kingdom_ai/exports/maps",
+        "reports": "~/.kingdom_ai/exports/reports"
+    },
+    "scraped_content": {
+        "base_dir": "~/.kingdom_ai/scraped_content",
+        "videos": "~/.kingdom_ai/scraped_content/videos",
+        "images": "~/.kingdom_ai/scraped_content/images"
+    },
+    "learned_knowledge": {
+        "base_dir": "~/.kingdom_ai/learned_knowledge",
+        "facts": "~/.kingdom_ai/learned_knowledge/facts",
+        "graphs": "~/.kingdom_ai/learned_knowledge/graphs"
+    }
+}

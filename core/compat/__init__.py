@@ -1,0 +1,1 @@
+# Kingdom AI compatibility package

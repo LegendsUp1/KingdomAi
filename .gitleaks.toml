@@ -1,0 +1,86 @@
+# Kingdom AI -- gitleaks configuration.
+#
+# Extends the upstream default ruleset with project-specific signatures:
+#   - KAIG-XXXX-XXXX-XXXX recovery keys
+#   - Creator config filenames
+#   - Custom API key prefixes seen in the audit.
+
+title = "Kingdom AI gitleaks rules"
+
+[extend]
+useDefault = true
+
+# ===== project-specific rules =====
+
+[[rules]]
+id = "kingdom-kaig-recovery-key"
+description = "KAIG-prefixed recovery / node key"
+regex = '''KAIG-[A-Z0-9]{4,}(-[A-Z0-9]{4,})*'''
+tags = ["kingdom", "recovery-key"]
+
+[[rules]]
+id = "kingdom-netlify-token"
+description = "Netlify personal access token"
+regex = '''nfp_[A-Za-z0-9]{20,}'''
+tags = ["kingdom", "netlify"]
+
+[[rules]]
+id = "kingdom-heroku-token"
+description = "Heroku API token"
+regex = '''HRKU-[A-Za-z0-9-]{10,}'''
+tags = ["kingdom", "heroku"]
+
+[[rules]]
+id = "kingdom-figma-token"
+description = "Figma personal access token"
+regex = '''figd_[A-Za-z0-9_-]{20,}'''
+tags = ["kingdom", "figma"]
+
+[[rules]]
+id = "kingdom-xai-token"
+description = "xAI / Grok token"
+regex = '''xai-[A-Za-z0-9_-]{20,}'''
+tags = ["kingdom", "xai"]
+
+[[rules]]
+id = "kingdom-groq-token"
+description = "Groq API key"
+regex = '''gsk_[A-Za-z0-9]{40,}'''
+tags = ["kingdom", "groq"]
+
+[[rules]]
+id = "kingdom-astra-token"
+description = "DataStax Astra token"
+regex = '''AstraCS:[A-Za-z0-9]+:'''
+tags = ["kingdom", "astra"]
+
+[[rules]]
+id = "kingdom-dockerhub-pat"
+description = "Docker Hub personal access token"
+regex = '''dckr_pat_[A-Za-z0-9_-]{10,}'''
+tags = ["kingdom", "dockerhub"]
+
+[[rules]]
+id = "kingdom-github-pat-fine"
+description = "Fine-grained GitHub PAT"
+regex = '''github_pat_[A-Za-z0-9_]{30,}'''
+tags = ["kingdom", "github"]
+
+# ===== allowlist =====
+
+[allowlist]
+description = "Paths that can reference the placeholder without tripping scans"
+paths = [
+  '''(^|/)SECURITY\.md$''',
+  '''(^|/)\.gitleaks\.toml$''',
+  '''(^|/)\.pre-commit-config\.yaml$''',
+  '''(^|/)scripts/verify_consumer_bundle\.sh$''',
+  '''(^|/)scripts/_internal_redact_phase_a\.py$''',
+  '''(^|/)core/secrets_loader\.py$''',
+  '''(^|/)\.private_backups/''',
+  '''(^|/)\.cursor/plans/''',
+]
+regexes = [
+  '''REDACTED-PLACEHOLDER''',
+  '''your_[a-z_]+_here''',
+]

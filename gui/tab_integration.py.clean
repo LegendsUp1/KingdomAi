@@ -1,0 +1,426 @@
+#!/usr/bin/env python3
+"""Kingdom AI Tab Integration Module.
+
+This module ensures all tab frames are properly connected to the event bus
+and can display real-time data from their respective components."""
+
+import logging
+import importlib
+import inspect
+import traceback
+import asyncio
+import threading
+from typing import Dict, Any, Optional, List, Callable, Set, Union
+from concurrent.futures import ThreadPoolExecutor
+
+# Import EventBusWrapper for synchronous event bus operations
+from core.event_bus_wrapper import get_event_bus_wrapper, sync_method
+
+# Import event handler integration
+from gui.event_handler_integration import integrate_frame_event_handlers
+
+logger = logging.getLogger("kingdom.tab_integration")
+
+
+class TabIntegrator:
+    """Integrates all tab frames with their components and ensures real-time data display.
+    
+    This class manages the connection between tab frames and their corresponding
+    components, ensuring that real-time data flows correctly between them.
+    """
+    
+    def __init__(self, event_bus):
+        """Initialize the TabIntegrator.
+        
+        Args:
+            event_bus: The event bus for inter-component communication
+        """
+        self.event_bus = event_bus
+        self.integrated_frames = set()
+        # Preserving original component mappings to ensure compatibility
+        self.component_mapping = {
+            "dashboard": ["market_data_provider", "system_monitor"],
+            "trading": ["trading_system", "market_api"],
+            "mining": ["mining_system", "blockchain_connector"],
+            "wallet": ["wallet_manager", "blockchain_connector"],
+            "vr": ["vr_system", "vr_connector"],
+            "ai": ["thoth_ai_assistant", "continuous_response_generator"],
+            "thoth": ["thoth_ai_assistant", "voice_manager"],
+            "code_generator": ["code_generator", "thoth_ai_assistant"],
+            "api_keys": ["api_key_manager"],
+            "diagnostics": ["system_monitor", "error_resolution_system"],
+            "settings": ["config_manager"]
+        }
+        
+        self.logger = logging.getLogger("kingdom.tab_integration")
+        self.logger.info("TabIntegrator initialized")
+        self.thread_pool = ThreadPoolExecutor(max_workers=4)
+    
+    def integrate_frame(self, frame, frame_name: Optional[str] = None) -> bool:
+        """Integrate a frame with real-time data handlers.
+        
+        Args:
+            frame: The frame to integrate
+            frame_name: Optional name for the frame
+            
+        Returns:
+            bool: True if integration was successful, False otherwise
+        """
+        if frame is None:
+            self.logger.warning("Cannot integrate None frame")
+            return False
+            
+        try:
+            # Get the frame name if not provided
+            if frame_name is None:
+                # Try to get the frame name from the class name
+                frame_name = frame.__class__.__name__
+                
+                # Strip "Frame" suffix if present
+                if frame_name and frame_name.endswith("Frame"):
+                    frame_name = frame_name[:-5].lower()
+                
+                # Default to "unknown" if name couldn't be determined
+                if not frame_name:
+                    frame_name = "unknown"
+            
+            # Check if this frame has already been integrated
+            if frame in self.integrated_frames:
+                self.logger.info(f"Frame {frame_name} already integrated, skipping")
+                return True
+                
+            # Integrate the frame
+            result = self._integrate_frame(frame_name, frame)
+            
+            if result:
+                # Add frame to the set of integrated frames
+                self.integrated_frames.add(frame)
+                
+            return result
+        except Exception as e:
+            self.logger.error(f"Error integrating frame: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    def _integrate_frame(self, frame_name: str, frame) -> bool:
+        """Integrate a specific frame with real-time data handlers.
+        
+        Args:
+            frame_name: Name of the frame
+            frame: The frame instance
+            
+        Returns:
+            bool: True if integration was successful, False otherwise
+        """
+        try:
+            self.logger.info(f"Integrating {frame_name} frame")
+            
+            # Get event bus wrapper for synchronous operations
+            event_bus_wrapper = get_event_bus_wrapper(self.event_bus)
+            
+            # Determine frame type for event subscriptions
+            frame_type = frame_name.lower()
+            
+            # First, integrate general event handlers
+            integrate_frame_event_handlers(frame, self.event_bus)
+            
+            # For Trading frame
+            if frame_type == "trading":
+                event_bus_wrapper.subscribe("market.data", self._create_data_handler(frame, "market_data"))
+                event_bus_wrapper.subscribe("market.update", self._create_data_handler(frame, "market_update"))
+                event_bus_wrapper.subscribe("trading.orders", self._create_data_handler(frame, "orders"))
+                event_bus_wrapper.subscribe("trading.history", self._create_data_handler(frame, "trade_history"))
+                
+            # For Mining frame
+            elif frame_type == "mining":
+                event_bus_wrapper.subscribe("mining.data", self._create_data_handler(frame, "mining_data"))
+                event_bus_wrapper.subscribe("mining.status", self._create_data_handler(frame, "mining_status"))
+                event_bus_wrapper.subscribe("mining.hashrate", self._create_data_handler(frame, "hashrate"))
+                
+            # For Wallet frame
+            elif frame_type == "wallet":
+                event_bus_wrapper.subscribe("wallet.balance", self._create_data_handler(frame, "wallet_balance"))
+                event_bus_wrapper.subscribe("wallet.transactions", self._create_data_handler(frame, "wallet_transactions"))
+                event_bus_wrapper.subscribe("blockchain.data", self._create_data_handler(frame, "blockchain_data"))
+                
+            # For VR frame
+            elif frame_type == "vr":
+                event_bus_wrapper.subscribe("vr.status", self._create_data_handler(frame, "vr_status"))
+                event_bus_wrapper.subscribe("vr.scene", self._create_data_handler(frame, "vr_scene"))
+                
+            # For AI assistant frame
+            elif frame_type == "ai" or frame_type == "thoth":
+                event_bus_wrapper.subscribe("ai.response", self._create_data_handler(frame, "ai_response"))
+                event_bus_wrapper.subscribe("ai.status", self._create_data_handler(frame, "ai_status"))
+                event_bus_wrapper.subscribe("voice.status", self._create_data_handler(frame, "voice_status"))
+                
+            # For Code Generator frame
+            elif frame_type == "code" or frame_type == "code_generator":
+                event_bus_wrapper.subscribe("code.templates", self._create_data_handler(frame, "code_templates"))
+                event_bus_wrapper.subscribe("code.generated", self._create_data_handler(frame, "code_generated"))
+                
+            # For API Keys frame
+            elif frame_type == "api" or frame_type == "api_keys":
+                event_bus_wrapper.subscribe("api_keys.updated", self._create_data_handler(frame, "api_key_update"))
+                event_bus_wrapper.subscribe("api_keys.status", self._create_data_handler(frame, "api_key_status"))
+                
+            # For Diagnostics frame
+            elif frame_type == "diagnostics":
+                event_bus_wrapper.subscribe("system.diagnostics", self._create_data_handler(frame, "system_diagnostics"))
+                event_bus_wrapper.subscribe("system.metrics", self._create_data_handler(frame, "system_metrics"))
+            
+            # For Dashboard, also subscribe to component status events
+            elif frame_type == "dashboard":
+                event_bus_wrapper.subscribe("component.status", self._create_data_handler(frame, "component_status"))
+                event_bus_wrapper.subscribe("system.metrics", self._create_data_handler(frame, "system_metrics"))
+                # Add market data subscription for dashboard
+                event_bus_wrapper.subscribe("market.update", self._create_data_handler(frame, "market_update"))
+                event_bus_wrapper.subscribe("market.data", self._create_data_handler(frame, "market_data"))
+            
+            # Default subscriptions for all other frame types
+            else:
+                # Register frame-specific data events using the wrapper for synchronous subscription
+                event_bus_wrapper.subscribe(f"{frame_type}.update", self._create_data_handler(frame, "update"))
+                event_bus_wrapper.subscribe(f"{frame_type}.status", self._create_data_handler(frame, "status"))
+            
+            self.logger.info(f"Integrated {frame_name} with real-time data handlers")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error integrating {frame_name} event handlers: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    def integrate_tabs(self, main_window) -> bool:
+        """Integrate all tabs from the main window with their real-time data handlers.
+        
+        Args:
+            main_window: The main window containing all tabs
+            
+        Returns:
+            bool: True if all tabs were integrated successfully, False otherwise
+        """
+        if main_window is None:
+            self.logger.warning("Cannot integrate tabs from None main_window")
+            return False
+        
+        try:
+            # Get all tab frames from the main window
+            # Typical tabs include: dashboard, trading, mining, wallet, settings, api_keys
+            tabs = {}
+            
+            # Try to get tab_frames dictionary from main window
+            tab_frames = getattr(main_window, "tab_frames", None)
+            if tab_frames and isinstance(tab_frames, dict):
+                tabs.update(tab_frames)
+            
+            # Try to get individual tab attributes if dictionary not found
+            for tab_name in ["dashboard", "trading", "mining", "wallet", "vr", 
+                            "ai", "thoth", "code_generator", "api_keys", 
+                            "diagnostics", "settings"]:
+                tab_frame = getattr(main_window, f"{tab_name}_frame", None)
+                if tab_frame:
+                    tabs[tab_name] = tab_frame
+            
+            # If no tabs were found, try to use notebook tabs
+            if not tabs and hasattr(main_window, "notebook") and main_window.notebook:
+                for i in range(main_window.notebook.index("end")):
+                    tab_widget = main_window.notebook.nametowidget(main_window.notebook.tabs()[i])
+                    tab_name = main_window.notebook.tab(i, "text").lower()
+                    tabs[tab_name] = tab_widget
+            
+            if not tabs:
+                self.logger.warning("No tabs found in main window")
+                return False
+            
+            # Integrate each tab
+            success_count = 0
+            for tab_name, tab_frame in tabs.items():
+                if self.integrate_frame(tab_frame, tab_name):
+                    success_count += 1
+            
+            self.logger.info(f"Integrated {success_count}/{len(tabs)} tabs")
+            
+            # Consider it a partial success if at least one tab was integrated
+            return success_count > 0
+            
+        except Exception as e:
+            self.logger.error(f"Error integrating tabs: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    def _create_data_handler(self, frame, event_type: str) -> Callable[[Dict[str, Any]], None]:
+        """Create a data handler function for a specific event type.
+        
+        Args:
+            frame: The frame instance
+            event_type: The type of event to handle
+            
+        Returns:
+            function: A function that handles the event
+        """
+        # Define the handler function that will process the event
+        async def handle_event(event_data):
+            try:
+                # Try to get the appropriate handler method from the frame
+                handler_method = None
+                
+                # Check for exact method name first
+                method_name = f"handle_{event_type}"
+                if hasattr(frame, method_name) and callable(getattr(frame, method_name)):
+                    handler_method = getattr(frame, method_name)
+                
+                # Check for update_data method (common convention)
+                elif hasattr(frame, "update_data") and callable(frame.update_data):
+                    handler_method = frame.update_data
+                
+                # If a handler method was found, call it with the event data
+                if handler_method:
+                    try:
+                        # Check if the handler is a coroutine function
+                        if asyncio.iscoroutinefunction(handler_method):
+                            # Submit coroutine to event loop
+                            loop = asyncio.get_event_loop()
+                            if loop.is_running():
+                                future = asyncio.run_coroutine_threadsafe(
+                                    handler_method(event_type, event_data),
+                                    loop
+                                )
+                                # Optional: Wait for result with timeout
+                                # result = future.result(timeout=1.0)
+                            else:
+                                # If no event loop is running, run the coroutine directly
+                                await handler_method(event_type, event_data)
+                        else:
+                            # For regular functions, run in thread pool to avoid blocking
+                            self.thread_pool.submit(handler_method, event_type, event_data)
+                    except Exception as e:
+                        self.logger.error(f"Error in event handler for {event_type}: {e}")
+                        self.logger.error(traceback.format_exc())
+                else:
+                    self.logger.debug(f"No handler found for event type {event_type} in frame {frame.__class__.__name__}")
+            except Exception as e:
+                self.logger.error(f"Error handling event {event_type}: {e}")
+                self.logger.error(traceback.format_exc())
+        
+        # Return a synchronous wrapper around the async handler
+        def sync_handler(event_data):
+            # Create a task in the event loop
+            asyncio.create_task(handle_event(event_data))
+        
+        return sync_handler
+    
+    def get_component_requirements(self, frame_name: str) -> List[str]:
+        """Get the list of components required by a frame.
+        
+        Args:
+            frame_name: The name of the frame
+            
+        Returns:
+            List[str]: List of component names required by the frame
+        """
+        # Convert frame name to lowercase for lookup
+        frame_type = frame_name.lower()
+        
+        # Strip "Frame" suffix if present
+        if frame_type.endswith("frame"):
+            frame_type = frame_type[:-5]
+            
+        # Get the component requirements from the mapping
+        return self.component_mapping.get(frame_type, [])
+    
+    def connect_components(self, frame, components: Dict[str, Any]) -> bool:
+        """Connect components to a frame.
+        
+        Args:
+            frame: The frame instance
+            components: Dictionary of components {name: component_instance}
+            
+        Returns:
+            bool: True if connection was successful, False otherwise
+        """
+        if frame is None:
+            self.logger.warning("Cannot connect components to None frame")
+            return False
+        
+        try:
+            # Get frame name
+            frame_name = getattr(frame, "name", frame.__class__.__name__)
+            if frame_name.endswith("Frame"):
+                frame_name = frame_name[:-5].lower()
+            
+            # Get required components
+            required_components = self.get_component_requirements(frame_name)
+            
+            # Connect each required component
+            for component_name in required_components:
+                if component_name in components:
+                    component = components[component_name]
+                    
+                    # Try different attribute names for the component
+                    attr_names = [
+                        component_name,
+                        f"{component_name}_component",
+                        component_name.replace("_", "")
+                    ]
+                    
+                    # Set the attribute on the frame if it has one of the expected attribute names
+                    for attr_name in attr_names:
+                        if hasattr(frame, attr_name):
+                            setattr(frame, attr_name, component)
+                            self.logger.debug(f"Connected {component_name} to {frame_name}.{attr_name}")
+                            break
+                    else:
+                        # If no matching attribute was found, try to call a connect method
+                        connect_method = getattr(frame, f"connect_{component_name}", None)
+                        if connect_method and callable(connect_method):
+                            connect_method(component)
+                            self.logger.debug(f"Connected {component_name} to {frame_name} via connect method")
+                        else:
+                            self.logger.warning(f"No suitable attribute or method found to connect {component_name} to {frame_name}")
+                else:
+                    self.logger.warning(f"Required component {component_name} not found for frame {frame_name}")
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error connecting components to frame: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+
+
+# Singleton implementation
+class TabIntegratorSingleton:
+    """Singleton manager for TabIntegrator"""
+    
+    _instance = None
+    _lock = threading.Lock()
+    
+    @classmethod
+    def get_instance(cls, event_bus=None):
+        """Get the singleton TabIntegrator instance.
+        
+        Args:
+            event_bus: Event bus for the TabIntegrator
+            
+        Returns:
+            TabIntegrator: The singleton TabIntegrator instance
+        """
+        with cls._lock:
+            if cls._instance is None:
+                if event_bus is None:
+                    raise ValueError("event_bus cannot be None when creating the first instance")
+                cls._instance = TabIntegrator(event_bus)
+            return cls._instance
+
+
+def get_tab_integrator(event_bus=None):
+    """Get the singleton TabIntegrator instance.
+    
+    Args:
+        event_bus: Event bus for the TabIntegrator
+        
+    Returns:
+        TabIntegrator: The singleton TabIntegrator instance
+    """
+    return TabIntegratorSingleton.get_instance(event_bus)

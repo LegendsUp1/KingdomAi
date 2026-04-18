@@ -1,0 +1,12 @@
+{
+  "app_version": "2.2.0",
+  "desktop_build": "2026.04",
+  "flutter_build": "1.2.0+2",
+  "protocol_version": 2,
+  "recovery_protocol": 1,
+  "landing_page_url": "https://kingdom-ai.netlify.app",
+  "support_email": "",
+  "pbkdf2_iters": 600000,
+  "pbkdf2_iters_max": 1000000,
+  "updated_at": "2026-04-18"
+}

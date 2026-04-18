@@ -1,0 +1,118 @@
+{
+    "system": {
+        "name": "Kingdom AI",
+        "version": "1.0.0",
+        "debug_mode": false,
+        "log_level": "INFO",
+        "auto_recovery": true
+    },
+    "blockchain": {
+        "xrp": {
+            "enabled": true,
+            "network": "mainnet",
+            "node_url": "wss://xrplcluster.com",
+            "fallback_nodes": [
+                "wss://s1.ripple.com",
+                "wss://s2.ripple.com"
+            ],
+            "fallback_enabled": true,
+            "transaction_timeout": 60,
+            "auto_connect": true,
+            "hooks_enabled": true,
+            "dex_enabled": true
+        },
+        "ethereum": {
+            "enabled": true,
+            "network": "mainnet",
+            "providers": ["alchemy", "infura"],
+            "fallback_enabled": true
+        }
+    },
+    "gui": {
+        "theme": "dark",
+        "window_size": {
+            "width": 1200,
+            "height": 800
+        },
+        "refresh_rate": 1000,
+        "charts_enabled": true
+    },
+    "security": {
+        "encryption_enabled": true,
+        "key_rotation_days": 30,
+        "backup_enabled": true,
+        "backup_interval_hours": 24
+    },
+    "api": {
+        "rate_limit": 100,
+        "timeout": 30,
+        "retry_attempts": 3
+    },
+    "autonomous_trading": {
+        "enabled": false,
+        "simulation_mode": true,
+        "cycle_interval_seconds": 300,
+        "edge_threshold": 0.7,
+        "live_execution": false,
+        "capital_limit_per_cycle": 12000,
+        "capital_flow": {},
+        "botsofwallstreet": {
+            "enabled": false,
+            "auto_register": false,
+            "auto_post_ideas": false
+        },
+        "modules": {
+            "portfolio_hedging": { "enabled": true, "weight": 0.15 },
+            "institutional_positioning": { "enabled": true, "weight": 0.15 },
+            "dividend_radar": { "enabled": true, "weight": 0.1 },
+            "correlation_map": { "enabled": true, "weight": 0.15 },
+            "sentiment_arbitrage": { "enabled": true, "weight": 0.2 },
+            "macro_analysis": { "enabled": true, "weight": 0.15 },
+            "short_squeeze": { "enabled": true, "weight": 0.1 }
+        },
+        "risk_management": {
+            "max_position_size_pct": 5,
+            "daily_loss_limit": 2000,
+            "var_threshold": 0.05,
+            "stop_loss_pct": 2,
+            "take_profit_pct": 5
+        },
+        "data_feeds": {
+            "polygon_io": { "enabled": true },
+            "alpaca": { "enabled": true },
+            "binance": { "enabled": true },
+            "oanda": { "enabled": true }
+        }
+    },
+    "self_ask_ai": {
+        "enabled": false,
+        "model": "gpt-4o-mini",
+        "max_expansion_tokens": 1024
+    },
+    "sandbox_hardening": {
+        "enabled": true
+    },
+    "claw_code_bridge": {
+        "enabled": false,
+        "claw_repo_path": "~/claw-code"
+    },
+    "metacognition_bridge": {
+        "enabled": true
+    },
+    "master_orchestrator_v3": {
+        "enabled": true,
+        "heartbeat_interval_seconds": 120
+    },
+    "tgis": {
+        "enabled": false
+    },
+    "universal_equipment": {
+        "enabled": false
+    },
+    "chemistry_manufacturing": {
+        "enabled": false
+    },
+    "mempalace": {
+        "enabled": true
+    }
+}

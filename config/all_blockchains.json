@@ -1,0 +1,41 @@
+{
+  "version": "2025.1.0",
+  "last_updated": "2025-01-25",
+  "total_count": 467,
+  "categories": {
+    "layer1": 152,
+    "layer2": 45,
+    "sidechain": 28,
+    "testnet": 242
+  },
+  "blockchains": {
+    "mainnets": [
+      {"id": 1, "name": "Ethereum", "symbol": "ETH", "chainId": 1, "type": "layer1", "consensus": "PoS"},
+      {"id": 2, "name": "Bitcoin", "symbol": "BTC", "chainId": null, "type": "layer1", "consensus": "PoW"},
+      {"id": 3, "name": "Binance Smart Chain", "symbol": "BNB", "chainId": 56, "type": "layer1", "consensus": "PoSA"},
+      {"id": 4, "name": "Polygon", "symbol": "MATIC", "chainId": 137, "type": "layer2", "consensus": "PoS"},
+      {"id": 5, "name": "Avalanche", "symbol": "AVAX", "chainId": 43114, "type": "layer1", "consensus": "PoS"},
+      {"id": 6, "name": "Arbitrum One", "symbol": "ARB", "chainId": 42161, "type": "layer2", "consensus": "Optimistic Rollup"},
+      {"id": 7, "name": "Optimism", "symbol": "OP", "chainId": 10, "type": "layer2", "consensus": "Optimistic Rollup"},
+      {"id": 8, "name": "Fantom", "symbol": "FTM", "chainId": 250, "type": "layer1", "consensus": "PoS"},
+      {"id": 9, "name": "Solana", "symbol": "SOL", "chainId": null, "type": "layer1", "consensus": "PoH"},
+      {"id": 10, "name": "Cardano", "symbol": "ADA", "chainId": null, "type": "layer1", "consensus": "PoS"},
+      {"id": 11, "name": "Polkadot", "symbol": "DOT", "chainId": null, "type": "layer1", "consensus": "NPoS"},
+      {"id": 12, "name": "Near Protocol", "symbol": "NEAR", "chainId": null, "type": "layer1", "consensus": "PoS"},
+      {"id": 13, "name": "Cosmos Hub", "symbol": "ATOM", "chainId": null, "type": "layer1", "consensus": "PoS"},
+      {"id": 14, "name": "Algorand", "symbol": "ALGO", "chainId": null, "type": "layer1", "consensus": "PPoS"},
+      {"id": 15, "name": "Harmony", "symbol": "ONE", "chainId": 1666600000, "type": "layer1", "consensus": "PoS"},
+      {"id": 16, "name": "Cronos", "symbol": "CRO", "chainId": 25, "type": "layer1", "consensus": "PoS"},
+      {"id": 17, "name": "Moonbeam", "symbol": "GLMR", "chainId": 1284, "type": "parachain", "consensus": "PoS"},
+      {"id": 18, "name": "Moonriver", "symbol": "MOVR", "chainId": 1285, "type": "parachain", "consensus": "PoS"},
+      {"id": 19, "name": "Celo", "symbol": "CELO", "chainId": 42220, "type": "layer1", "consensus": "PoS"},
+      {"id": 20, "name": "Gnosis Chain", "symbol": "xDAI", "chainId": 100, "type": "layer1", "consensus": "PoS"}
+    ],
+    "summary_note": "Full list contains 467 blockchains - showing first 20 mainnets for brevity. Categories: 152 Layer-1, 45 Layer-2, 28 Sidechains, 242 Testnets"
+  },
+  "networks_by_category": {
+    "evm_compatible": 348,
+    "bitcoin_forks": 23,
+    "standalone": 96
+  }
+}

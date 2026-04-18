@@ -1,0 +1,14 @@
+# Google GenAI SDK for Gemini integration
+google-generativeai>=0.3.0
+
+# Required dependencies for Gemini
+google-ai-generativelanguage>=0.4.0
+google-api-core>=2.11.0
+google-auth>=2.17.0
+google-generativeai>=0.3.0
+
+# For async support
+anyio>=3.6.2
+
+# For type hints (optional but recommended)
+typing-extensions>=4.5.0

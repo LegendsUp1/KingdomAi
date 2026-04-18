@@ -1,0 +1,40 @@
+{
+  "id": "/",
+  "name": "Kingdom AI",
+  "short_name": "Kingdom AI",
+  "description": "Free crypto trading, mining, AI assistant, and 467+ blockchain wallet. Trade on 7+ exchanges, mine 82+ coins, and manage your portfolio — all from one app.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0A0E17",
+  "theme_color": "#FFD700",
+  "orientation": "portrait",
+  "dir": "ltr",
+  "lang": "en",
+  "categories": ["finance", "crypto", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Kingdom AI — Crypto Trading & Mining"
+    }
+  ],
+  "prefer_related_applications": false
+}

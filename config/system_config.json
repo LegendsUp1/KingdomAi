@@ -1,0 +1,80 @@
+{
+  "system": {
+    "name": "KingdomAI",
+    "version": "1.0.0",
+    "debug": true,
+    "log_directory": "logs",
+    "config_directory": "config"
+  },
+  "components": {
+    "gui_manager": {
+      "enabled": true
+    },
+    "redis_quantum_nexus": {
+      "enabled": true,
+      "config_path": "config/redis_config.json"
+    },
+    "trading_system": {
+      "enabled": true,
+      "config_path": "config/trading_config.json",
+      "auto_connect": true,
+      "default_exchange": "binance"
+    },
+    "mining_system": {
+      "enabled": true,
+      "config_path": "config/mining_config.json",
+      "auto_connect": true,
+      "hardware_detection": true
+    },
+    "wallet_manager": {
+      "enabled": true,
+      "config_path": "config/wallet_config.json",
+      "auto_connect": true,
+      "security_level": "high"
+    },
+    "thoth_ai": {
+      "enabled": true,
+      "model": "llama2",
+      "streaming": true
+    },
+    "error_resolution_system": {
+      "enabled": true,
+      "auto_recovery": true
+    }
+  },
+  "api_keys": {
+    "binance": {
+      "api_key": "HGT67VGJHJ45RGFDSW34RFVBGT6Y7UJMKO9I",
+      "api_secret": "JKI8UJHY6TRGFVCDSWQ23ERFVBGT5YHUJM"
+    },
+    "coinbase": {
+      "api_key": "KJU7Y6T5RFVCDEW32QASDFVBGT5YHUJM", 
+      "api_secret": "LKI9U7Y6TRFVCDEW43RFVBGT6YHUJMKO"
+    },
+    "etherscan": {
+      "api_key": "XSWCDEVFR4TG5BYHNUJM8IK9OL0PMNHYT6R"
+    },
+    "infura": {
+      "api_key": "ZSXDCFVGBHNJMKL9I8U7Y6T5R4E3W2Q1A"
+    }
+  },
+  "security": {
+    "encryption_key_file": ".security/encryption.key",
+    "api_key_encryption": true,
+    "session_timeout_minutes": 30,
+    "require_2fa": false,
+    "ip_whitelist": ["127.0.0.1", "::1"]
+  },
+  "ui": {
+    "theme": "dark",
+    "accent_color": "#6a0dad",
+    "animations": true,
+    "loading_screen": true,
+    "market_auto_refresh": true,
+    "refresh_interval_seconds": 30,
+    "charts": {
+      "default_timeframe": "1h",
+      "candle_style": "japanese"
+    }
+  }
+}

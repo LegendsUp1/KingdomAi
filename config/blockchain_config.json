@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "description": "Kingdom AI Blockchain Configuration - Uses kingdomweb3_v2 with 228 networks",
+  "web3_module": "kingdomweb3_v2",
+  "network_count": 228,
+  "primary_networks": {
+    "ethereum": {"chain_id": 1, "name": "Ethereum Mainnet", "rpc": "https://mainnet.infura.io/v3/"},
+    "bsc": {"chain_id": 56, "name": "Binance Smart Chain", "rpc": "https://bsc-dataseed.binance.org/"},
+    "avalanche": {"chain_id": 43114, "name": "Avalanche C-Chain", "rpc": "https://api.avax.network/ext/bc/C/rpc"},
+    "polygon": {"chain_id": 137, "name": "Polygon Mainnet", "rpc": "https://polygon-rpc.com/"}
+  },
+  "kingdomweb3_v2_integration": {
+    "enabled": true,
+    "total_networks": 228,
+    "redis_support": true,
+    "async_support": true
+  },
+  "mining": {
+    "enabled": true,
+    "default_algorithm": "ethash"
+  }
+}

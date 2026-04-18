@@ -1,0 +1,2798 @@
+#!/usr/bin/env python3
+# Kingdom AI Main Window with component tabs
+
+import os
+import sys
+import asyncio
+import logging
+import traceback
+import tkinter as tk
+from tkinter import ttk, messagebox, scrolledtext
+from typing import Dict, Any, Optional, List, Tuple, Set, Callable, Union
+from datetime import datetime
+import asyncio
+import logging
+import traceback
+import json
+import redis.asyncio as aioredis
+from redis.exceptions import RedisError
+from aiohttp.client_exceptions import ClientConnectorError
+import random  # For simulated data generation
+import socket  # For socket timeout handling
+
+# Import Kingdom AI components
+from core.event_bus import EventBus
+from core.component_manager import ComponentManager
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# Widget registry for tracking UI components
+class WidgetRegistry:
+    """Registry for tracking UI widgets by ID."""
+    
+    def __init__(self):
+        """Initialize the widget registry."""
+        self.widgets = {}
+        self.logger = logging.getLogger(__name__)
+        
+    def register_widget(self, widget_id: str, widget: Any) -> None:
+        """Register a widget with a unique ID."""
+        self.widgets[widget_id] = widget
+        
+    def get_widget(self, widget_id: str) -> Optional[Any]:
+        """Get a widget by its ID."""
+        return self.widgets.get(widget_id)
+
+# Import Redis client if available
+try:
+    import redis
+    has_redis = True
+    try:
+        import aioredis
+        has_aioredis = True
+    except ImportError:
+        has_aioredis = False
+        logging.getLogger(__name__).warning("aioredis not found - using sync connections only")
+except ImportError:
+    has_redis = False
+    has_aioredis = False
+    logging.getLogger(__name__).warning("Redis modules not found - using simulated data")
+
+# Create stub exceptions for better error handling
+class RedisConnectionError(Exception):
+    """Stub Redis connection error when redis is not available."""
+    pass
+
+# Define the RedisQuantumNexus class to ensure proper integration
+class RedisQuantumNexus:
+    """Redis Quantum Nexus connection manager for real-time data.
+    
+    This class handles automatic connections to Redis Quantum, environment surveying,
+    and real-time data subscriptions for the Kingdom AI system.
+    """
+    
+    def __init__(self, host='localhost', port=6380, db=0, password='QuantumNexus2025', socket_timeout=5):
+        """Initialize the Redis Quantum Nexus connection manager."""
+        self.host = host
+        self.port = port
+        self.db = db
+        self.password = password
+        self.socket_timeout = socket_timeout
+        self.connection = None
+        self.async_connection = None
+        self.fallback_mode = not has_redis
+        self.logger = logging.getLogger(__name__)
+        self.data_cache = {}  # Cache for frequently accessed data
+        self.last_update_time = {}  # Track last update time for each data type
+        
+    def connect(self) -> bool:
+        """Establish connection to the Redis Quantum Nexus with timeout protection."""
+        # Skip connection if Redis not available
+        if not has_redis:
+            self.logger.warning("Redis module not available, activating fallback mode")
+            self._set_fallback_mode()
+            return False
+            
+        try:
+            # Use a timeout to prevent hanging if the Redis server is unresponsive
+            connection_kwargs = {
+                'host': self.host, 
+                'port': self.port, 
+                'db': self.db, 
+                'socket_timeout': self.socket_timeout
+            }
+            if self.password:
+                connection_kwargs['password'] = self.password
+                
+            self.connection = redis.Redis(**connection_kwargs)
+            
+            # Test connection with ping
+            self.connection.ping()
+            self.logger.info(f"Connected to Redis Quantum Nexus at {self.host}:{self.port}")
+            self.fallback_mode = False
+            
+            # Initialize real data
+            self._initialize_real_data()
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to connect to Redis: {e}")
+            self.logger.error(traceback.format_exc())
+            self._set_fallback_mode()
+            return False
+            
+    def _set_fallback_mode(self) -> None:
+        """Set the connector to fallback mode to avoid repeated errors."""
+        self.fallback_mode = True
+        self.logger.warning("Activating Redis fallback mode with simulated data")
+        # Generate simulated data for a better fallback experience
+        self._generate_simulated_market_data()
+        self._generate_simulated_wallet_data()
+        self._generate_simulated_trading_data()
+        self._generate_simulated_mining_data()
+        
+    def _initialize_real_data(self) -> None:
+        """Initialize data structures with real data from Redis."""
+        try:
+            self._fetch_market_data()
+            self._fetch_wallet_data()
+            self._fetch_trading_data()
+            self._fetch_mining_data()
+            self.logger.info("Redis data structures initialized with real data")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize Redis data: {e}")
+            self.logger.error(traceback.format_exc())
+            self._set_fallback_mode()
+            
+    def _fetch_market_data(self) -> Dict[str, Any]:
+        """Fetch market data from Redis."""
+        try:
+            if self.fallback_mode or not self.connection:
+                return self.data_cache.get('market_data', {})
+                
+            # Get market data from Redis
+            raw_data = self.connection.get('market:data')
+            if raw_data:
+                market_data = json.loads(raw_data)
+                self.data_cache['market_data'] = market_data
+                self.last_update_time['market_data'] = time.time()
+                return market_data
+            else:
+                self.logger.warning("No market data found in Redis, using cached or simulated data")
+                return self.data_cache.get('market_data', {})
+                
+        except Exception as e:
+            self.logger.error(f"Error fetching market data: {e}")
+            return self.data_cache.get('market_data', {})
+            
+    def _fetch_wallet_data(self) -> Dict[str, Any]:
+        """Fetch wallet data from Redis."""
+        try:
+            if self.fallback_mode or not self.connection:
+                return self.data_cache.get('wallet_data', {})
+                
+            # Get wallet data from Redis
+            raw_data = self.connection.get('wallet:data')
+            if raw_data:
+                wallet_data = json.loads(raw_data)
+                self.data_cache['wallet_data'] = wallet_data
+                self.last_update_time['wallet_data'] = time.time()
+                return wallet_data
+            else:
+                self.logger.warning("No wallet data found in Redis, using cached or simulated data")
+                return self.data_cache.get('wallet_data', {})
+                
+        except Exception as e:
+            self.logger.error(f"Error fetching wallet data: {e}")
+            return self.data_cache.get('wallet_data', {})
+            
+    def _fetch_trading_data(self) -> Dict[str, Any]:
+        """Fetch trading data from Redis."""
+        try:
+            if self.fallback_mode or not self.connection:
+                return self.data_cache.get('trading_data', {})
+                
+            # Get trading data from Redis
+            raw_data = self.connection.get('trading:data')
+            if raw_data:
+                trading_data = json.loads(raw_data)
+                self.data_cache['trading_data'] = trading_data
+                self.last_update_time['trading_data'] = time.time()
+                return trading_data
+            else:
+                self.logger.warning("No trading data found in Redis, using cached or simulated data")
+                return self.data_cache.get('trading_data', {})
+                
+        except Exception as e:
+            self.logger.error(f"Error fetching trading data: {e}")
+            return self.data_cache.get('trading_data', {})
+            
+    def _fetch_mining_data(self) -> Dict[str, Any]:
+        """Fetch mining data from Redis."""
+        try:
+            if self.fallback_mode or not self.connection:
+                return self.data_cache.get('mining_data', {})
+                
+            # Get mining data from Redis
+            raw_data = self.connection.get('mining:data')
+            if raw_data:
+                mining_data = json.loads(raw_data)
+                self.data_cache['mining_data'] = mining_data
+                self.last_update_time['mining_data'] = time.time()
+                return mining_data
+            else:
+                self.logger.warning("No mining data found in Redis, using cached or simulated data")
+                return self.data_cache.get('mining_data', {})
+                
+        except Exception as e:
+            self.logger.error(f"Error fetching mining data: {e}")
+            return self.data_cache.get('mining_data', {})
+            
+    def _generate_simulated_market_data(self) -> None:
+        """Generate simulated market data when Redis is unavailable."""
+        self.data_cache['market_data'] = {
+            'btc_price': f"{random.uniform(30000, 45000):.2f}",
+            'eth_price': f"{random.uniform(1800, 3000):.2f}",
+            'market_status': random.choice(['open', 'volatile', 'steady']),
+            'volatility': random.choice(['low', 'medium', 'high']),
+            'timestamp': time.time()
+        }
+        self.last_update_time['market_data'] = time.time()
+        
+    def _generate_simulated_wallet_data(self) -> None:
+        """Generate simulated wallet data when Redis is unavailable."""
+        self.data_cache['wallet_data'] = {
+            'btc_balance': f"{random.uniform(0.1, 2.5):.8f}",
+            'eth_balance': f"{random.uniform(1, 20):.8f}",
+            'usd_balance': f"{random.uniform(5000, 25000):.2f}",
+            'last_transaction': datetime.now().isoformat(),
+            'timestamp': time.time()
+        }
+        self.last_update_time['wallet_data'] = time.time()
+        
+    def _generate_simulated_trading_data(self) -> None:
+        """Generate simulated trading data when Redis is unavailable."""
+        self.data_cache['trading_data'] = {
+            'active_orders': random.randint(0, 5),
+            'strategy': random.choice(['conservative', 'balanced', 'aggressive']),
+            'risk_level': random.choice(['low', 'medium', 'high']),
+            'pnl_24h': f"{random.uniform(-500, 1500):.2f}",
+            'timestamp': time.time()
+        }
+        self.last_update_time['trading_data'] = time.time()
+        
+    def _generate_simulated_mining_data(self) -> None:
+        """Generate simulated mining data when Redis is unavailable."""
+        self.data_cache['mining_data'] = {
+            'hashrate': f"{random.uniform(100, 500):.1f} MH/s",
+            'active_miners': random.randint(1, 5),
+            'daily_earnings': f"{random.uniform(0.0001, 0.001):.8f} BTC",
+            'power_consumption': f"{random.uniform(800, 2000):.0f}W",
+            'timestamp': time.time()
+        }
+        self.last_update_time['mining_data'] = time.time()
+        
+    async def connect_async(self) -> bool:
+        """Establish asynchronous connection to Redis Quantum Nexus."""
+        if not has_aioredis:
+            self.logger.warning("Async Redis not available, falling back to sync")
+            return False
+            
+        try:
+            # Configure connection parameters
+            conn_params = {
+                'host': self.host,
+                'port': self.port,
+                'db': self.db
+            }
+            if self.password:
+                conn_params['password'] = self.password
+                
+            # Create async connection
+            if hasattr(aioredis, 'create_redis_pool'):
+                # aioredis < 2.0
+                self.async_connection = await aioredis.create_redis_pool(**conn_params)
+            else:
+                # aioredis >= 2.0
+                self.async_connection = await aioredis.from_url(
+                    f"redis://{self.host}:{self.port}/{self.db}", 
+                    password=self.password
+                )
+                
+            self.logger.info(f"Async Redis connection established to {self.host}:{self.port}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to establish async Redis connection: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+
+
+# Main window implementation for Kingdom AI application
+class MainWindow:
+    """Main window for the Kingdom AI application.
+    
+    This class manages the main application window with all tabs
+    and handles integration with the Redis Quantum Nexus for real-time data.
+    """
+    
+    def __init__(self, event_bus: EventBus, component_manager: Optional[ComponentManager] = None):
+        """Initialize the main window with event bus and component manager.
+        
+        Args:
+            event_bus: Event bus for component communication
+            component_manager: Optional component manager instance
+        """
+        self.event_bus = event_bus
+        self.component_manager = component_manager
+        self.logger = logging.getLogger(__name__)
+        self.widget_registry = WidgetRegistry()
+        self.data_cache = {}  # Cache for frequently accessed data
+        self.redis_nexus = None  # Will be set during Redis initialization
+        self._refresh_task = None  # Track the refresh task to avoid duplicates
+        self.is_visible = False  # Track if window is currently visible
+        
+        # Create the root window immediately to avoid NoneType errors
+        try:
+            self.root = tk.Tk()
+            self.root.withdraw()  # Hide until fully initialized
+            self.logger.info("Main window root object initialized")
+        except Exception as e:
+            self.logger.error(f"Error creating Tkinter root: {e}")
+            self.logger.error(traceback.format_exc())
+            self.root = None
+            
+    def show(self) -> bool:
+        """Show the main window by deiconifying it.
+        
+        This method makes the main window visible after it has been initialized.
+        
+        Returns:
+            bool: True if window was successfully shown, False otherwise
+        """
+        try:
+            self.logger.info("Showing main window")
+            if self.root is not None:
+                self.root.deiconify()
+                self.is_visible = True
+                self.logger.info("Main window is now visible")
+                
+                # Publish event to notify other components
+                if hasattr(self, 'event_bus') and self.event_bus:
+                    asyncio.create_task(self.event_bus.publish("window.shown", {
+                        "timestamp": time.time()
+                    }))
+                return True
+            else:
+                self.logger.error("Cannot show window: root is None")
+                return False
+        except Exception as e:
+            self.logger.error(f"Error showing main window: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    async def initialize_window(self) -> bool:
+        """Initialize the main window and all components.
+        
+        Returns:
+            bool: True if initialization was successful, False otherwise
+        """
+        try:
+            self.logger.info("Initializing main window")
+            
+            # First verify root object exists, create it if needed
+            if self.root is None:
+                self.logger.warning("Root object not initialized, creating now")
+                try:
+                    self.root = tk.Tk()
+                    self.root.withdraw()  # Hide until fully initialized
+                except Exception as e:
+                    self.logger.error(f"Failed to create Tkinter root: {e}")
+                    self.logger.error(traceback.format_exc())
+                    return False
+            
+            # Set window properties
+            self.root.title("Kingdom AI System")
+            self.root.geometry("1024x768")
+            
+            # Initialize Redis connection for real-time data
+            self._initialize_redis_connection()
+            
+            # Set up the UI components
+            self._setup_ui()
+            
+            # Connect to the event bus for real-time updates
+            try:
+                # Subscribe to event bus updates
+                asyncio.create_task(self.event_bus.subscribe("market.price.update", self._handle_price_update))
+                asyncio.create_task(self.event_bus.subscribe("wallet.balance.update", self._handle_balance_update))
+                asyncio.create_task(self.event_bus.subscribe("wallet.tx.update", self._handle_tx_update))
+                asyncio.create_task(self.event_bus.subscribe("mining.status.update", self._handle_mining_update))
+                asyncio.create_task(self.event_bus.subscribe("code.generated", self._handle_code_generation))
+                asyncio.create_task(self.event_bus.subscribe("api.key.status", self._handle_api_key_status))
+                asyncio.create_task(self.event_bus.subscribe("api.key.test.result", self._handle_api_test_result))
+            except Exception as e:
+                self.logger.error(f"Error subscribing to events: {e}")
+                self.logger.error(traceback.format_exc())
+            
+            # Publish initialization success
+            if hasattr(self, 'event_bus') and self.event_bus:
+                asyncio.create_task(self.event_bus.publish("window.initialized", {
+                    "success": True,
+                    "timestamp": time.time()
+                }))
+            
+            self.logger.info("Main window initialization complete")
+            return True
+        except Exception as e:
+            self.logger.error(f"Error initializing main window: {e}")
+            self.logger.error(traceback.format_exc())
+            
+            # Publish initialization failure
+            if hasattr(self, 'event_bus') and self.event_bus:
+                asyncio.create_task(self.event_bus.publish("window.initialized", {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": time.time()
+                }))
+            
+            return False
+            
+    def _initialize_redis_connection(self) -> bool:
+        """Initialize the Redis Quantum Nexus connection for real-time data."""
+        try:
+            # Create a Redis Quantum Nexus instance for real-time data
+            self.redis_nexus = RedisQuantumNexus()
+            connection_result = self.redis_nexus.connect()
+            if connection_result:
+                self.logger.info("Connected to Redis Quantum Nexus for real-time data")
+                # Update loading screen to indicate Redis connection if available
+                if 'loading_screen' in globals():
+                    try:
+                        # Get loading_screen from globals
+                        loading_screen = globals().get('loading_screen')
+                        if loading_screen and hasattr(loading_screen, 'update_progress'):
+                            # Get component initialization progress
+                            components_initialized = 1
+                            total_components = 2  # Default values
+                            
+                            # Try to get actual values from globals if available
+                            if 'components_initialized' in globals():
+                                components_initialized = globals().get('components_initialized', 1)
+                            if 'total_components' in globals():
+                                total_components = globals().get('total_components', 2)
+                                
+                            # Update loading progress
+                            loading_screen.update_progress(
+                                components_initialized / total_components, 
+                                "Connected to Redis Quantum Nexus"
+                            )
+                    except Exception as e:
+                        self.logger.error(f"Error updating loading screen: {e}")
+            else:
+                self.logger.warning("Failed to connect to Redis Quantum Nexus, using fallback mode")
+                
+            # Initialize data caches to avoid NoneType errors
+            self.market_data = {
+                'btc_price': '35428.76',
+                'eth_price': '2013.45',
+                'market_status': 'open',
+                'volatility': 'medium'
+            }
+            self.trading_data = {
+                'active_orders': '3',
+                'strategy': 'conservative',
+                'risk_level': 'medium',
+                'available_balance': '10000.00'
+            }
+            self.mining_data = {
+                'hashrate': '250.5 MH/s',
+                'active_miners': '3',
+                'daily_earnings': '0.00025 BTC',
+                'power_consumption': '1200W'
+            }
+            
+            # Start the live data refresh task
+            self._refresh_task = asyncio.create_task(self._start_live_data_refresh())
+            return True
+        except Exception as e:
+            self.logger.error(f"Error initializing Redis connection: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    def _setup_ui(self) -> bool:
+        """Set up the user interface with all tabs and components."""
+        try:
+            self.logger.info("Setting up UI components")
+            
+            # Configure the root window style
+            self.root.configure(bg='#2E2E2E')
+            
+            # Create main frame to hold all content
+            self.main_frame = ttk.Frame(self.root)
+            self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            
+            # Create a notebook (tabbed interface)
+            self.notebook = ttk.Notebook(self.main_frame)
+            self.notebook.pack(fill=tk.BOTH, expand=True)
+            
+            # Set up all tabs
+            self._setup_dashboard_tab()
+            self._setup_trading_tab()
+            self._setup_mining_tab()
+            self._setup_ai_tab()
+            self._setup_blockchain_tab()
+            self._setup_settings_tab()
+            
+            # Add status bar at the bottom
+            self._setup_status_bar()
+            
+            # Configure theme and style
+            self._configure_styles()
+            
+            self.logger.info("UI components setup complete")
+            return True
+        except Exception as e:
+            self.logger.error(f"Error setting up UI: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    def _configure_styles(self) -> None:
+        """Configure the TTK styles for a modern, consistent look."""
+        style = ttk.Style()
+        
+        # Try to set a modern theme if available
+        available_themes = style.theme_names()
+        preferred_themes = ['clam', 'alt', 'default']
+        
+        for theme in preferred_themes:
+            if theme in available_themes:
+                style.theme_use(theme)
+                break
+        
+        # Configure colors
+        style.configure('TFrame', background='#2E2E2E')
+        style.configure('TNotebook', background='#2E2E2E', tabmargins=[2, 5, 2, 0])
+        style.configure('TNotebook.Tab', background='#4A4A4A', foreground='white', padding=[10, 2])
+        style.map('TNotebook.Tab', background=[('selected', '#1E90FF')], foreground=[('selected', 'white')])
+        style.configure('TLabel', background='#2E2E2E', foreground='white')
+        style.configure('TButton', background='#1E90FF', foreground='white')
+        
+        # Create custom styles for special elements
+        style.configure('Header.TLabel', font=('Helvetica', 16, 'bold'))
+        style.configure('Status.TLabel', font=('Helvetica', 9))
+        style.configure('Success.TLabel', foreground='#32CD32')
+        style.configure('Warning.TLabel', foreground='#FFA500')
+        style.configure('Error.TLabel', foreground='#FF4500')
+        
+    def _setup_dashboard_tab(self) -> None:
+        """Set up the main dashboard tab with summary panels and charts."""
+        try:
+            # Create dashboard tab
+            self.dashboard_tab = ttk.Frame(self.notebook)
+            self.notebook.add(self.dashboard_tab, text="Dashboard")
+            
+            # Create header with Kingdom AI logo and title
+            header_frame = ttk.Frame(self.dashboard_tab)
+            header_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            # Title and subtitle
+            title_label = ttk.Label(header_frame, text="Kingdom AI System", style="Header.TLabel")
+            title_label.pack(side=tk.LEFT, padx=5)
+            
+            # Summary panels section
+            summary_frame = ttk.Frame(self.dashboard_tab)
+            summary_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+            
+            # Create grid of summary panels
+            for i, (title, metric_id) in enumerate([
+                ("BTC Price", "btc_price"),
+                ("ETH Price", "eth_price"),
+                ("Wallet Balance", "wallet_balance"),
+                ("Active Orders", "active_orders"),
+                ("Mining Hashrate", "hashrate"),
+                ("System Status", "system_status")
+            ]):
+                # Calculate grid position
+                row, col = divmod(i, 3)
+                
+                # Create panel
+                panel = ttk.Frame(summary_frame, borderwidth=2, relief=tk.GROOVE)
+                panel.grid(row=row, column=col, padx=5, pady=5, sticky="nsew")
+                
+                # Panel title
+                panel_title = ttk.Label(panel, text=title)
+                panel_title.pack(anchor=tk.NW, padx=5, pady=2)
+                
+                # Panel value with larger font
+                value_var = tk.StringVar(value="Loading...")
+                value_label = ttk.Label(panel, textvariable=value_var, font=("Helvetica", 16))
+                value_label.pack(anchor=tk.CENTER, padx=5, pady=10, expand=True)
+                
+                # Register widget for future updates
+                self.widget_registry.register_widget(f"dashboard_{metric_id}", value_var)
+                
+            # Configure grid layout
+            for i in range(3):
+                summary_frame.columnconfigure(i, weight=1, uniform="column")
+            for i in range(2):
+                summary_frame.rowconfigure(i, weight=1, uniform="row")
+                
+            # Activity feed section
+            activity_frame = ttk.Frame(self.dashboard_tab)
+            activity_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+            
+            # Activity feed header
+            activity_header = ttk.Label(activity_frame, text="Recent Activity", style="Header.TLabel")
+            activity_header.pack(anchor=tk.W, padx=5, pady=5)
+            
+            # Activity feed text area
+            activity_text = scrolledtext.ScrolledText(activity_frame, height=6, wrap=tk.WORD)
+            activity_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            activity_text.insert(tk.END, "System initializing...\n")
+            activity_text.configure(state=tk.DISABLED)  # Make read-only
+            
+            # Register activity feed for updates
+            self.widget_registry.register_widget("dashboard_activity", activity_text)
+            
+            self.logger.info("Dashboard tab setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up dashboard tab: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _setup_trading_tab(self) -> None:
+        """Set up the trading tab with market data, order management, and trading controls."""
+        try:
+            # Create trading tab
+            self.trading_tab = ttk.Frame(self.notebook)
+            self.notebook.add(self.trading_tab, text="Trading")
+            
+            # Split the tab into left and right panels
+            left_panel = ttk.Frame(self.trading_tab)
+            left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            right_panel = ttk.Frame(self.trading_tab)
+            right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Market data section (left panel)
+            market_frame = ttk.LabelFrame(left_panel, text="Market Data")
+            market_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Market selection
+            market_selection_frame = ttk.Frame(market_frame)
+            market_selection_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(market_selection_frame, text="Market:").pack(side=tk.LEFT, padx=5)
+            market_var = tk.StringVar(value="BTC/USDT")
+            market_combo = ttk.Combobox(market_selection_frame, textvariable=market_var, 
+                                       values=["BTC/USDT", "ETH/USDT", "XRP/USDT", "ADA/USDT", "SOL/USDT"])
+            market_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Refresh button
+            refresh_button = ttk.Button(market_selection_frame, text="Refresh", 
+                                       command=lambda: self.event_bus.publish("market.refresh", {"market": market_var.get()}))
+            refresh_button.pack(side=tk.RIGHT, padx=5)
+            
+            # Market price display
+            price_frame = ttk.Frame(market_frame)
+            price_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            # Current price with large font
+            current_price_var = tk.StringVar(value="Loading...")
+            current_price_label = ttk.Label(price_frame, textvariable=current_price_var, font=("Helvetica", 24))
+            current_price_label.pack(anchor=tk.CENTER, pady=10)
+            
+            # 24h change percentage
+            change_var = tk.StringVar(value="0.00%")
+            change_label = ttk.Label(price_frame, textvariable=change_var)
+            change_label.pack(anchor=tk.CENTER)
+            
+            # Register widgets for updates
+            self.widget_registry.register_widget("trading_price", current_price_var)
+            self.widget_registry.register_widget("trading_change", change_var)
+            
+            # Market depth display
+            depth_frame = ttk.LabelFrame(market_frame, text="Order Book")
+            depth_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Create a frame for the order book headers
+            header_frame = ttk.Frame(depth_frame)
+            header_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(header_frame, text="Price", width=10).pack(side=tk.LEFT, padx=5)
+            ttk.Label(header_frame, text="Amount", width=10).pack(side=tk.LEFT, padx=5)
+            ttk.Label(header_frame, text="Total", width=10).pack(side=tk.LEFT, padx=5)
+            
+            # Order book display (ask orders)
+            ask_frame = ttk.Frame(depth_frame)
+            ask_frame.pack(fill=tk.BOTH, expand=True, padx=5)
+            
+            ask_text = tk.Text(ask_frame, height=5, width=30, bg="#FFEEEE")
+            ask_text.pack(fill=tk.BOTH, expand=True)
+            ask_text.insert(tk.END, "Loading ask orders...")
+            
+            # Order book display (bid orders)
+            bid_frame = ttk.Frame(depth_frame)
+            bid_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            bid_text = tk.Text(bid_frame, height=5, width=30, bg="#EEFFEE")
+            bid_text.pack(fill=tk.BOTH, expand=True)
+            bid_text.insert(tk.END, "Loading bid orders...")
+            
+            # Register widgets for updates
+            self.widget_registry.register_widget("trading_asks", ask_text)
+            self.widget_registry.register_widget("trading_bids", bid_text)
+            
+            # Order management section (right panel)
+            order_frame = ttk.LabelFrame(right_panel, text="Place Order")
+            order_frame.pack(fill=tk.BOTH, expand=False, padx=5, pady=5)
+            
+            # Order type selection
+            order_type_frame = ttk.Frame(order_frame)
+            order_type_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(order_type_frame, text="Order Type:").pack(side=tk.LEFT, padx=5)
+            order_type_var = tk.StringVar(value="Limit")
+            order_type_combo = ttk.Combobox(order_type_frame, textvariable=order_type_var, 
+                                          values=["Limit", "Market", "Stop-Limit"])
+            order_type_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Buy/Sell selection
+            buy_sell_frame = ttk.Frame(order_frame)
+            buy_sell_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            buy_sell_var = tk.StringVar(value="Buy")
+            buy_radio = ttk.Radiobutton(buy_sell_frame, text="Buy", variable=buy_sell_var, value="Buy")
+            buy_radio.pack(side=tk.LEFT, padx=20)
+            sell_radio = ttk.Radiobutton(buy_sell_frame, text="Sell", variable=buy_sell_var, value="Sell")
+            sell_radio.pack(side=tk.LEFT, padx=20)
+            
+            # Price input
+            price_input_frame = ttk.Frame(order_frame)
+            price_input_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(price_input_frame, text="Price:").pack(side=tk.LEFT, padx=5)
+            price_var = tk.StringVar(value="0.00")
+            price_entry = ttk.Entry(price_input_frame, textvariable=price_var)
+            price_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Amount input
+            amount_input_frame = ttk.Frame(order_frame)
+            amount_input_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(amount_input_frame, text="Amount:").pack(side=tk.LEFT, padx=5)
+            amount_var = tk.StringVar(value="0.00")
+            amount_entry = ttk.Entry(amount_input_frame, textvariable=amount_var)
+            amount_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Total calculation
+            total_frame = ttk.Frame(order_frame)
+            total_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(total_frame, text="Total:").pack(side=tk.LEFT, padx=5)
+            total_var = tk.StringVar(value="0.00")
+            total_label = ttk.Label(total_frame, textvariable=total_var)
+            total_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Submit order button
+            submit_frame = ttk.Frame(order_frame)
+            submit_frame.pack(fill=tk.X, padx=5, pady=10)
+            
+            submit_button = ttk.Button(submit_frame, text="Place Order",
+                                       command=lambda: self._submit_order(market_var.get(), buy_sell_var.get(),
+                                                                        order_type_var.get(), price_var.get(),
+                                                                        amount_var.get()))
+            submit_button.pack(fill=tk.X, padx=20)
+            
+            # Open orders section
+            open_orders_frame = ttk.LabelFrame(right_panel, text="Open Orders")
+            open_orders_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Open orders list
+            open_orders_text = scrolledtext.ScrolledText(open_orders_frame, height=10)
+            open_orders_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            open_orders_text.insert(tk.END, "No open orders")
+            
+            # Register for updates
+            self.widget_registry.register_widget("trading_open_orders", open_orders_text)
+            
+            # Add quick actions buttons
+            actions_frame = ttk.Frame(right_panel)
+            actions_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            cancel_all_button = ttk.Button(actions_frame, text="Cancel All Orders",
+                                          command=lambda: self.event_bus.publish("trading.cancel_all_orders", {}))
+            cancel_all_button.pack(side=tk.LEFT, padx=5)
+            
+            strategies_button = ttk.Button(actions_frame, text="Trading Strategies",
+                                          command=self._show_trading_strategies)
+            strategies_button.pack(side=tk.RIGHT, padx=5)
+            
+            self.logger.info("Trading tab setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up trading tab: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _submit_order(self, market: str, side: str, order_type: str, price: str, amount: str) -> None:
+        """Submit a trading order through the event bus."""
+        try:
+            # Validate inputs
+            if order_type == "Limit" and (not price or float(price) <= 0):
+                messagebox.showerror("Invalid Order", "Please enter a valid price")
+                return
+                
+            if not amount or float(amount) <= 0:
+                messagebox.showerror("Invalid Order", "Please enter a valid amount")
+                return
+                
+            # Prepare order data
+            order_data = {
+                "market": market,
+                "side": side.lower(),
+                "type": order_type.lower(),
+                "price": float(price) if price else None,
+                "amount": float(amount),
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Publish order event
+            self.event_bus.publish("trading.place_order", order_data)
+            
+            # Show confirmation
+            messagebox.showinfo("Order Submitted", f"{side} order for {amount} {market.split('/')[0]} submitted")
+            
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid number format: {str(e)}")
+        except Exception as e:
+            self.logger.error(f"Error submitting order: {e}")
+            messagebox.showerror("Order Error", f"Failed to submit order: {str(e)}")
+            
+    def _show_trading_strategies(self) -> None:
+        """Show the trading strategies dialog."""
+        try:
+            strategies_window = tk.Toplevel(self.root)
+            strategies_window.title("Trading Strategies")
+            strategies_window.geometry("600x400")
+            strategies_window.grab_set()  # Make window modal
+            
+            # Create the content
+            header_label = ttk.Label(strategies_window, text="Available Trading Strategies", style="Header.TLabel")
+            header_label.pack(padx=10, pady=10)
+            
+            # Create strategies list
+            strategies_frame = ttk.Frame(strategies_window)
+            strategies_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+            
+            strategies_list = [
+                ("DCA Bot", "Dollar Cost Averaging automatic buying", False),
+                ("MACD Crossover", "Moving Average Convergence Divergence strategy", False),
+                ("RSI Reversal", "Relative Strength Index reversal detection", False),
+                ("Grid Trading", "Automated grid trading strategy", False),
+                ("Moonshot", "High-risk moonshot strategy for new tokens", False),
+                ("Whale Tracker", "Follow large wallet transactions", False)
+            ]
+            
+            for i, (name, description, active) in enumerate(strategies_list):
+                strategy_frame = ttk.Frame(strategies_frame)
+                strategy_frame.pack(fill=tk.X, padx=5, pady=2)
+                
+                var = tk.BooleanVar(value=active)
+                check = ttk.Checkbutton(strategy_frame, text=name, variable=var)
+                check.pack(side=tk.LEFT, padx=5)
+                
+                desc_label = ttk.Label(strategy_frame, text=description)
+                desc_label.pack(side=tk.LEFT, padx=10)
+                
+                config_button = ttk.Button(strategy_frame, text="Configure",
+                                           command=lambda s=name: self._configure_strategy(s))
+                config_button.pack(side=tk.RIGHT, padx=5)
+                
+            # Buttons at bottom
+            button_frame = ttk.Frame(strategies_window)
+            button_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            apply_button = ttk.Button(button_frame, text="Apply", 
+                                      command=strategies_window.destroy)
+            apply_button.pack(side=tk.RIGHT, padx=5)
+            
+            cancel_button = ttk.Button(button_frame, text="Cancel", 
+                                       command=strategies_window.destroy)
+            cancel_button.pack(side=tk.RIGHT, padx=5)
+            
+        except Exception as e:
+            self.logger.error(f"Error showing strategies dialog: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _configure_strategy(self, strategy_name: str) -> None:
+        """Show configuration dialog for a specific trading strategy."""
+        try:
+            messagebox.showinfo("Strategy Configuration", 
+                               f"Configuration for {strategy_name} would be shown here.\n\nThis will be implemented in the next phase.")
+        except Exception as e:
+            self.logger.error(f"Error configuring strategy {strategy_name}: {e}")
+            messagebox.showerror("Configuration Error", f"Failed to configure strategy: {str(e)}")
+            
+    def _setup_mining_tab(self) -> None:
+        """Set up the mining tab with mining controls and statistics."""
+        try:
+            # Create mining tab
+            self.mining_tab = ttk.Frame(self.notebook)
+            self.notebook.add(self.mining_tab, text="Mining")
+            
+            # Split into left and right panels
+            left_panel = ttk.Frame(self.mining_tab)
+            left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            right_panel = ttk.Frame(self.mining_tab)
+            right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Mining control panel (left)
+            control_frame = ttk.LabelFrame(left_panel, text="Mining Controls")
+            control_frame.pack(fill=tk.BOTH, expand=False, padx=5, pady=5)
+            
+            # Mining status
+            status_frame = ttk.Frame(control_frame)
+            status_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT, padx=5)
+            status_var = tk.StringVar(value="Stopped")
+            status_label = ttk.Label(status_frame, textvariable=status_var, font=("Helvetica", 10, "bold"))
+            status_label.pack(side=tk.LEFT, padx=5)
+            
+            # Start/Stop button
+            button_frame = ttk.Frame(control_frame)
+            button_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            self.mining_start_button = ttk.Button(button_frame, text="Start Mining", 
+                                            command=lambda: self.event_bus.publish("mining.start", {}))
+            self.mining_start_button.pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+            
+            self.mining_stop_button = ttk.Button(button_frame, text="Stop Mining", 
+                                           command=lambda: self.event_bus.publish("mining.stop", {}))
+            self.mining_stop_button.pack(side=tk.RIGHT, padx=5, expand=True, fill=tk.X)
+            self.mining_stop_button.configure(state="disabled")
+            
+            # Mining configuration
+            config_frame = ttk.LabelFrame(left_panel, text="Mining Configuration")
+            config_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Algorithm selection
+            algo_frame = ttk.Frame(config_frame)
+            algo_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(algo_frame, text="Algorithm:").pack(side=tk.LEFT, padx=5)
+            algo_var = tk.StringVar(value="Ethash")
+            algo_combo = ttk.Combobox(algo_frame, textvariable=algo_var, 
+                                     values=["Ethash", "SHA-256", "Scrypt", "RandomX", "KawPow"])
+            algo_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Pool configuration
+            pool_frame = ttk.Frame(config_frame)
+            pool_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(pool_frame, text="Pool URL:").pack(side=tk.LEFT, padx=5)
+            pool_var = tk.StringVar(value="stratum+tcp://eth.pool.example.com:8008")
+            pool_entry = ttk.Entry(pool_frame, textvariable=pool_var)
+            pool_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Wallet address
+            wallet_frame = ttk.Frame(config_frame)
+            wallet_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(wallet_frame, text="Wallet:").pack(side=tk.LEFT, padx=5)
+            wallet_var = tk.StringVar(value="0x0000000000000000000000000000000000000000")
+            wallet_entry = ttk.Entry(wallet_frame, textvariable=wallet_var)
+            wallet_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Worker name
+            worker_frame = ttk.Frame(config_frame)
+            worker_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(worker_frame, text="Worker:").pack(side=tk.LEFT, padx=5)
+            worker_var = tk.StringVar(value="KingdomAI")
+            worker_entry = ttk.Entry(worker_frame, textvariable=worker_var)
+            worker_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Threads
+            threads_frame = ttk.Frame(config_frame)
+            threads_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(threads_frame, text="Threads:").pack(side=tk.LEFT, padx=5)
+            threads_var = tk.StringVar(value="4")
+            threads_spinbox = ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=threads_var)
+            threads_spinbox.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Apply configuration button
+            apply_button = ttk.Button(config_frame, text="Apply Configuration", 
+                                     command=lambda: self._apply_mining_config(algo_var.get(), pool_var.get(), 
+                                                                            wallet_var.get(), worker_var.get(), 
+                                                                            threads_var.get()))
+            apply_button.pack(fill=tk.X, padx=20, pady=10)
+            
+            # Mining statistics panel (right)
+            stats_frame = ttk.LabelFrame(right_panel, text="Mining Statistics")
+            stats_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Hashrate display
+            hashrate_frame = ttk.Frame(stats_frame)
+            hashrate_frame.pack(fill=tk.X, padx=5, pady=10)
+            
+            ttk.Label(hashrate_frame, text="Hashrate:").pack(side=tk.LEFT, padx=5)
+            hashrate_var = tk.StringVar(value="0 H/s")
+            hashrate_label = ttk.Label(hashrate_frame, textvariable=hashrate_var, font=("Helvetica", 14, "bold"))
+            hashrate_label.pack(side=tk.LEFT, padx=5)
+            
+            # Shares display
+            shares_frame = ttk.Frame(stats_frame)
+            shares_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(shares_frame, text="Shares:").pack(side=tk.LEFT, padx=5)
+            shares_var = tk.StringVar(value="Accepted: 0 | Rejected: 0")
+            shares_label = ttk.Label(shares_frame, textvariable=shares_var)
+            shares_label.pack(side=tk.LEFT, padx=5)
+            
+            # Temperature display
+            temp_frame = ttk.Frame(stats_frame)
+            temp_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(temp_frame, text="Temperature:").pack(side=tk.LEFT, padx=5)
+            temp_var = tk.StringVar(value="CPU: 60°C | GPU: 65°C")
+            temp_label = ttk.Label(temp_frame, textvariable=temp_var)
+            temp_label.pack(side=tk.LEFT, padx=5)
+            
+            # Hardware display
+            hw_frame = ttk.Frame(stats_frame)
+            hw_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(hw_frame, text="Hardware:").pack(side=tk.LEFT, padx=5)
+            hw_var = tk.StringVar(value="CPU: 4 cores | GPU: RTX 3080")
+            hw_label = ttk.Label(hw_frame, textvariable=hw_var)
+            hw_label.pack(side=tk.LEFT, padx=5)
+            
+            # Earnings estimate
+            earnings_frame = ttk.Frame(stats_frame)
+            earnings_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(earnings_frame, text="Est. Earnings:").pack(side=tk.LEFT, padx=5)
+            earnings_var = tk.StringVar(value="Daily: 0.005 ETH | Weekly: 0.035 ETH")
+            earnings_label = ttk.Label(earnings_frame, textvariable=earnings_var)
+            earnings_label.pack(side=tk.LEFT, padx=5)
+            
+            # Pool connection
+            pool_status_frame = ttk.Frame(stats_frame)
+            pool_status_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(pool_status_frame, text="Pool:").pack(side=tk.LEFT, padx=5)
+            pool_status_var = tk.StringVar(value="Disconnected")
+            pool_status_label = ttk.Label(pool_status_frame, textvariable=pool_status_var)
+            pool_status_label.pack(side=tk.LEFT, padx=5)
+            
+            # Mining log
+            log_frame = ttk.LabelFrame(right_panel, text="Mining Log")
+            log_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            log_text = scrolledtext.ScrolledText(log_frame, height=8, wrap=tk.WORD)
+            log_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            log_text.insert(tk.END, "Mining system ready. Click 'Start Mining' to begin.\n")
+            log_text.configure(state=tk.DISABLED)  # Make read-only
+            
+            # Register widgets for updates
+            self.widget_registry.register_widget("mining_status", status_var)
+            self.widget_registry.register_widget("mining_hashrate", hashrate_var)
+            self.widget_registry.register_widget("mining_shares", shares_var)
+            self.widget_registry.register_widget("mining_temp", temp_var)
+            self.widget_registry.register_widget("mining_hw", hw_var)
+            self.widget_registry.register_widget("mining_earnings", earnings_var)
+            self.widget_registry.register_widget("mining_pool_status", pool_status_var)
+            self.widget_registry.register_widget("mining_log", log_text)
+            self.widget_registry.register_widget("mining_start_button", self.mining_start_button)
+            self.widget_registry.register_widget("mining_stop_button", self.mining_stop_button)
+            
+            self.logger.info("Mining tab setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up mining tab: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _apply_mining_config(self, algorithm: str, pool_url: str, wallet: str, worker: str, threads: str) -> None:
+        """Apply mining configuration through the event bus."""
+        try:
+            # Validate inputs
+            if not pool_url:
+                messagebox.showerror("Invalid Configuration", "Pool URL cannot be empty")
+                return
+                
+            if not wallet:
+                messagebox.showerror("Invalid Configuration", "Wallet address cannot be empty")
+                return
+                
+            # Prepare configuration data
+            config_data = {
+                "algorithm": algorithm,
+                "pool_url": pool_url,
+                "wallet": wallet,
+                "worker": worker,
+                "threads": int(threads)
+            }
+            
+            # Publish configuration event
+            self.event_bus.publish("mining.update_config", config_data)
+            
+            # Show confirmation
+            messagebox.showinfo("Configuration Updated", "Mining configuration has been updated")
+            
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid number format: {str(e)}")
+        except Exception as e:
+            self.logger.error(f"Error applying mining configuration: {e}")
+            messagebox.showerror("Configuration Error", f"Failed to update configuration: {str(e)}")
+            
+    def _setup_ai_tab(self) -> None:
+        """Set up the AI tab with Thoth chat interface and voice controls."""
+        try:
+            # Create AI tab
+            self.ai_tab = ttk.Frame(self.notebook)
+            self.notebook.add(self.ai_tab, text="ThothAI")
+            
+            # Split into top and bottom panels
+            top_panel = ttk.Frame(self.ai_tab)
+            top_panel.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            bottom_panel = ttk.Frame(self.ai_tab)
+            bottom_panel.pack(fill=tk.X, expand=False, padx=5, pady=5)
+            
+            # Left side: Chat interface
+            chat_frame = ttk.LabelFrame(top_panel, text="ThothAI Assistant")
+            chat_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Chat history
+            self.chat_history = scrolledtext.ScrolledText(chat_frame, wrap=tk.WORD, height=20)
+            self.chat_history.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            self.chat_history.insert(tk.END, "ThothAI: Welcome to Kingdom AI. How can I assist you today?\n\n")
+            self.chat_history.configure(state=tk.DISABLED)  # Make read-only
+            
+            # Right side: Controls and settings
+            control_frame = ttk.LabelFrame(top_panel, text="AI Controls")
+            control_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=5, pady=5, ipadx=5, ipady=5)
+            
+            # AI model selection
+            model_frame = ttk.Frame(control_frame)
+            model_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(model_frame, text="AI Model:").pack(side=tk.LEFT, padx=5)
+            model_var = tk.StringVar(value="Ollama (Llama2)")
+            model_combo = ttk.Combobox(model_frame, textvariable=model_var, 
+                                      values=["Ollama (Llama2)", "Ollama (Mistral)", "Ollama (Mixtral)", "Fallback Model"])
+            model_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Connection status
+            status_frame = ttk.Frame(control_frame)
+            status_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT, padx=5)
+            ai_status_var = tk.StringVar(value="Connecting...")
+            ai_status_label = ttk.Label(status_frame, textvariable=ai_status_var)
+            ai_status_label.pack(side=tk.LEFT, padx=5)
+            
+            # Voice controls
+            voice_frame = ttk.LabelFrame(control_frame, text="Voice Controls")
+            voice_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            # Voice toggle
+            voice_toggle_frame = ttk.Frame(voice_frame)
+            voice_toggle_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            voice_enabled_var = tk.BooleanVar(value=False)
+            voice_checkbox = ttk.Checkbutton(voice_toggle_frame, text="Enable Voice", variable=voice_enabled_var,
+                                            command=self._toggle_voice)
+            voice_checkbox.pack(side=tk.LEFT, padx=5)
+            
+            # Voice type selection
+            voice_type_frame = ttk.Frame(voice_frame)
+            voice_type_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(voice_type_frame, text="Voice:").pack(side=tk.LEFT, padx=5)
+            voice_type_var = tk.StringVar(value="Default")
+            voice_type_combo = ttk.Combobox(voice_type_frame, textvariable=voice_type_var, 
+                                          values=["Default", "Black Panther"], state="disabled")
+            voice_type_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Register voice widgets
+            self.widget_registry.register_widget("voice_enabled", voice_enabled_var)
+            self.widget_registry.register_widget("voice_type", voice_type_combo)
+            
+            # Test voice button
+            test_voice_button = ttk.Button(voice_frame, text="Test Voice", 
+                                         command=self._test_voice, state="disabled")
+            test_voice_button.pack(fill=tk.X, padx=5, pady=5)
+            self.widget_registry.register_widget("test_voice_button", test_voice_button)
+            
+            # Code generation section
+            code_frame = ttk.LabelFrame(control_frame, text="Code Generation")
+            code_frame.pack(fill=tk.X, padx=5, pady=5, expand=True)
+            
+            # Output format
+            format_frame = ttk.Frame(code_frame)
+            format_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(format_frame, text="Format:").pack(side=tk.LEFT, padx=5)
+            format_var = tk.StringVar(value="Python")
+            format_combo = ttk.Combobox(format_frame, textvariable=format_var, 
+                                       values=["Python", "JavaScript", "Java", "C++", "Bash", "Markdown"])
+            format_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Generate button
+            generate_button = ttk.Button(code_frame, text="Generate Code", 
+                                       command=lambda: self._generate_code(format_var.get()))
+            generate_button.pack(fill=tk.X, padx=5, pady=10)
+            
+            # Input area (bottom panel)
+            input_frame = ttk.Frame(bottom_panel)
+            input_frame.pack(fill=tk.X, expand=True, side=tk.LEFT, padx=5, pady=5)
+            
+            self.message_input = tk.Text(input_frame, height=3, width=40, wrap=tk.WORD)
+            self.message_input.pack(fill=tk.X, expand=True, side=tk.LEFT)
+            self.message_input.bind("<Return>", self._on_enter_pressed)
+            
+            # Send button
+            send_button = ttk.Button(bottom_panel, text="Send", command=self._send_message)
+            send_button.pack(side=tk.RIGHT, padx=5, pady=5)
+            
+            # Voice input button
+            voice_input_button = ttk.Button(bottom_panel, text="🎤", width=3, 
+                                         command=self._start_voice_input, state="disabled")
+            voice_input_button.pack(side=tk.RIGHT, padx=5, pady=5)
+            self.widget_registry.register_widget("voice_input_button", voice_input_button)
+            
+            # Register widgets for updates
+            self.widget_registry.register_widget("ai_status", ai_status_var)
+            self.widget_registry.register_widget("chat_history", self.chat_history)
+            self.widget_registry.register_widget("ai_model", model_var)
+            
+            # Initialize AI connection status
+            self.event_bus.publish("thoth.status.request", {})
+            
+            self.logger.info("AI tab setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up AI tab: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _toggle_voice(self) -> None:
+        """Toggle voice system on/off."""
+        try:
+            voice_enabled = self.widget_registry.get_widget("voice_enabled").get()
+            voice_type_combo = self.widget_registry.get_widget("voice_type")
+            test_voice_button = self.widget_registry.get_widget("test_voice_button")
+            voice_input_button = self.widget_registry.get_widget("voice_input_button")
+            
+            # Enable/disable controls
+            voice_type_combo.configure(state="readonly" if voice_enabled else "disabled")
+            test_voice_button.configure(state="normal" if voice_enabled else "disabled")
+            voice_input_button.configure(state="normal" if voice_enabled else "disabled")
+            
+            # Publish event to voice system
+            self.event_bus.publish("voice.set", {"enabled": voice_enabled})
+            
+            # Log action
+            action = "enabled" if voice_enabled else "disabled"
+            self.logger.info(f"Voice system {action}")
+            
+        except Exception as e:
+            self.logger.error(f"Error toggling voice: {e}")
+            messagebox.showerror("Voice Error", f"Failed to toggle voice: {str(e)}")
+            
+    def _test_voice(self) -> None:
+        """Test the voice system with a sample message."""
+        try:
+            voice_type = self.widget_registry.get_widget("voice_type").get()
+            self.event_bus.publish("voice.speak", {
+                "text": "This is a test of the Kingdom AI voice system.", 
+                "voice_type": voice_type
+            })
+        except Exception as e:
+            self.logger.error(f"Error testing voice: {e}")
+            messagebox.showerror("Voice Error", f"Failed to test voice: {str(e)}")
+            
+    def _on_enter_pressed(self, event: tk.Event) -> None:
+        """Handle Enter key press in the message input."""
+        if not (event.state & 0x1):  # No Shift key
+            self._send_message()
+            return "break"  # Prevent default Enter behavior
+        return None
+    
+    def _send_message(self) -> None:
+        """Send a message to ThothAI through the event bus."""
+        try:
+            # Get message text
+            message = self.message_input.get("1.0", tk.END).strip()
+            if not message:
+                return
+                
+            # Clear input
+            self.message_input.delete("1.0", tk.END)
+            
+            # Update chat history
+            self.chat_history.configure(state=tk.NORMAL)
+            self.chat_history.insert(tk.END, f"You: {message}\n\n")
+            self.chat_history.insert(tk.END, "ThothAI: Thinking...\n\n")
+            self.chat_history.see(tk.END)
+            self.chat_history.configure(state=tk.DISABLED)
+            
+            # Get AI model
+            model = self.widget_registry.get_widget("ai_model").get()
+            
+            # Prepare request data
+            request_data = {
+                "message": message,
+                "model": model,
+                "request_id": str(int(time.time() * 1000)),  # Simple unique ID
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Publish request event
+            self.event_bus.publish("thoth.request", request_data)
+            
+        except Exception as e:
+            self.logger.error(f"Error sending message: {e}")
+            messagebox.showerror("Message Error", f"Failed to send message: {str(e)}")
+            
+    def _generate_code(self, format_type: str) -> None:
+        """Request code generation from ThothAI."""
+        try:
+            # Get message text
+            prompt = self.message_input.get("1.0", tk.END).strip()
+            if not prompt:
+                messagebox.showwarning("Code Generation", "Please enter a description for the code you want to generate.")
+                return
+                
+            # Clear input
+            self.message_input.delete("1.0", tk.END)
+            
+            # Update chat history
+            self.chat_history.configure(state=tk.NORMAL)
+            self.chat_history.insert(tk.END, f"You: [CODE REQUEST] {prompt}\n\n")
+            self.chat_history.insert(tk.END, "ThothAI: Generating code...\n\n")
+            self.chat_history.see(tk.END)
+            self.chat_history.configure(state=tk.DISABLED)
+            
+            # Prepare request data
+            request_data = {
+                "prompt": prompt,
+                "format": format_type,
+                "request_id": str(int(time.time() * 1000)),  # Simple unique ID
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Publish request event
+            self.event_bus.publish("thoth.generate_code", request_data)
+            
+        except Exception as e:
+            self.logger.error(f"Error requesting code generation: {e}")
+            messagebox.showerror("Code Generation Error", f"Failed to request code: {str(e)}")
+            
+    def _start_voice_input(self) -> None:
+        """Start voice input for message."""
+        try:
+            # Visual feedback
+            self.message_input.delete("1.0", tk.END)
+            self.message_input.insert(tk.END, "Listening...")
+            
+            # Publish voice listen event
+            self.event_bus.publish("voice.listen", {"mode": "command"})
+            
+        except Exception as e:
+            self.logger.error(f"Error starting voice input: {e}")
+            messagebox.showerror("Voice Input Error", f"Failed to start voice input: {str(e)}")
+            
+    def _handle_voice_command(self, event_data: Dict[str, Any]) -> None:
+        """Handle a voice command received from the voice system."""
+        try:
+            # Get command text
+            command = event_data.get("text", "")
+            if not command:
+                self.message_input.delete("1.0", tk.END)
+                return
+                
+            # Update input field
+            self.message_input.delete("1.0", tk.END)
+            self.message_input.insert(tk.END, command)
+            
+            # Automatically send if configured to do so
+            auto_send = event_data.get("auto_send", False)
+            if auto_send:
+                self._send_message()
+                
+        except Exception as e:
+            self.logger.error(f"Error handling voice command: {e}")
+            
+    def _handle_ai_response(self, event_data: Dict[str, Any]) -> None:
+        """Handle a response from ThothAI."""
+        try:
+            # Get response text and metadata
+            response = event_data.get("response", "")
+            request_id = event_data.get("request_id", "")
+            error = event_data.get("error", None)
+            
+            # Update chat history
+            self.chat_history.configure(state=tk.NORMAL)
+            
+            # Find and remove the "Thinking..." placeholder
+            text = self.chat_history.get("1.0", tk.END)
+            if "ThothAI: Thinking..." in text:
+                start = text.rfind("ThothAI: Thinking...")
+                end = start + len("ThothAI: Thinking...\n\n")
+                self.chat_history.delete(f"1.0 + {start}c", f"1.0 + {end}c")
+            
+            # Add the actual response
+            if error:
+                self.chat_history.insert(tk.END, f"ThothAI: [ERROR] {error}\n\n")
+            else:
+                self.chat_history.insert(tk.END, f"ThothAI: {response}\n\n")
+                
+                # If voice is enabled, speak the response
+                voice_enabled = self.widget_registry.get_widget("voice_enabled").get()
+                if voice_enabled:
+                    voice_type = self.widget_registry.get_widget("voice_type").get()
+                    self.event_bus.publish("voice.speak", {
+                        "text": response, 
+                        "voice_type": voice_type
+                    })
+            
+            self.chat_history.see(tk.END)
+            self.chat_history.configure(state=tk.DISABLED)
+            
+        except Exception as e:
+            self.logger.error(f"Error handling AI response: {e}")
+            
+    def _handle_code_generation(self, event_data: Dict[str, Any]) -> None:
+        """Handle code generation results from ThothAI."""
+        try:
+            # Get generated code and metadata
+            code = event_data.get("code", "")
+            language = event_data.get("language", "")
+            error = event_data.get("error", None)
+            
+            # Update chat history
+            self.chat_history.configure(state=tk.NORMAL)
+            
+            # Find and remove the "Generating code..." placeholder
+            text = self.chat_history.get("1.0", tk.END)
+            if "ThothAI: Generating code..." in text:
+                start = text.rfind("ThothAI: Generating code...")
+                end = start + len("ThothAI: Generating code...\n\n")
+                self.chat_history.delete(f"1.0 + {start}c", f"1.0 + {end}c")
+            
+            # Add the actual response
+            if error:
+                self.chat_history.insert(tk.END, f"ThothAI: [ERROR] {error}\n\n")
+            else:
+                self.chat_history.insert(tk.END, f"ThothAI: Here's the {language} code you requested:\n\n```{language}\n{code}\n```\n\n")
+            
+            self.chat_history.see(tk.END)
+            self.chat_history.configure(state=tk.DISABLED)
+            
+        except Exception as e:
+            self.logger.error(f"Error handling code generation: {e}")
+            
+    def _handle_ai_status(self, event_data: Dict[str, Any]) -> None:
+        """Handle AI status updates."""
+        try:
+            # Get status information
+            status = event_data.get("status", "Unknown")
+            model = event_data.get("model", "Unknown")
+            connected = event_data.get("connected", False)
+            
+            # Update status display
+            status_var = self.widget_registry.get_widget("ai_status")
+            if connected:
+                status_var.set(f"Connected ({model})")
+            else:
+                status_var.set(f"Disconnected: {status}")
+                
+            # Update model if provided
+            if model and model != "Unknown":
+                model_var = self.widget_registry.get_widget("ai_model")
+                current = model_var.get()
+                if "Ollama" not in current and "Fallback" not in current:
+                    model_var.set(f"Ollama ({model})")
+                    
+        except Exception as e:
+            self.logger.error(f"Error handling AI status: {e}")
+            
+    def _setup_ui(self) -> None:
+        """Set up the user interface components."""
+        try:
+            # Create theme styles
+            self._create_styles()
+            
+            # Create notebook for tabs
+            self.notebook = ttk.Notebook(self.root)
+            self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            
+            # Set up widget registry
+            self.widget_registry = WidgetRegistry()
+            
+            # Set up each tab
+            self._setup_dashboard_tab()
+            self._setup_trading_tab()
+            self._setup_mining_tab()
+            self._setup_ai_tab()
+            self._setup_settings_tab()
+            self._setup_blockchain_tab()
+            
+            # Connect event handlers
+            self._connect_event_handlers()
+            
+            # Start live data refresh
+            self._start_live_data_refresh()
+            
+            self.logger.info("UI setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up UI: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _create_styles(self) -> None:
+        """Create custom styles for the UI."""
+        try:
+            # Create style object
+            style = ttk.Style()
+            
+            # Configure existing styles
+            style.configure("TFrame", background="#f0f0f0")
+            style.configure("TLabel", background="#f0f0f0", font=("Helvetica", 10))
+            style.configure("TButton", font=("Helvetica", 10))
+            style.configure("TNotebook", background="#f0f0f0")
+            style.configure("TNotebook.Tab", font=("Helvetica", 10, "bold"))
+            
+            # Custom styles
+            style.configure("Header.TLabel", font=("Helvetica", 14, "bold"))
+            style.configure("SubHeader.TLabel", font=("Helvetica", 12, "bold"))
+            style.configure("Info.TLabel", foreground="#0066cc")
+            style.configure("Success.TLabel", foreground="#009900")
+            style.configure("Warning.TLabel", foreground="#cc6600")
+            style.configure("Error.TLabel", foreground="#cc0000")
+            
+            # Frame styles
+            style.configure("Card.TFrame", background="#ffffff", relief="raised")
+            style.configure("QR.TFrame", background="#ffffff", relief="solid", borderwidth=1)
+            
+            self.logger.info("Custom styles created")
+        except Exception as e:
+            self.logger.error(f"Error creating styles: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _setup_settings_tab(self) -> None:
+        """Set up the settings tab with configuration options."""
+        try:
+            # Create settings tab
+            self.settings_tab = ttk.Frame(self.notebook)
+            self.notebook.add(self.settings_tab, text="Settings")
+            
+            # Create notebook for settings categories
+            settings_notebook = ttk.Notebook(self.settings_tab)
+            settings_notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # API Keys settings panel
+            api_frame = ttk.Frame(settings_notebook)
+            settings_notebook.add(api_frame, text="API Keys")
+            
+            # API Key management
+            api_header = ttk.Label(api_frame, text="API Key Management", style="Header.TLabel")
+            api_header.pack(pady=10, padx=10, anchor=tk.W)
+            
+            # API key list
+            self.api_list = ttk.Treeview(api_frame, columns=("service", "key", "status"), show="headings", height=8)
+            self.api_list.heading("service", text="Service")
+            self.api_list.heading("key", text="API Key")
+            self.api_list.heading("status", text="Status")
+            
+            self.api_list.column("service", width=150)
+            self.api_list.column("key", width=300)
+            self.api_list.column("status", width=100)
+            
+            self.api_list.pack(fill=tk.X, padx=10, pady=5)
+            
+            # Add scrollbar
+            api_scrollbar = ttk.Scrollbar(api_frame, orient=tk.VERTICAL, command=self.api_list.yview)
+            api_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            self.api_list.configure(yscrollcommand=api_scrollbar.set)
+            
+            # API key input frame
+            api_input_frame = ttk.Frame(api_frame)
+            api_input_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            # Service selection
+            service_frame = ttk.Frame(api_input_frame)
+            service_frame.pack(fill=tk.X, pady=5)
+            
+            ttk.Label(service_frame, text="Service:").pack(side=tk.LEFT, padx=5)
+            service_var = tk.StringVar()
+            service_combo = ttk.Combobox(service_frame, textvariable=service_var, 
+                                        values=["Binance", "Coinbase", "Kraken", "OpenAI", "Claude"])
+            service_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # API key entry
+            key_frame = ttk.Frame(api_input_frame)
+            key_frame.pack(fill=tk.X, pady=5)
+            
+            ttk.Label(key_frame, text="API Key:").pack(side=tk.LEFT, padx=5)
+            key_var = tk.StringVar()
+            key_entry = ttk.Entry(key_frame, textvariable=key_var)
+            key_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # API secret entry
+            secret_frame = ttk.Frame(api_input_frame)
+            secret_frame.pack(fill=tk.X, pady=5)
+            
+            ttk.Label(secret_frame, text="API Secret:").pack(side=tk.LEFT, padx=5)
+            secret_var = tk.StringVar()
+            secret_entry = ttk.Entry(secret_frame, textvariable=secret_var)
+            secret_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Buttons
+            button_frame = ttk.Frame(api_input_frame)
+            button_frame.pack(fill=tk.X, pady=10)
+            
+            add_button = ttk.Button(button_frame, text="Add/Update", 
+                                   command=lambda: self._add_update_api_key(
+                                       service_var.get(), key_var.get(), secret_var.get()))
+            add_button.pack(side=tk.LEFT, padx=5)
+            
+            test_button = ttk.Button(button_frame, text="Test Connection", 
+                                    command=lambda: self._test_api_connection(
+                                        service_var.get(), key_var.get(), secret_var.get()))
+            test_button.pack(side=tk.LEFT, padx=5)
+            
+            delete_button = ttk.Button(button_frame, text="Delete", 
+                                      command=lambda: self._delete_api_key(service_var.get()))
+            delete_button.pack(side=tk.LEFT, padx=5)
+            
+            # Redis settings panel
+            redis_frame = ttk.Frame(settings_notebook)
+            settings_notebook.add(redis_frame, text="Redis")
+            
+            # Redis configuration
+            redis_header = ttk.Label(redis_frame, text="Redis Configuration", style="Header.TLabel")
+            redis_header.pack(pady=10, padx=10, anchor=tk.W)
+            
+            # Connection settings
+            host_frame = ttk.Frame(redis_frame)
+            host_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(host_frame, text="Host:").pack(side=tk.LEFT, padx=5)
+            host_var = tk.StringVar(value="localhost")
+            host_entry = ttk.Entry(host_frame, textvariable=host_var)
+            host_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            port_frame = ttk.Frame(redis_frame)
+            port_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(port_frame, text="Port:").pack(side=tk.LEFT, padx=5)
+            port_var = tk.StringVar(value="6379")
+            port_entry = ttk.Entry(port_frame, textvariable=port_var)
+            port_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            password_frame = ttk.Frame(redis_frame)
+            password_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(password_frame, text="Password:").pack(side=tk.LEFT, padx=5)
+            password_var = tk.StringVar()
+            password_entry = ttk.Entry(password_frame, textvariable=password_var, show="•")
+            password_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Redis buttons
+            redis_button_frame = ttk.Frame(redis_frame)
+            redis_button_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            save_redis_button = ttk.Button(redis_button_frame, text="Save Settings", 
+                                          command=lambda: self._save_redis_settings(
+                                              host_var.get(), port_var.get(), password_var.get()))
+            save_redis_button.pack(side=tk.LEFT, padx=5)
+            
+            test_redis_button = ttk.Button(redis_button_frame, text="Test Connection", 
+                                         command=lambda: self._test_redis_connection(
+                                             host_var.get(), port_var.get(), password_var.get()))
+            test_redis_button.pack(side=tk.LEFT, padx=5)
+            
+            # System settings panel
+            system_frame = ttk.Frame(settings_notebook)
+            settings_notebook.add(system_frame, text="System")
+            
+            # System settings
+            system_header = ttk.Label(system_frame, text="System Settings", style="Header.TLabel")
+            system_header.pack(pady=10, padx=10, anchor=tk.W)
+            
+            # Theme selection
+            theme_frame = ttk.Frame(system_frame)
+            theme_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(theme_frame, text="Theme:").pack(side=tk.LEFT, padx=5)
+            theme_var = tk.StringVar(value="Light")
+            theme_combo = ttk.Combobox(theme_frame, textvariable=theme_var, 
+                                      values=["Light", "Dark", "System"])
+            theme_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Log level
+            log_frame = ttk.Frame(system_frame)
+            log_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(log_frame, text="Log Level:").pack(side=tk.LEFT, padx=5)
+            log_var = tk.StringVar(value="INFO")
+            log_combo = ttk.Combobox(log_frame, textvariable=log_var, 
+                                    values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
+            log_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Auto start
+            auto_frame = ttk.Frame(system_frame)
+            auto_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            auto_var = tk.BooleanVar(value=True)
+            auto_check = ttk.Checkbutton(auto_frame, text="Auto-connect to services on startup", 
+                                        variable=auto_var)
+            auto_check.pack(anchor=tk.W, padx=5)
+            
+            # System buttons
+            system_button_frame = ttk.Frame(system_frame)
+            system_button_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            save_system_button = ttk.Button(system_button_frame, text="Save Settings", 
+                                           command=lambda: self._save_system_settings(
+                                               theme_var.get(), log_var.get(), auto_var.get()))
+            save_system_button.pack(side=tk.LEFT, padx=5)
+            
+            reset_button = ttk.Button(system_button_frame, text="Reset to Defaults", 
+                                     command=self._reset_system_settings)
+            reset_button.pack(side=tk.LEFT, padx=5)
+            
+            # About panel
+            about_frame = ttk.Frame(settings_notebook)
+            settings_notebook.add(about_frame, text="About")
+            
+            # About information
+            about_header = ttk.Label(about_frame, text="Kingdom AI System", style="Header.TLabel")
+            about_header.pack(pady=10)
+            
+            version_label = ttk.Label(about_frame, text="Version 1.0.0")
+            version_label.pack()
+            
+            about_text = scrolledtext.ScrolledText(about_frame, height=10, width=50, wrap=tk.WORD)
+            about_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            about_text.insert(tk.END, "Kingdom AI System is a comprehensive platform for cryptocurrency trading, ")
+            about_text.insert(tk.END, "mining, and AI-assisted analysis. The system integrates with various ")
+            about_text.insert(tk.END, "cryptocurrency exchanges, provides mining management, and offers ")
+            about_text.insert(tk.END, "AI-driven insights for optimal trading strategies.\n\n")
+            about_text.insert(tk.END, "Developed by: Kingdom AI Team\n")
+            about_text.insert(tk.END, " 2023 Kingdom AI. All rights reserved.")
+            about_text.configure(state=tk.DISABLED)  # Make read-only
+            
+            # Register widgets for updates
+            self.widget_registry.register_widget("api_list", self.api_list)
+            
+            # Request current settings data
+            self.event_bus.publish("settings.request_data", {})
+            
+            self.logger.info("Settings tab setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up settings tab: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _add_update_api_key(self, service: str, key: str, secret: str) -> None:
+        """Add or update an API key."""
+        try:
+            if not service:
+                messagebox.showwarning("Missing Service", "Please select a service")
+                return
+                
+            if not key:
+                messagebox.showwarning("Missing Key", "Please enter an API key")
+                return
+                
+            # Publish event to add/update API key
+            self.event_bus.publish("api.key.update", {
+                "service": service,
+                "key": key,
+                "secret": secret
+            })
+            
+            messagebox.showinfo("API Key", f"API key for {service} has been updated")
+            
+        except Exception as e:
+            self.logger.error(f"Error adding/updating API key: {e}")
+            messagebox.showerror("API Key Error", f"Failed to update API key: {str(e)}")
+            
+    def _test_api_connection(self, service: str, key: str, secret: str) -> None:
+        """Test API connection."""
+        try:
+            if not service:
+                messagebox.showwarning("Missing Service", "Please select a service")
+                return
+                
+            if not key:
+                messagebox.showwarning("Missing Key", "Please enter an API key")
+                return
+                
+            # Publish event to test API connection
+            self.event_bus.publish("api.test.connection", {
+                "service": service,
+                "key": key,
+                "secret": secret
+            })
+            
+            messagebox.showinfo("API Connection", f"Testing connection to {service}...")
+            
+        except Exception as e:
+            self.logger.error(f"Error testing API connection: {e}")
+            messagebox.showerror("API Test Error", f"Failed to test API connection: {str(e)}")
+            
+    def _delete_api_key(self, service: str) -> None:
+        """Delete an API key."""
+        try:
+            if not service:
+                messagebox.showwarning("Missing Service", "Please select a service")
+                return
+                
+            # Confirm deletion
+            confirm = messagebox.askyesno("Confirm Deletion", 
+                                        f"Are you sure you want to delete the API key for {service}?")
+            if not confirm:
+                return
+                
+            # Publish event to delete API key
+            self.event_bus.publish("api.key.delete", {
+                "service": service
+            })
+            
+            messagebox.showinfo("API Key", f"API key for {service} has been deleted")
+            
+        except Exception as e:
+            self.logger.error(f"Error deleting API key: {e}")
+            messagebox.showerror("API Key Error", f"Failed to delete API key: {str(e)}")
+            
+    def _save_redis_settings(self, host: str, port: str, password: str) -> None:
+        """Save Redis connection settings."""
+        try:
+            if not host:
+                messagebox.showwarning("Missing Host", "Please enter a host")
+                return
+                
+            try:
+                port_int = int(port)
+                if port_int <= 0 or port_int > 65535:
+                    messagebox.showwarning("Invalid Port", "Port must be between 1 and 65535")
+                    return
+            except ValueError:
+                messagebox.showwarning("Invalid Port", "Port must be a valid number")
+                return
+                
+            # Publish event to save Redis settings
+            self.event_bus.publish("redis.settings.update", {
+                "host": host,
+                "port": int(port),
+                "password": password
+            })
+            
+            messagebox.showinfo("Redis Settings", "Redis connection settings have been saved")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving Redis settings: {e}")
+            messagebox.showerror("Redis Settings Error", f"Failed to save Redis settings: {str(e)}")
+            
+    def _test_redis_connection(self, host: str, port: str, password: str) -> None:
+        """Test Redis connection."""
+        try:
+            if not host:
+                messagebox.showwarning("Missing Host", "Please enter a host")
+                return
+                
+            try:
+                port_int = int(port)
+                if port_int <= 0 or port_int > 65535:
+                    messagebox.showwarning("Invalid Port", "Port must be between 1 and 65535")
+                    return
+            except ValueError:
+                messagebox.showwarning("Invalid Port", "Port must be a valid number")
+                return
+                
+            # Publish event to test Redis connection
+            self.event_bus.publish("redis.test.connection", {
+                "host": host,
+                "port": int(port),
+                "password": password
+            })
+            
+            messagebox.showinfo("Redis Connection", "Testing Redis connection...")
+            
+        except Exception as e:
+            self.logger.error(f"Error testing Redis connection: {e}")
+            messagebox.showerror("Redis Connection Error", f"Failed to test Redis connection: {str(e)}")
+            
+    def _save_system_settings(self, theme: str, log_level: str, auto_connect: bool) -> None:
+        """Save system settings."""
+        try:
+            # Publish event to save system settings
+            self.event_bus.publish("system.settings.update", {
+                "theme": theme,
+                "log_level": log_level,
+                "auto_connect": auto_connect
+            })
+            
+            # Apply theme if changed
+            self._apply_theme(theme)
+            
+            # Update log level if changed
+            self._update_log_level(log_level)
+            
+            messagebox.showinfo("System Settings", "System settings have been saved")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving system settings: {e}")
+            messagebox.showerror("System Settings Error", f"Failed to save system settings: {str(e)}")
+            
+    def _reset_system_settings(self) -> None:
+        """Reset system settings to defaults."""
+        try:
+            # Confirm reset
+            confirm = messagebox.askyesno("Confirm Reset", 
+                                        "Are you sure you want to reset system settings to defaults?")
+            if not confirm:
+                return
+                
+            # Publish event to reset system settings
+            self.event_bus.publish("system.settings.reset", {})
+            
+            messagebox.showinfo("System Settings", "System settings have been reset to defaults")
+            
+        except Exception as e:
+            self.logger.error(f"Error resetting system settings: {e}")
+            messagebox.showerror("System Settings Error", f"Failed to reset system settings: {str(e)}")
+            
+    def _apply_theme(self, theme: str) -> None:
+        """Apply the selected theme."""
+        try:
+            style = ttk.Style()
+            
+            if theme == "Dark":
+                # Dark theme settings
+                style.configure("TFrame", background="#2e2e2e")
+                style.configure("TLabel", background="#2e2e2e", foreground="#ffffff")
+                style.configure("TButton", background="#3c3c3c")
+                style.configure("TNotebook", background="#2e2e2e")
+                style.configure("TNotebook.Tab", background="#3c3c3c", foreground="#ffffff")
+                
+                # Update text colors for custom styles
+                style.configure("Header.TLabel", foreground="#ffffff")
+                style.configure("SubHeader.TLabel", foreground="#ffffff")
+                
+                # Frame styles
+                style.configure("Card.TFrame", background="#3c3c3c")
+                
+            elif theme == "Light" or theme == "System":  # Default is Light
+                # Light theme settings (default)
+                style.configure("TFrame", background="#f0f0f0")
+                style.configure("TLabel", background="#f0f0f0", foreground="#000000")
+                style.configure("TButton", background="#e0e0e0")
+                style.configure("TNotebook", background="#f0f0f0")
+                style.configure("TNotebook.Tab", background="#e0e0e0", foreground="#000000")
+                
+                # Update text colors for custom styles
+                style.configure("Header.TLabel", foreground="#000000")
+                style.configure("SubHeader.TLabel", foreground="#000000")
+                
+                # Frame styles
+                style.configure("Card.TFrame", background="#ffffff")
+                
+            self.logger.info(f"Applied {theme} theme")
+        except Exception as e:
+            self.logger.error(f"Error applying theme: {e}")
+            
+    def _update_log_level(self, log_level: str) -> None:
+        """Update the logging level."""
+        try:
+            # Map string level to logging constant
+            level_map = {
+                "DEBUG": logging.DEBUG,
+                "INFO": logging.INFO,
+                "WARNING": logging.WARNING,
+                "ERROR": logging.ERROR,
+                "CRITICAL": logging.CRITICAL
+            }
+            
+            # Set root logger level
+            level = level_map.get(log_level, logging.INFO)
+            logging.getLogger().setLevel(level)
+            
+            # Update handler levels
+            for handler in logging.getLogger().handlers:
+                handler.setLevel(level)
+                
+            self.logger.info(f"Updated log level to {log_level}")
+        except Exception as e:
+            self.logger.error(f"Error updating log level: {e}")
+    
+    def _setup_blockchain_tab(self) -> None:
+        """Set up the blockchain tab with wallet and transaction management."""
+        try:
+            # Create blockchain tab
+            self.blockchain_tab = ttk.Frame(self.notebook)
+            self.notebook.add(self.blockchain_tab, text="Blockchain")
+            
+            # Split into left and right panels
+            left_panel = ttk.Frame(self.blockchain_tab)
+            left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            right_panel = ttk.Frame(self.blockchain_tab)
+            right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Wallet section (left panel)
+            wallet_frame = ttk.LabelFrame(left_panel, text="Wallet")
+            wallet_frame.pack(fill=tk.BOTH, expand=False, padx=5, pady=5)
+            
+            # Wallet address
+            address_frame = ttk.Frame(wallet_frame)
+            address_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(address_frame, text="Address:").pack(side=tk.LEFT, padx=5)
+            address_var = tk.StringVar(value="Loading...")
+            address_label = ttk.Label(address_frame, textvariable=address_var, font=("Consolas", 9))
+            address_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Copy address button
+            copy_button = ttk.Button(address_frame, text="Copy", 
+                                   command=lambda: self._copy_to_clipboard(address_var.get()))
+            copy_button.pack(side=tk.RIGHT, padx=5)
+            
+            # Balance display
+            balance_frame = ttk.Frame(wallet_frame)
+            balance_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(balance_frame, text="Balance:").pack(side=tk.LEFT, padx=5)
+            balance_var = tk.StringVar(value="Loading...")
+            balance_label = ttk.Label(balance_frame, textvariable=balance_var, font=("Helvetica", 12, "bold"))
+            balance_label.pack(side=tk.LEFT, padx=5)
+            
+            # Refresh button
+            refresh_button = ttk.Button(balance_frame, text="Refresh", 
+                                      command=lambda: self.event_bus.publish("wallet.refresh", {}))
+            refresh_button.pack(side=tk.RIGHT, padx=5)
+            
+            # Send/Receive buttons
+            button_frame = ttk.Frame(wallet_frame)
+            button_frame.pack(fill=tk.X, padx=5, pady=10)
+            
+            send_button = ttk.Button(button_frame, text="Send", 
+                                    command=self._show_send_transaction_dialog)
+            send_button.pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+            
+            receive_button = ttk.Button(button_frame, text="Receive", 
+                                       command=self._show_receive_dialog)
+            receive_button.pack(side=tk.RIGHT, padx=5, expand=True, fill=tk.X)
+            
+            # Transaction history section
+            history_frame = ttk.LabelFrame(left_panel, text="Transaction History")
+            history_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Transaction list
+            self.tx_list = ttk.Treeview(history_frame, columns=("date", "type", "amount", "status"), show="headings")
+            self.tx_list.heading("date", text="Date")
+            self.tx_list.heading("type", text="Type")
+            self.tx_list.heading("amount", text="Amount")
+            self.tx_list.heading("status", text="Status")
+            
+            self.tx_list.column("date", width=100)
+            self.tx_list.column("type", width=80)
+            self.tx_list.column("amount", width=100)
+            self.tx_list.column("status", width=80)
+            
+            self.tx_list.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Add scrollbar
+            scrollbar = ttk.Scrollbar(history_frame, orient=tk.VERTICAL, command=self.tx_list.yview)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            self.tx_list.configure(yscrollcommand=scrollbar.set)
+            
+            # Blockchain explorer section (right panel)
+            explorer_frame = ttk.LabelFrame(right_panel, text="Blockchain Explorer")
+            explorer_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Network selection
+            network_frame = ttk.Frame(explorer_frame)
+            network_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(network_frame, text="Network:").pack(side=tk.LEFT, padx=5)
+            network_var = tk.StringVar(value="Ethereum")
+            network_combo = ttk.Combobox(network_frame, textvariable=network_var, 
+                                        values=["Ethereum", "Bitcoin", "Polygon", "Binance Smart Chain"])
+            network_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Explorer search
+            search_frame = ttk.Frame(explorer_frame)
+            search_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(search_frame, text="Search:").pack(side=tk.LEFT, padx=5)
+            search_var = tk.StringVar()
+            search_entry = ttk.Entry(search_frame, textvariable=search_var)
+            search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            search_button = ttk.Button(search_frame, text="Go", 
+                                      command=lambda: self._search_blockchain(network_var.get(), search_var.get()))
+            search_button.pack(side=tk.RIGHT, padx=5)
+            
+            # Explorer results
+            results_frame = ttk.Frame(explorer_frame)
+            results_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            explorer_text = scrolledtext.ScrolledText(results_frame, height=15, wrap=tk.WORD)
+            explorer_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            explorer_text.insert(tk.END, "Enter an address, transaction hash, or block number and click 'Go'")
+            explorer_text.configure(state=tk.DISABLED)  # Make read-only
+            
+            # Network status
+            status_frame = ttk.Frame(explorer_frame)
+            status_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT, padx=5)
+            status_var = tk.StringVar(value="Disconnected")
+            status_label = ttk.Label(status_frame, textvariable=status_var)
+            status_label.pack(side=tk.LEFT, padx=5)
+            
+            connect_button = ttk.Button(status_frame, text="Connect", 
+                                       command=lambda: self.event_bus.publish("blockchain.connect", 
+                                                                           {"network": network_var.get()}))
+            connect_button.pack(side=tk.RIGHT, padx=5)
+            
+            # Registered widgets for updates
+            self.widget_registry.register_widget("blockchain_address", address_var)
+            self.widget_registry.register_widget("blockchain_balance", balance_var)
+            self.widget_registry.register_widget("blockchain_tx_list", self.tx_list)
+            self.widget_registry.register_widget("blockchain_explorer", explorer_text)
+            self.widget_registry.register_widget("blockchain_status", status_var)
+            
+            # Request wallet data
+            self.event_bus.publish("wallet.request_data", {})
+            
+            self.logger.info("Blockchain tab setup complete")
+        except Exception as e:
+            self.logger.error(f"Error setting up blockchain tab: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _copy_to_clipboard(self, text: str) -> None:
+        """Copy text to clipboard."""
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(text)
+            self.logger.info(f"Copied to clipboard: {text}")
+        except Exception as e:
+            self.logger.error(f"Error copying to clipboard: {e}")
+            
+    def _show_send_transaction_dialog(self) -> None:
+        """Show dialog for sending a transaction."""
+        try:
+            send_window = tk.Toplevel(self.root)
+            send_window.title("Send Transaction")
+            send_window.geometry("400x300")
+            send_window.grab_set()  # Make window modal
+            
+            # Create the content
+            header_label = ttk.Label(send_window, text="Send Transaction", style="Header.TLabel")
+            header_label.pack(padx=10, pady=10)
+            
+            # Recipient address
+            address_frame = ttk.Frame(send_window)
+            address_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(address_frame, text="Recipient:").pack(side=tk.LEFT, padx=5)
+            address_var = tk.StringVar()
+            address_entry = ttk.Entry(address_frame, textvariable=address_var, width=40)
+            address_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Amount
+            amount_frame = ttk.Frame(send_window)
+            amount_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(amount_frame, text="Amount:").pack(side=tk.LEFT, padx=5)
+            amount_var = tk.StringVar()
+            amount_entry = ttk.Entry(amount_frame, textvariable=amount_var)
+            amount_entry.pack(side=tk.LEFT, padx=5)
+            
+            # Currency
+            currency_var = tk.StringVar(value="ETH")
+            currency_combo = ttk.Combobox(amount_frame, textvariable=currency_var, 
+                                         values=["ETH", "BTC", "MATIC", "BNB"], width=5)
+            currency_combo.pack(side=tk.LEFT, padx=5)
+            
+            # Gas price (for Ethereum)
+            gas_frame = ttk.Frame(send_window)
+            gas_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(gas_frame, text="Gas Price:").pack(side=tk.LEFT, padx=5)
+            gas_var = tk.StringVar(value="Standard")
+            gas_combo = ttk.Combobox(gas_frame, textvariable=gas_var, 
+                                    values=["Low", "Standard", "Fast"], width=10)
+            gas_combo.pack(side=tk.LEFT, padx=5)
+            
+            # Note/memo
+            note_frame = ttk.Frame(send_window)
+            note_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(note_frame, text="Note:").pack(side=tk.LEFT, padx=5)
+            note_var = tk.StringVar()
+            note_entry = ttk.Entry(note_frame, textvariable=note_var)
+            note_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            
+            # Buttons at bottom
+            button_frame = ttk.Frame(send_window)
+            button_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            send_button = ttk.Button(button_frame, text="Send", 
+                                    command=lambda: self._send_transaction(address_var.get(), 
+                                                                         amount_var.get(), 
+                                                                         currency_var.get(), 
+                                                                         gas_var.get(), 
+                                                                         note_var.get(), 
+                                                                         send_window))
+            send_button.pack(side=tk.RIGHT, padx=5)
+            
+            cancel_button = ttk.Button(button_frame, text="Cancel", 
+                                      command=send_window.destroy)
+            cancel_button.pack(side=tk.RIGHT, padx=5)
+            
+        except Exception as e:
+            self.logger.error(f"Error showing send transaction dialog: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _send_transaction(self, recipient: str, amount: str, currency: str, 
+                         gas_price: str, note: str, dialog: tk.Toplevel) -> None:
+        """Send a blockchain transaction."""
+        try:
+            # Validate inputs
+            if not recipient:
+                messagebox.showerror("Invalid Transaction", "Recipient address cannot be empty")
+                return
+                
+            try:
+                amount_float = float(amount)
+                if amount_float <= 0:
+                    messagebox.showerror("Invalid Transaction", "Amount must be greater than zero")
+                    return
+            except ValueError:
+                messagebox.showerror("Invalid Transaction", "Amount must be a valid number")
+                return
+                
+            # Prepare transaction data
+            tx_data = {
+                "recipient": recipient,
+                "amount": float(amount),
+                "currency": currency,
+                "gas_price": gas_price,
+                "note": note,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            # Confirm transaction
+            confirm = messagebox.askyesno("Confirm Transaction", 
+                                        f"Send {amount} {currency} to {recipient}?")
+            if not confirm:
+                return
+                
+            # Close the dialog
+            dialog.destroy()
+            
+            # Publish transaction event
+            self.event_bus.publish("wallet.send_transaction", tx_data)
+            
+            # Show processing notification
+            messagebox.showinfo("Transaction Sent", 
+                              f"Transaction of {amount} {currency} has been submitted")
+            
+        except Exception as e:
+            self.logger.error(f"Error sending transaction: {e}")
+            messagebox.showerror("Transaction Error", f"Failed to send transaction: {str(e)}")
+            
+    def _show_receive_dialog(self) -> None:
+        """Show dialog for receiving funds."""
+        try:
+            receive_window = tk.Toplevel(self.root)
+            receive_window.title("Receive Funds")
+            receive_window.geometry("400x250")
+            receive_window.grab_set()  # Make window modal
+            
+            # Create the content
+            header_label = ttk.Label(receive_window, text="Receive Funds", style="Header.TLabel")
+            header_label.pack(padx=10, pady=10)
+            
+            # Address display
+            address_frame = ttk.Frame(receive_window)
+            address_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            # Get address from widget registry
+            address_var = self.widget_registry.get_widget("blockchain_address")
+            address_text = address_var.get() if address_var else "Address not available"
+            
+            # Display address
+            address_display = ttk.Entry(address_frame, width=50)
+            address_display.pack(fill=tk.X, padx=10, pady=5)
+            address_display.insert(0, address_text)
+            address_display.configure(state="readonly")
+            
+            # Copy button
+            copy_button = ttk.Button(address_frame, text="Copy Address", 
+                                    command=lambda: self._copy_to_clipboard(address_text))
+            copy_button.pack(padx=10, pady=5)
+            
+            # QR code placeholder (simulate with a frame)
+            qr_frame = ttk.Frame(receive_window, width=150, height=150, style="QR.TFrame")
+            qr_frame.pack(padx=10, pady=10)
+            
+            # Note about QR code
+            note_label = ttk.Label(receive_window, text="QR Code would be displayed here")
+            note_label.pack(padx=10, pady=5)
+            
+            # Close button
+            close_button = ttk.Button(receive_window, text="Close", command=receive_window.destroy)
+            close_button.pack(padx=10, pady=10)
+            
+        except Exception as e:
+            self.logger.error(f"Error showing receive dialog: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    def _search_blockchain(self, network: str, query: str) -> None:
+        """Search blockchain for address, transaction, or block."""
+        try:
+            if not query:
+                messagebox.showwarning("Empty Query", "Please enter an address, transaction hash, or block number")
+                return
+                
+            # Get explorer text widget
+            explorer_text = self.widget_registry.get_widget("blockchain_explorer")
+            if not explorer_text:
+                return
+                
+            # Update display
+            explorer_text.configure(state=tk.NORMAL)
+            explorer_text.delete(1.0, tk.END)
+            explorer_text.insert(tk.END, f"Searching {network} for: {query}\n\nPlease wait...")
+            explorer_text.configure(state=tk.DISABLED)
+            
+            # Publish search event
+            self.event_bus.publish("blockchain.search", {
+                "network": network,
+                "query": query
+            })
+            
+        except Exception as e:
+            self.logger.error(f"Error searching blockchain: {e}")
+            messagebox.showerror("Search Error", f"Failed to search blockchain: {str(e)}")
+            
+    def _handle_balance_update(self, event_data: Dict[str, Any]) -> None:
+        """Handle wallet balance updates."""
+        try:
+            # Get balance data
+            balance = event_data.get("balance", 0.0)
+            currency = event_data.get("currency", "ETH")
+            address = event_data.get("address", "")
+            
+            # Update display widgets
+            balance_var = self.widget_registry.get_widget("blockchain_balance")
+            if balance_var:
+                balance_var.set(f"{balance:.8f} {currency}")
+                
+            address_var = self.widget_registry.get_widget("blockchain_address")
+            if address_var and address:
+                address_var.set(address)
+                
+        except Exception as e:
+            self.logger.error(f"Error handling balance update: {e}")
+            
+    def _handle_tx_update(self, event_data: Dict[str, Any]) -> None:
+        """Handle transaction updates."""
+        try:
+            # Get transaction list
+            tx_list = self.widget_registry.get_widget("blockchain_tx_list")
+            if not tx_list:
+                return
+                
+            # Clear existing items
+            for item in tx_list.get_children():
+                tx_list.delete(item)
+                
+            # Add new transaction data
+            transactions = event_data.get("transactions", [])
+            for tx in transactions:
+                tx_list.insert("", tk.END, values=(
+                    tx.get("date", ""),
+                    tx.get("type", ""),
+                    f"{tx.get('amount', 0.0)} {tx.get('currency', 'ETH')}",
+                    tx.get("status", "")
+                ))
+                
+        except Exception as e:
+            self.logger.error(f"Error handling transaction update: {e}")
+            
+    def _handle_blockchain_search_result(self, event_data: Dict[str, Any]) -> None:
+        """Handle blockchain search results."""
+        try:
+            # Get explorer text widget
+            explorer_text = self.widget_registry.get_widget("blockchain_explorer")
+            if not explorer_text:
+                return
+                
+            # Get result data
+            result = event_data.get("result", "No results found")
+            error = event_data.get("error", None)
+            
+            # Update display
+            explorer_text.configure(state=tk.NORMAL)
+            explorer_text.delete(1.0, tk.END)
+            
+            if error:
+                explorer_text.insert(tk.END, f"Error: {error}")
+            else:
+                explorer_text.insert(tk.END, result)
+                
+            explorer_text.configure(state=tk.DISABLED)
+            
+        except Exception as e:
+            self.logger.error(f"Error handling blockchain search result: {e}")
+    
+    async def _start_live_data_refresh(self) -> None:
+        """Start live data refresh for market data, balance, etc."""
+        try:
+            # Request initial data
+            await self.event_bus.publish("market.request_data", {})
+            await self.event_bus.publish("wallet.request_data", {})
+            await self.event_bus.publish("mining.request_status", {})
+            await self.event_bus.publish("api.key.request_status", {})
+            
+            # Set up periodic refresh tasks
+            asyncio.create_task(self._periodic_market_data_refresh())
+            asyncio.create_task(self._periodic_wallet_data_refresh())
+            asyncio.create_task(self._periodic_mining_status_refresh())
+            
+            self.logger.info("Started live data refresh")
+        except Exception as e:
+            self.logger.error(f"Error starting live data refresh: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    async def _periodic_market_data_refresh(self) -> None:
+        """Periodically refresh market data."""
+        try:
+            while True:
+                await asyncio.sleep(30)  # Refresh every 30 seconds
+                await self.event_bus.publish("market.request_data", {})
+        except Exception as e:
+            self.logger.error(f"Error in periodic market data refresh: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    async def _periodic_wallet_data_refresh(self) -> None:
+        """Periodically refresh wallet data."""
+        try:
+            while True:
+                await asyncio.sleep(60)  # Refresh every 60 seconds
+                await self.event_bus.publish("wallet.request_data", {})
+        except Exception as e:
+            self.logger.error(f"Error in periodic wallet data refresh: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    async def _periodic_mining_status_refresh(self) -> None:
+        """Periodically refresh mining status."""
+        try:
+            while True:
+                await asyncio.sleep(15)  # Refresh every 15 seconds
+                await self.event_bus.publish("mining.request_status", {})
+        except Exception as e:
+            self.logger.error(f"Error in periodic mining status refresh: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _handle_price_update(self, event_data: Dict[str, Any]) -> None:
+        """Handle market price updates."""
+        try:
+            # Get price data
+            symbol = event_data.get("symbol", "")
+            price = event_data.get("price", 0.0)
+            change = event_data.get("change_24h", 0.0)
+            
+            # Update display widgets
+            if symbol == "BTC":
+                btc_price_var = self.widget_registry.get_widget("btc_price")
+                if btc_price_var:
+                    btc_price_var.set(f"${price:,.2f}")
+                    
+                btc_change_var = self.widget_registry.get_widget("btc_change")
+                if btc_change_var:
+                    btc_change_var.set(f"{change:+.2f}%")
+                    
+            elif symbol == "ETH":
+                eth_price_var = self.widget_registry.get_widget("eth_price")
+                if eth_price_var:
+                    eth_price_var.set(f"${price:,.2f}")
+                    
+                eth_change_var = self.widget_registry.get_widget("eth_change")
+                if eth_change_var:
+                    eth_change_var.set(f"{change:+.2f}%")
+            
+            # Update order book if available
+            order_book = event_data.get("order_book", None)
+            if order_book and symbol:
+                self._update_order_book(symbol, order_book)
+                
+        except Exception as e:
+            self.logger.error(f"Error handling price update: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _update_order_book(self, symbol: str, order_book: Dict[str, Any]) -> None:
+        """Update the order book display."""
+        try:
+            # Get order book widgets
+            bids_tree = self.widget_registry.get_widget(f"{symbol.lower()}_bids")
+            asks_tree = self.widget_registry.get_widget(f"{symbol.lower()}_asks")
+            
+            if not bids_tree or not asks_tree:
+                return
+                
+            # Clear existing items
+            for tree in [bids_tree, asks_tree]:
+                for item in tree.get_children():
+                    tree.delete(item)
+                    
+            # Add bid orders
+            bids = order_book.get("bids", [])
+            for i, bid in enumerate(bids[:10]):  # Show top 10 bids
+                price = bid.get("price", 0.0)
+                amount = bid.get("amount", 0.0)
+                total = price * amount
+                
+                bids_tree.insert("", tk.END, values=(f"${price:,.2f}", f"{amount:.4f}", f"${total:,.2f}"))
+                
+            # Add ask orders
+            asks = order_book.get("asks", [])
+            for i, ask in enumerate(asks[:10]):  # Show top 10 asks
+                price = ask.get("price", 0.0)
+                amount = ask.get("amount", 0.0)
+                total = price * amount
+                
+                asks_tree.insert("", tk.END, values=(f"${price:,.2f}", f"{amount:.4f}", f"${total:,.2f}"))
+                
+        except Exception as e:
+            self.logger.error(f"Error updating order book: {e}")
+    
+    def _handle_mining_update(self, event_data: Dict[str, Any]) -> None:
+        """Handle mining status updates."""
+        try:
+            # Update mining status widgets
+            status = event_data.get("status", "Stopped")
+            hashrate = event_data.get("hashrate", 0.0)
+            shares = event_data.get("shares", 0)
+            accepted = event_data.get("accepted", 0)
+            rejected = event_data.get("rejected", 0)
+            temperature = event_data.get("temperature", 0.0)
+            
+            # Update status label
+            status_var = self.widget_registry.get_widget("mining_status")
+            if status_var:
+                status_var.set(status)
+                
+            # Update hashrate
+            hashrate_var = self.widget_registry.get_widget("mining_hashrate")
+            if hashrate_var:
+                hashrate_unit = "H/s"
+                if hashrate >= 1000000000:
+                    hashrate = hashrate / 1000000000
+                    hashrate_unit = "GH/s"
+                elif hashrate >= 1000000:
+                    hashrate = hashrate / 1000000
+                    hashrate_unit = "MH/s"
+                elif hashrate >= 1000:
+                    hashrate = hashrate / 1000
+                    hashrate_unit = "KH/s"
+                    
+                hashrate_var.set(f"{hashrate:.2f} {hashrate_unit}")
+                
+            # Update shares
+            shares_var = self.widget_registry.get_widget("mining_shares")
+            if shares_var:
+                shares_var.set(f"{shares} ({accepted} accepted, {rejected} rejected)")
+                
+            # Update temperature
+            temp_var = self.widget_registry.get_widget("mining_temperature")
+            if temp_var:
+                temp_var.set(f"{temperature}°C")
+                
+            # Update mining history chart if available
+            history = event_data.get("history", [])
+            if history:
+                self._update_mining_chart(history)
+                
+        except Exception as e:
+            self.logger.error(f"Error handling mining update: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _update_mining_chart(self, history: List[Dict[str, Any]]) -> None:
+        """Update the mining history chart."""
+        # In a real implementation, this would update a chart widget
+        # For now, we'll just log the update
+        self.logger.debug(f"Updated mining chart with {len(history)} data points")
+    
+    def _handle_ai_response(self, event_data: Dict[str, Any]) -> None:
+        """Handle AI response events."""
+        try:
+            # Get response data
+            response = event_data.get("response", "")
+            query_id = event_data.get("query_id", "")
+            
+            # Get chat widget
+            chat_text = self.widget_registry.get_widget("ai_chat")
+            if not chat_text:
+                return
+                
+            # Update chat display
+            chat_text.configure(state=tk.NORMAL)
+            chat_text.insert(tk.END, f"\nThothAI: {response}\n")
+            chat_text.see(tk.END)  # Scroll to bottom
+            chat_text.configure(state=tk.DISABLED)  # Make read-only again
+            
+        except Exception as e:
+            self.logger.error(f"Error handling AI response: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _handle_ai_status(self, event_data: Dict[str, Any]) -> None:
+        """Handle AI status updates."""
+        try:
+            # Get status data
+            status = event_data.get("status", "Disconnected")
+            model = event_data.get("model", "Unknown")
+            
+            # Update status widgets
+            status_var = self.widget_registry.get_widget("ai_status")
+            if status_var:
+                status_var.set(f"Status: {status}")
+                
+            model_var = self.widget_registry.get_widget("ai_model")
+            if model_var:
+                model_var.set(f"Model: {model}")
+                
+        except Exception as e:
+            self.logger.error(f"Error handling AI status update: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _handle_code_generation(self, event_data: Dict[str, Any]) -> None:
+        """Handle code generation events."""
+        try:
+            # Get code data
+            code = event_data.get("code", "")
+            language = event_data.get("language", "python")
+            description = event_data.get("description", "Generated code")
+            
+            # Get code display widget
+            code_text = self.widget_registry.get_widget("ai_code")
+            if not code_text:
+                return
+                
+            # Update code display
+            code_text.configure(state=tk.NORMAL)
+            code_text.delete(1.0, tk.END)  # Clear existing code
+            code_text.insert(tk.END, f"# {description}\n")
+            code_text.insert(tk.END, code)
+            code_text.configure(state=tk.DISABLED)  # Make read-only
+            
+        except Exception as e:
+            self.logger.error(f"Error handling code generation: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _handle_voice_command(self, event_data: Dict[str, Any]) -> None:
+        """Handle voice command events."""
+        try:
+            # Get command data
+            command = event_data.get("command", "")
+            confidence = event_data.get("confidence", 0.0)
+            
+            if not command:
+                return
+                
+            # Get chat widget
+            chat_text = self.widget_registry.get_widget("ai_chat")
+            if not chat_text:
+                return
+                
+            # Update chat display with voice command
+            chat_text.configure(state=tk.NORMAL)
+            chat_text.insert(tk.END, f"\nVoice Command: {command}\n")
+            chat_text.see(tk.END)  # Scroll to bottom
+            
+            # Send command to AI
+            asyncio.create_task(self.event_bus.publish("thoth.query", {
+                "query": command,
+                "source": "voice"
+            }))
+            
+            chat_text.configure(state=tk.DISABLED)  # Make read-only again
+            
+        except Exception as e:
+            self.logger.error(f"Error handling voice command: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _handle_api_key_status(self, event_data: Dict[str, Any]) -> None:
+        """Handle API key status updates."""
+        try:
+            # Get API key data
+            service = event_data.get("service", "")
+            key = event_data.get("key", "")
+            status = event_data.get("status", "Unknown")
+            
+            # Get API list widget
+            api_list = self.widget_registry.get_widget("api_list")
+            if not api_list:
+                return
+                
+            # Check if service already exists in list
+            found = False
+            for item in api_list.get_children():
+                if api_list.item(item, "values")[0] == service:
+                    # Update existing item
+                    api_list.item(item, values=(service, self._mask_api_key(key), status))
+                    found = True
+                    break
+                    
+            # Add new item if not found
+            if not found:
+                api_list.insert("", tk.END, values=(service, self._mask_api_key(key), status))
+                
+        except Exception as e:
+            self.logger.error(f"Error handling API key status update: {e}")
+            self.logger.error(traceback.format_exc())
+    
+    def _mask_api_key(self, key: str) -> str:
+        """Mask API key for display."""
+        if not key:
+            return ""
+            
+        if len(key) <= 8:
+            return "*" * len(key)
+            
+        return key[:4] + "*" * (len(key) - 8) + key[-4:]
+    
+    def _handle_api_test_result(self, event_data: Dict[str, Any]) -> None:
+        """Handle API test results."""
+        try:
+            # Get test result data
+            service = event_data.get("service", "")
+            success = event_data.get("success", False)
+            message = event_data.get("message", "")
+            
+            # Show result message
+            if success:
+                messagebox.showinfo(f"{service} API Connection", 
+                                  f"Connection successful: {message}")
+            else:
+                messagebox.showerror(f"{service} API Connection", 
+                                   f"Connection failed: {message}")
+                
+        except Exception as e:
+            self.logger.error(f"Error handling API test result: {e}")
+            self.logger.error(traceback.format_exc())
+
+    def _connect_event_handlers(self) -> None:
+        """Connect event handlers to the event bus."""
+        try:
+            # Market data events
+            self.event_bus.subscribe("market.price_update", self._handle_price_update)
+            self.event_bus.subscribe("wallet.balance_update", self._handle_balance_update)
+            self.event_bus.subscribe("wallet.transaction_update", self._handle_tx_update)
+            self.event_bus.subscribe("mining.status_update", self._handle_mining_update)
+            
+            # AI related events
+            self.event_bus.subscribe("thoth.response", self._handle_ai_response)
+            self.event_bus.subscribe("thoth.status.update", self._handle_ai_status)
+            self.event_bus.subscribe("thoth.code_generated", self._handle_code_generation)
+            
+            # Voice system events
+            self.event_bus.subscribe("voice.command", self._handle_voice_command)
+            
+            # API and system events
+            self.event_bus.subscribe("api.key.status", self._handle_api_key_status)
+            self.event_bus.subscribe("api.test.result", self._handle_api_test_result)
+            self.event_bus.subscribe("blockchain.search_result", self._handle_blockchain_search_result)
+            
+            self.logger.info("Event handlers connected")
+        except Exception as e:
+            self.logger.error(f"Error connecting event handlers: {e}")
+            self.logger.error(traceback.format_exc())

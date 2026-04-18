@@ -1,0 +1,219 @@
+{
+    "version": "1.0.0",
+    "enabled": true,
+    "mode": "auto",
+    "mining_pool": {
+        "primary": {
+            "url": "stratum+tcp://ergo.f2pool.com:8888",
+            "user": "0x56B69204756A5DC03E5ba2EDe68b027bEfa79dA5",
+            "password": "x",
+            "timeout": 30,
+            "retries": 5
+        }
+    },
+    "hardware_detection": {
+        "auto_detect": true,
+        "gpu_only": false,
+        "cpu_mining": true,
+        "max_cpu_usage": 75,
+        "max_gpu_usage": 90,
+        "max_ram_usage_gb": 8
+    },
+    "miners": {
+        "gpu": ["t-rex", "nbminer", "gminer"],
+        "cpu": ["xmrig"],
+        "algorithms": {
+            "autolykos2": {
+                "enabled": true,
+                "coin": "ERGO",
+                "miners": ["t-rex", "nbminer"],
+                "intensity": 15,
+                "worksize": 128,
+                "threads": 0
+            },
+            "kawpow": {
+                "enabled": false,
+                "coin": "RVN",
+                "miners": ["t-rex", "nbminer"],
+                "intensity": 20,
+                "worksize": 64,
+                "threads": 2
+            },
+            "randomx": {
+                "enabled": true,
+                "coin": "XMR",
+                "miners": ["xmrig"],
+                "threads": 0,
+                "huge_pages": true,
+                "cpu_priority": 3
+            }
+        }
+    },
+    "pools": {
+        "eth": {
+            "name": "Ethermine",
+            "url": "stratum+tcp://us-east.ethmine.org:4444",
+            "worker": "kingdom"
+        },
+        "btc": {
+            "name": "Slush Pool",
+            "url": "stratum+tcp://us.slushpool.com:3333",
+            "worker": "kingdom"
+        },
+        "xmr": {
+            "name": "MineXMR",
+            "url": "pool.minexmr.com:4444",
+            "worker": "kingdom"
+        }
+    },
+    "auto_switching": {
+        "enabled": true,
+        "algorithm": "profit",
+        "check_interval": 3600
+    },
+    "power_management": {
+        "enabled": true,
+        "power_limit": 80,
+        "temperature_limit": 75,
+        "throttle_threshold": 80
+    },
+    "monitoring": {
+        "enabled": true,
+        "update_interval": 60,
+        "hashrate_samples": 10,
+        "shares_timeout": 300,
+        "restart_on_failure": true,
+        "restart_attempts": 3,
+        "restart_delay": 60,
+        "temperature": {
+            "warning": 70,
+            "critical": 80,
+            "shutdown": 85
+        },
+        "hashrate_drop_warning": 15,
+        "disk_space_warning_gb": 10,
+        "memory_warning_percent": 90
+    },
+    "notifications": {
+        "email": {
+            "enabled": false,
+            "smtp_server": "smtp.example.com",
+            "smtp_port": 587,
+            "username": "your_email@example.com",
+            "password": "your_password",
+            "from_address": "mining@yourdomain.com",
+            "to_addresses": ["your_email@example.com"],
+            "tls": true,
+            "events": ["miner_started", "miner_stopped", "hashrate_drop", "new_share", "block_found"]
+        },
+        "discord": {
+            "enabled": false,
+            "webhook_url": "",
+            "events": ["miner_started", "miner_stopped", "block_found"]
+        },
+        "telegram": {
+            "enabled": false,
+            "bot_token": "",
+            "chat_id": "",
+            "events": ["miner_started", "miner_stopped", "block_found"]
+        }
+    },
+    "logging": {
+        "enabled": true,
+        "level": "info",
+        "console": true,
+        "file": true,
+        "file_name": "mining.log",
+        "max_size_mb": 10,
+        "max_files": 5,
+        "directory": "logs",
+        "format": "%(asctime)s [%(levelname)s] %(message)s",
+        "date_format": "%Y-%m-%d %H:%M:%S"
+    },
+    "redis": {
+        "host": "localhost",
+        "port": 6380,
+        "password": "QuantumNexus2025",
+        "db": 0,
+        "mandatory": true,
+        "no_fallback_allowed": true
+    },
+    "blockchain": {
+        "mainnet_only": true,
+        "verify_connections": true,
+        "system_halt_on_failure": true
+    },
+    "security": {
+        "api": {
+            "enabled": true,
+            "listen": "127.0.0.1",
+            "port": 4068,
+            "access": ["127.0.0.1"],
+            "api_key": ""
+        },
+        "ssl": {
+            "enabled": false,
+            "certificate": "",
+            "private_key": ""
+        },
+        "worker_id": "worker1",
+        "hide_wallet_address": true
+    },
+    "advanced": {
+        "api_retry": 3,
+        "api_retry_pause": 1,
+        "api_gather": true,
+        "httpd_timeout": 5,
+        "auto_update": true,
+        "auto_restart": true,
+        "watchdog": true,
+        "watchdog_timer": 90,
+        "flush_stdout": true,
+        "flush_interval": 10,
+        "output": true,
+        "quiet": false,
+        "syslog": false,
+        "syslog_pretty": false,
+        "syslog_interval": 5,
+        "log_color": true,
+        "retries": 5,
+        "retry_pause": 5,
+        "timeout": 300,
+        "randomize": false,
+        "temp_scale": "C",
+        "huge_pages": true,
+        "no_nvml": false,
+        "no_auto_tune": false,
+        "no_color": false,
+        "no_cpu": false,
+        "no_gpu": false,
+        "no_http_keepalive": false,
+        "no_httpd": false,
+        "no_nvapi": false,
+        "no_watchdog": false,
+        "safe": false,
+        "self_test": false,
+        "syslog_local": false,
+        "syslog_skip": 0,
+        "tls_protocol": "TLSv1.2",
+        "user_agent": "KingdomAIMiner/1.0.0"
+    },
+    "profitability": {
+        "enabled": true,
+        "update_interval": 300,
+        "min_profitability": 0.0001,
+        "exchange_rates": {
+            "update_interval": 3600,
+            "api_url": "https://api.coingecko.com/api/v3/simple/price",
+            "api_key": ""
+        },
+        "power_cost": 0.12,
+        "power_consumption": 300,
+        "pool_fee": 1.0,
+        "dev_fee": 1.0
+    },
+    "version_notes": [
+        "1.0.0 - Initial release with comprehensive mining configuration"
+    ]
+
+}

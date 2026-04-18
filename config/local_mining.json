@@ -1,0 +1,58 @@
+﻿{
+  "mining_mode": "local",
+  "use_redis": true,
+  "use_memory_cache": true,
+  "miners": {
+    "xmrig_path": "external_miners/xmrig/xmrig",
+    "xmrig": {
+      "path": "external_miners/xmrig/xmrig",
+      "config": "external_miners/xmrig/config.json"
+    },
+    "trex_path": "external_miners/1.97/t-rex",
+    "lolminer_path": "external_miners/1.97/lolMiner"
+  },
+  "auto_start_mining": false,
+  "mine_all_coins": false,
+  "default_algorithm": "randomx",
+  "default_coin": "monero",
+  "wallets": {
+    "monero": "433LQpbL6jJJiH5NpApCTYhN5DE8DYLV48ApeSJEEjXaVYKxJNk1KxYGnzQ5fawfbE27MJ8oT4yHXRknvwr6mnWh5KGLYum",
+    "bitcoin": "bc1q5c4d70b042fd0e229a31feb5a271c582be63314e",
+    "ethereum": "0x4bED94d31d945a1C49F67721612bffb83eD1107C",
+    "ergo": "9fTCDRowDznk1eRJ6QE8RT3jTRNurAFDUuN2EFoRKKQzfXoDw7F",
+    "kaspa": "kaspa:qpaw5s8v97ae4z5v2ml3mefpdvvufu4lsyuth9uvhx82jejmcry2v378znaxr",
+    "ravencoin": "RVJn7L8PiX9UCyEaKawPNSu6xZR9kUrVTd",
+    "flux": "t1JSaoB5c8n2sTzi7evGTuWg3Yf4Lw4Xpk6",
+    "firo": "aLk3migjLVLkCWJUrpGQ3CtQof5uNSFtBp",
+    "vertcoin": "Vv2QwXQZXWF7CjmXbCbthptkt7FXXEivCf"
+  },
+  "pools": {
+    "monero": {
+      "url": "pool.supportxmr.com:3333",
+      "user": "433LQpbL6jJJiH5NpApCTYhN5DE8DYLV48ApeSJEEjXaVYKxJNk1KxYGnzQ5fawfbE27MJ8oT4yHXRknvwr6mnWh5KGLYum",
+      "pass": "KingdomAI",
+      "algo": "randomx"
+    },
+    "monero_backup": {
+      "url": "xmr.nanopool.org:14433",
+      "user": "433LQpbL6jJJiH5NpApCTYhN5DE8DYLV48ApeSJEEjXaVYKxJNk1KxYGnzQ5fawfbE27MJ8oT4yHXRknvwr6mnWh5KGLYum",
+      "pass": "KingdomAI",
+      "algo": "randomx"
+    },
+    "kaspa": {
+      "url": "stratum+tcp://pool.woolypooly.com:3112",
+      "user": "kaspa:qpaw5s8v97ae4z5v2ml3mefpdvvufu4lsyuth9uvhx82jejmcry2v378znaxr",
+      "pass": "KingdomAI",
+      "algo": "kheavyhash"
+    },
+    "ergo": {
+      "url": "stratum+tcp://ergo.herominers.com:1180",
+      "user": "9fTCDRowDznk1eRJ6QE8RT3jTRNurAFDUuN2EFoRKKQzfXoDw7F",
+      "pass": "KingdomAI",
+      "algo": "autolykos2"
+    }
+  },
+  "cpu_threads": 0,
+  "cpu_priority": 2,
+  "huge_pages": true
+}

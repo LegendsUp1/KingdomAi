@@ -1,0 +1,296 @@
+{
+  "version": "2026.1.0",
+  "description": "Complete mining pool configuration for all 82 POW coins",
+  "algorithm_miners": {
+    "SHA-256": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "quantum_gpu",
+      "pools": ["btc.viabtc.io:3333", "bitcoin.viabtc.io:3333", "btc.f2pool.com:3333", "stratum.braiins.com:3333"]
+    },
+    "Scrypt": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "lolminer",
+      "pools": ["ltc.2miners.com:8080", "stratum.litecoinpool.org:3333"]
+    },
+    "Ethash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["etc.2miners.com:1010", "etc.ethermine.org:4444"]
+    },
+    "Etchash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["etc.2miners.com:1010"]
+    },
+    "KawPow": {
+      "miner": "trex",
+      "gpu_miner": "trex",
+      "pools": ["rvn.2miners.com:6060", "stratum.ravenminer.com:3838"]
+    },
+    "kHeavyHash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["kas.2miners.com:2020", "pool.kaspa.ws:3333"]
+    },
+    "Autolykos2": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["erg.2miners.com:8888", "ergo.herominers.com:10250"]
+    },
+    "ZelHash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["flux.2miners.com:2020", "flux.rupool.io:3333"]
+    },
+    "Equihash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["zec.2miners.com:1010", "zec.flypool.org:3333"]
+    },
+    "RandomX": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["xmr.2miners.com:2222", "pool.supportxmr.com:3333"]
+    },
+    "X11": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "trex",
+      "pools": ["dash.2miners.com:5050"]
+    },
+    "Octopus": {
+      "miner": "trex",
+      "gpu_miner": "trex",
+      "pools": ["cfx.2miners.com:2020"]
+    },
+    "FiroPow": {
+      "miner": "trex",
+      "gpu_miner": "trex",
+      "pools": ["firo.2miners.com:8181"]
+    },
+    "Blake3": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["alph.2miners.com:2020"]
+    },
+    "NexaPow": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "lolminer",
+      "pools": ["nexa.acc-pool.pw:16000"]
+    },
+    "Zhash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["btg.2miners.com:4040"]
+    },
+    "Eaglesong": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["ckb.2miners.com:6060"]
+    },
+    "ProgPow": {
+      "miner": "trex",
+      "gpu_miner": "trex",
+      "pools": ["sero.2miners.com:8080"]
+    },
+    "Verthash": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "lolminer",
+      "pools": ["vtc.suprnova.cc:5678"]
+    },
+    "DynexSolve": {
+      "miner": "dynexsolve",
+      "gpu_miner": "dynexsolve",
+      "pools": ["dnx.2miners.com:4040"]
+    },
+    "BeamHashIII": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["beam.2miners.com:5050"]
+    },
+    "Cuckatoo32": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["grin.2miners.com:3030"]
+    },
+    "CryptoNight": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["cryptonight.usa.nicehash.com:3355"]
+    },
+    "CryptoNight-Lite": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["aeon.herominers.com:10410"]
+    },
+    "AstroBWT": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["dero.herominers.com:10130"]
+    },
+    "Lyra2REv2": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "trex",
+      "pools": ["mona.suprnova.cc:2995"]
+    },
+    "Groestl": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "lolminer",
+      "pools": ["grs.suprnova.cc:5544"]
+    },
+    "X13": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "trex",
+      "pools": ["bcd.2miners.com:3030"]
+    },
+    "MTP": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "trex",
+      "pools": ["firo.2miners.com:8181"]
+    },
+    "Cuckoo": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["ae.2miners.com:4040"]
+    },
+    "Tensority": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "lolminer",
+      "pools": ["btm.f2pool.com:9221"]
+    },
+    "Multi": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "lolminer",
+      "pools": ["dgb.2miners.com:5050"]
+    },
+    "Equihash210_9": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["aion.herominers.com:10240"]
+    },
+    "CryptoNight Saber": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["tube.herominers.com:10280"]
+    },
+    "CryptoNight GPU": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["xeq.herominers.com:10600"]
+    },
+    "CryptoNightHeavy": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["loki.herominers.com:10340"]
+    },
+    "Panthera": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["xla.herominers.com:10400"]
+    },
+    "Cuckaroo29s": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["xwp.herominers.com:10440"]
+    },
+    "Wild Keccak": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "cpu_stratum",
+      "pools": ["bbr.herominers.com:10090"]
+    },
+    "RandomWOW": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["wow.herominers.com:10660"]
+    },
+    "RandomARQ": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["arq.herominers.com:10320"]
+    },
+    "CryptoNightV7": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["qrl.herominers.com:10370"]
+    },
+    "Argon2id Chukwa": {
+      "miner": "xmrig",
+      "gpu_miner": "xmrig",
+      "pools": ["trtl.herominers.com:10380"]
+    },
+    "ProgPowZ": {
+      "miner": "trex",
+      "gpu_miner": "trex",
+      "pools": ["zano.2miners.com:3030"]
+    },
+    "Ubqhash": {
+      "miner": "lolminer",
+      "gpu_miner": "lolminer",
+      "pools": ["ubq.2miners.com:3030"]
+    },
+    "SHA-512/256d": {
+      "miner": "cpu_stratum",
+      "gpu_miner": "cpu_stratum",
+      "pools": ["rxd.2miners.com:3030"]
+    }
+  },
+  "coin_pools": {
+    "BTC": {"host": "btc.viabtc.io", "port": 3333, "algo": "SHA-256"},
+    "BCH": {"host": "bch.viabtc.io", "port": 3333, "algo": "SHA-256"},
+    "BSV": {"host": "bsv.viabtc.io", "port": 3333, "algo": "SHA-256"},
+    "LTC": {"host": "ltc.2miners.com", "port": 8080, "algo": "Scrypt"},
+    "DOGE": {"host": "doge.2miners.com", "port": 5050, "algo": "Scrypt"},
+    "XMR": {"host": "xmr.2miners.com", "port": 2222, "algo": "RandomX"},
+    "ZEC": {"host": "zec.2miners.com", "port": 1010, "algo": "Equihash"},
+    "DASH": {"host": "dash.2miners.com", "port": 5050, "algo": "X11"},
+    "ZEN": {"host": "zen.2miners.com", "port": 3030, "algo": "Equihash"},
+    "RVN": {"host": "rvn.2miners.com", "port": 6060, "algo": "KawPow"},
+    "ERG": {"host": "erg.2miners.com", "port": 8888, "algo": "Autolykos2"},
+    "ETC": {"host": "etc.2miners.com", "port": 1010, "algo": "Etchash"},
+    "FLUX": {"host": "flux.2miners.com", "port": 2020, "algo": "ZelHash"},
+    "KAS": {"host": "kas.2miners.com", "port": 2020, "algo": "kHeavyHash"},
+    "ALPH": {"host": "alph.2miners.com", "port": 2020, "algo": "Blake3"},
+    "NEXA": {"host": "nexa.acc-pool.pw", "port": 16000, "algo": "NexaPow"},
+    "CFX": {"host": "cfx.2miners.com", "port": 2020, "algo": "Octopus"},
+    "FIRO": {"host": "firo.2miners.com", "port": 8181, "algo": "FiroPow"},
+    "BTG": {"host": "btg.2miners.com", "port": 4040, "algo": "Zhash"},
+    "CKB": {"host": "ckb.2miners.com", "port": 6060, "algo": "Eaglesong"},
+    "CLORE": {"host": "clore.2miners.com", "port": 2020, "algo": "KawPow"},
+    "OCTA": {"host": "octa.2miners.com", "port": 3030, "algo": "Ethash"},
+    "NEOX": {"host": "neox.2miners.com", "port": 3030, "algo": "KawPow"},
+    "SERO": {"host": "sero.2miners.com", "port": 8080, "algo": "ProgPow"},
+    "VTC": {"host": "vtc.suprnova.cc", "port": 5678, "algo": "Verthash"},
+    "RXD": {"host": "rxd.2miners.com", "port": 3030, "algo": "SHA-512/256d"},
+    "DNX": {"host": "dnx.2miners.com", "port": 4040, "algo": "DynexSolve"},
+    "BEAM": {"host": "beam.2miners.com", "port": 5050, "algo": "BeamHashIII"},
+    "GRIN": {"host": "grin.2miners.com", "port": 3030, "algo": "Cuckatoo32"},
+    "PPC": {"host": "ppc.2miners.com", "port": 3333, "algo": "SHA-256"},
+    "NMC": {"host": "nmc.2miners.com", "port": 3333, "algo": "SHA-256"},
+    "SYS": {"host": "sys.2miners.com", "port": 3333, "algo": "SHA-256"},
+    "DGB": {"host": "dgb.2miners.com", "port": 5050, "algo": "Multi"},
+    "VIA": {"host": "via.suprnova.cc", "port": 5454, "algo": "Scrypt"},
+    "XVG": {"host": "xvg.2miners.com", "port": 3030, "algo": "Multi"},
+    "GRS": {"host": "grs.suprnova.cc", "port": 5544, "algo": "Groestl"},
+    "MWC": {"host": "mwc.2miners.com", "port": 3030, "algo": "Cuckoo"},
+    "ARRR": {"host": "arrr.2miners.com", "port": 3030, "algo": "Equihash"},
+    "PIRL": {"host": "pirl.2miners.com", "port": 3030, "algo": "Ethash"},
+    "UBQ": {"host": "ubq.2miners.com", "port": 3030, "algo": "Ubqhash"},
+    "EXP": {"host": "exp.2miners.com", "port": 3030, "algo": "Ethash"},
+    "CLO": {"host": "clo.2miners.com", "port": 3030, "algo": "Ethash"},
+    "MONA": {"host": "mona.suprnova.cc", "port": 2995, "algo": "Lyra2REv2"},
+    "ZANO": {"host": "zano.2miners.com", "port": 3030, "algo": "ProgPowZ"},
+    "XHV": {"host": "xhv.herominers.com", "port": 10450, "algo": "RandomX"},
+    "WOW": {"host": "wow.herominers.com", "port": 10660, "algo": "RandomWOW"},
+    "SUMO": {"host": "sumo.herominers.com", "port": 10610, "algo": "RandomX"},
+    "MSR": {"host": "msr.herominers.com", "port": 10150, "algo": "RandomX"},
+    "ARQ": {"host": "arq.herominers.com", "port": 10320, "algo": "RandomARQ"},
+    "DERO": {"host": "dero.herominers.com", "port": 10130, "algo": "AstroBWT"},
+    "TRTL": {"host": "trtl.herominers.com", "port": 10380, "algo": "Argon2id Chukwa"},
+    "CCX": {"host": "ccx.herominers.com", "port": 10360, "algo": "CryptoNight"},
+    "AEON": {"host": "aeon.herominers.com", "port": 10410, "algo": "CryptoNight-Lite"},
+    "KRB": {"host": "krb.herominers.com", "port": 10140, "algo": "CryptoNight"},
+    "XDN": {"host": "xdn.herominers.com", "port": 10120, "algo": "CryptoNight"},
+    "BCN": {"host": "bcn.herominers.com", "port": 10110, "algo": "CryptoNight"},
+    "QRL": {"host": "qrl.herominers.com", "port": 10370, "algo": "CryptoNightV7"},
+    "ETN": {"host": "etn.herominers.com", "port": 10260, "algo": "CryptoNight"}
+  }
+}

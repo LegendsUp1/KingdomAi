@@ -1,0 +1,5 @@
+/join    /index.html    200
+/join/*  /index.html    200
+/link    /index.html    200
+/link/*  /index.html    200
+/*       /index.html    200

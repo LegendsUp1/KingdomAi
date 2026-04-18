@@ -1,0 +1,755 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Loading Screen for Kingdom AI
+
+This module provides a loading screen for the Kingdom AI system
+that displays initialization progress and status updates.
+
+Features:
+- Graceful fallback to console when GUI isn't available
+- Progress bar shows real-time initialization status
+- Status messages display current initialization steps
+- Smooth transition to main application after loading
+"""
+
+import os
+import sys
+import time
+import threading
+import traceback
+import logging
+from typing import Optional, Union, Any
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# Try to import tkinter, but fail gracefully if not available
+try:
+    import tkinter as tk
+    from tkinter import ttk
+    TKINTER_AVAILABLE = True
+except ImportError:
+    logger.warning("Tkinter not available. Falling back to console mode.")
+    TKINTER_AVAILABLE = False
+
+class LoadingScreen:
+    """Tkinter-based loading screen with a progress bar and status message.
+    
+    The loading screen is a top-level window with a progress bar and status message.
+    It is shown during startup to indicate initialization progress.
+    """
+    
+    def __init__(self, parent=None, progress_var=None, status_var=None, title="Kingdom AI", width=600, height=400):
+        """Initialize the loading screen.
+        
+        Args:
+            parent: Parent window
+            progress_var: Variable to track progress (0.0-1.0)
+            status_var: Variable to track status message
+            title: Window title
+            width: Window width
+            height: Window height
+        """
+        self.parent = parent
+        self.title = title
+        self.width = width
+        self.height = height
+        self.is_shown = False
+        
+        # Create the root window if not provided
+        if parent is None:
+            self.root = tk.Tk()
+            self.root.withdraw()  # Hide initially
+        else:
+            self.root = tk.Toplevel(parent)
+            self.root.withdraw()  # Hide initially
+        
+        # Create progress variable if not provided
+        if progress_var is None:
+            self.progress_var = tk.DoubleVar(self.root, value=0.0)
+        else:
+            self.progress_var = progress_var
+            
+        # Create status variable if not provided
+        if status_var is None:
+            self.status_var = tk.StringVar(self.root, value="")
+        else:
+            self.status_var = status_var
+        
+        # Initialize attributes for compatibility
+        self.status_label = None
+        self.status_text = None
+        self.progress_bar = None
+            
+        # Configure the window
+        self.root.title(title)
+        self.root.protocol("WM_DELETE_WINDOW", self._on_close)  # Handle close button
+        
+        # Position window in center of screen
+        self._center_on_screen()
+        
+        # Set up UI elements
+        self._setup_ui()
+        
+    def _on_close(self):
+        """Handle window close button click."""
+        # Do nothing - prevent user from closing the loading screen
+        pass
+        
+    def _setup_ui(self):
+        """Set up the UI elements of the loading screen."""
+        # Main frame
+        main_frame = tk.Frame(self.root, padx=20, pady=20)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Logo or title
+        title_frame = tk.Frame(main_frame)
+        title_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        title_label = tk.Label(title_frame, text=self.title, font=("Helvetica", 24, "bold"))
+        title_label.pack()
+        
+        # Status text
+        status_frame = tk.Frame(main_frame)
+        status_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.status_label = tk.Label(status_frame, textvariable=self.status_var, font=("Helvetica", 10))
+        self.status_label.pack(anchor=tk.W)
+        
+        # Progress bar
+        progress_frame = tk.Frame(main_frame)
+        progress_frame.pack(fill=tk.X)
+        
+        self.progress_bar = ttk.Progressbar(
+            progress_frame,
+            variable=self.progress_var,
+            mode="determinate",
+            length=self.width - 40  # Adjust for padding
+        )
+        self.progress_bar.pack(fill=tk.X)
+        
+        # Additional status text below progress bar
+        status_detail_frame = tk.Frame(main_frame)
+        status_detail_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        self.status_text = tk.Label(status_detail_frame, text="", font=("Helvetica", 8))
+        self.status_text.pack(anchor=tk.W)
+    
+    def _center_on_screen(self):
+        """Center the window on the screen."""
+        # Get screen dimensions
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        # Calculate position
+        x = (screen_width - self.width) // 2
+        y = (screen_height - self.height) // 2
+        
+        # Set geometry
+        self.root.geometry(f"{self.width}x{self.height}+{x}+{y}")
+        
+    def show(self):
+        """Show the loading screen.
+        
+        This creates and displays the loading screen window.
+        """
+        if not self.is_shown:
+            self._create_window()
+            self.is_shown = True
+            
+    def _create_window(self):
+        """Create the loading screen window."""
+        try:
+            # Configure initial window properties
+            self.root.deiconify()  # Show window
+            self.root.attributes("-topmost", True)  # Keep on top
+            self.root.update()
+            
+            # Customize window appearance
+            if hasattr(self.root, "attributes"):
+                try:
+                    # Set transparency if supported (Windows)
+                    self.root.attributes("-alpha", 0.95)
+                except:
+                    logger.debug("Window transparency not supported")
+                    
+                try:
+                    # Remove window decorations if supported (macOS, some Linux)
+                    self.root.attributes("-toolwindow", True)
+                except:
+                    logger.debug("Toolwindow attribute not supported")
+            
+            # Update window to show all elements
+            self.update()
+            self.update_idletasks()
+            
+        except Exception as e:
+            logger.error(f"Error creating loading screen window: {e}")
+            logger.error(traceback.format_exc())
+            
+    def update_progress(self, progress, status=None):
+        """Update the progress bar and status text.
+        
+        Args:
+            progress (float): Progress value (0-1)
+            status (str, optional): Status text to display
+        """
+        try:
+            # Update progress variable
+            if hasattr(self, 'progress_var') and self.progress_var is not None:
+                self.progress_var.set(progress)
+                
+            # Update status if provided
+            if status is not None and hasattr(self, 'status_var') and self.status_var is not None:
+                self.status_var.set(status)
+                
+            # Update additional status text
+            if hasattr(self, 'status_text') and self.status_text is not None:
+                progress_pct = int(progress * 100)
+                self.status_text.config(text=f"{progress_pct}% complete")
+                
+            # Try to update the UI if possible
+            self.update()
+                
+        except Exception as e:
+            logger.error(f"Error updating progress: {e}")
+            
+    def update_status(self, status):
+        """Update just the status text.
+        
+        Args:
+            status (str): Status text to display
+        """
+        if hasattr(self, 'status_var') and self.status_var is not None:
+            self.status_var.set(status)
+            self.update()
+            
+    def hide(self):
+        """Hide the loading screen without destroying it."""
+        if self.is_shown and hasattr(self, 'root') and self.root is not None:
+            try:
+                self.root.withdraw()
+                self.is_shown = False
+            except Exception as e:
+                logger.error(f"Error hiding loading screen: {e}")
+                
+    def close(self):
+        """Close the loading screen."""
+        try:
+            if hasattr(self, 'root') and self.root is not None:
+                self.root.destroy()
+            self.is_shown = False
+        except Exception as e:
+            logger.error(f"Error closing loading screen: {e}")
+            
+    def destroy(self):
+        """Destroy the loading screen window.
+        
+        This is an alias for close() to maintain compatibility with Tkinter's destroy pattern.
+        """
+        self.close()
+        
+    def update(self):
+        """Update the window (compatibility with Tkinter)."""
+        if hasattr(self, 'root') and self.root is not None:
+            try:
+                self.root.update()
+            except Exception as e:
+                logger.debug(f"Root update failed: {e}")
+                
+    def update_idletasks(self):
+        """Update idle tasks (compatibility with Tkinter)."""
+        if hasattr(self, 'root') and self.root is not None:
+            try:
+                self.root.update_idletasks()
+            except Exception as e:
+                logger.debug(f"Root update_idletasks failed: {e}")
+
+class DummyLoadingScreen:
+    """A dummy loading screen that implements the same interface but does nothing.
+    
+    This is used as a fallback when the graphical loading screen cannot be created.
+    """
+    
+    def __init__(self):
+        """Initialize the dummy loading screen."""
+        self.is_shown = False
+        
+        # Add compatibility attributes to match the graphical version
+        self.progress_var = None  # Progress variable compatibility
+        self.status_var = None    # Status variable compatibility
+        self.root = None          # Root window compatibility
+        
+        logger.info("Dummy loading screen created")
+        
+    def show(self):
+        """Show method (does nothing)."""
+        self.is_shown = True
+        logger.info("Dummy loading screen shown")
+        
+    def hide(self):
+        """Hide method (does nothing)."""
+        self.is_shown = False
+        logger.info("Dummy loading screen hidden")
+        
+    def update_progress(self, progress, status=None):
+        """Update progress (does nothing)."""
+        logger.info(f"Progress update: {progress:.1%} - {status}")
+        
+    def update_status(self, status):
+        """Update status (does nothing)."""
+        logger.info(f"Status update: {status}")
+        
+    def update(self):
+        """Update method for compatibility with Tkinter."""
+        pass
+        
+    def update_idletasks(self):
+        """Update idletasks method for compatibility with Tkinter."""
+        pass
+        
+    def close(self):
+        """Close method (does nothing)."""
+        self.is_shown = False
+        logger.info("Dummy loading screen closed")
+        
+    def destroy(self):
+        """Destroy method (does nothing)."""
+        self.close()
+
+# Support class for ConsoleLoadingScreen to mimic Tkinter variables
+class _ConsoleVar:
+    """A simple class to mimic Tkinter variables for console mode."""
+    
+    def __init__(self, value=None):
+        self.value = value
+        
+    def set(self, value):
+        """Set the value."""
+        self.value = value
+        
+    def get(self):
+        """Get the value."""
+        return self.value
+        
+# Support class for ConsoleLoadingScreen to mimic Tkinter progress bar
+class _ConsoleProgressBar:
+    """A simple class to mimic Tkinter progress bar for console mode."""
+    
+    def __init__(self):
+        self.value = 0
+        
+    def config(self, **kwargs):
+        """Mock config method."""
+        pass
+
+# Define ConsoleLoadingScreen class
+class ConsoleLoadingScreen:
+    """A text-based loading screen for console environments.
+    
+    This provides a loading screen interface for environments where
+    a graphical UI is not available or desired.
+    """
+    
+    def __init__(self):
+        """Initialize the console loading screen."""
+        self.last_update = time.time() - 10  # Force initial update
+        self.last_progress = -1  # Force initial update
+        self.progress = 0
+        self.status = "Initializing..."
+        self.is_shown = False
+        
+        # Create compatibility attributes to match the graphical version
+        self.progress_var = _ConsoleVar(0.0)
+        self.status_var = _ConsoleVar("")
+        self.root = None  # No root window for console
+        self.progress_bar = _ConsoleProgressBar()
+        
+    def update_progress(self, progress, status=None):
+        """Update the progress and status."""
+        current_time = time.time()
+        update_interval = 0.5  # Update console every 0.5 seconds
+        
+        # Always update progress var for compatibility
+        if hasattr(self, 'progress_var') and self.progress_var is not None:
+            self.progress_var.set(progress)
+            
+        # Store for progress checks
+        self.progress = progress
+        
+        # Update status if provided
+        if status is not None:
+            self.update_status(status)
+            
+        # Convert progress to percentage
+        progress_pct = int(progress * 100)
+            
+        # Only update console display if significant change or time passed
+        if (abs(progress_pct - self.last_progress) >= 5 or 
+                current_time - self.last_update >= update_interval):
+            
+            # Save last values
+            self.last_progress = progress_pct
+            self.last_update = current_time
+            
+            # Show progress in console
+            progress_bar = self._create_progress_bar(progress)
+            print(f"\r{progress_bar} {progress_pct}% - {self.status}", end="")
+            sys.stdout.flush()
+            
+    def update(self):
+        """Mock update for compatibility with Tkinter."""
+        pass
+        
+    def update_idletasks(self):
+        """Mock update_idletasks for compatibility with Tkinter."""
+        pass
+        
+    def update_status(self, message):
+        """Update status message."""
+        if hasattr(self, 'status_var') and self.status_var is not None:
+            self.status_var.set(message)
+        self.status = message
+        
+    def _create_progress_bar(self, progress, length=20):
+        """Create a text-based progress bar."""
+        filled_length = int(length * progress)
+        bar = '█' * filled_length + '░' * (length - filled_length)
+        return f"[{bar}]"
+        
+    def close(self):
+        """Close the loading screen."""
+        if self.is_shown:
+            print("\nLoading complete!")
+            self.is_shown = False
+            
+    def show(self):
+        """Show the loading screen."""
+        if not self.is_shown:
+            print("\nKingdom AI Loading...")
+            self.is_shown = True
+            
+    def hide(self):
+        """Hide the loading screen."""
+        # Can't really hide in console mode, but mark as hidden
+        self.is_shown = False
+        
+    def destroy(self):
+        """Mock destroy for compatibility with Tkinter."""
+        self.close()
+
+# Initialize the global loading screen instance
+_active_loading_screen = None
+
+def show_loading_screen(progress_var=None, status_var=None, title="Kingdom AI", width=600, height=400):
+    """Show a loading screen with progress bar and status message.
+    
+    This function attempts to create a graphical loading screen first.
+    If that fails, it falls back to a console-based loading screen.
+    
+    Args:
+        progress_var: Variable to track progress (0-1)
+        status_var: Variable to track status message
+        title: Window title
+        width: Window width
+        height: Window height
+        
+    Returns:
+        True if loading screen shown successfully, False otherwise
+    """
+    global _active_loading_screen
+    
+    # Don't create new screen if one is already active
+    if _active_loading_screen is not None and _active_loading_screen.is_shown:
+        logger.info("Loading screen already active")
+        return True
+        
+    # Try to create a graphical loading screen if Tkinter is available
+    if TKINTER_AVAILABLE:
+        try:
+            # Create the loading screen
+            loading_screen = LoadingScreen(
+                progress_var=progress_var,
+                status_var=status_var,
+                title=title,
+                width=width,
+                height=height
+            )
+            
+            # Show it
+            loading_screen.show()
+            
+            # Store reference
+            _active_loading_screen = loading_screen
+            
+            logger.info("Graphical loading screen created and shown")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to create graphical loading screen: {e}")
+            logger.error(traceback.format_exc())
+            # Fall back to console mode
+    
+    # Fall back to console mode
+    try:
+        # Create console loading screen
+        console_loading_screen = ConsoleLoadingScreen()
+        
+        # Show it
+        console_loading_screen.show()
+        
+        # Store reference
+        _active_loading_screen = console_loading_screen
+        
+        logger.info("Console loading screen created and shown")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to create console loading screen: {e}")
+        logger.error(traceback.format_exc())
+        
+        # Last resort: create a dummy loading screen that does nothing
+        try:
+            dummy_loading_screen = DummyLoadingScreen()
+            _active_loading_screen = dummy_loading_screen
+            
+            logger.info("Dummy loading screen created")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to create dummy loading screen: {e}")
+            logger.error(traceback.format_exc())
+            
+    # If all attempts fail
+    logger.critical("All loading screen creation attempts failed")
+    return False
+
+def update_loading_progress(progress, status=None):
+    """Update the loading screen progress and status.
+    
+    Args:
+        progress (float): Progress value between 0.0 and 1.0
+        status (str, optional): Status message to display
+        
+    Returns:
+        bool: True if update successful, False otherwise
+    """
+    global _active_loading_screen
+    
+    # Normalize progress value
+    progress = max(0.0, min(1.0, float(progress)))
+    
+    # Check if loading screen exists
+    if _active_loading_screen is None:
+        logger.warning("No active loading screen to update")
+        return False
+    
+    # Check if we've reached 100%
+    at_hundred_percent = progress >= 0.99
+    
+    # Try to update progress
+    try:
+        # Update the loading screen with the progress value and status
+        _active_loading_screen.update_progress(progress, status)
+        
+        # Force multiple UI refreshes to ensure visual update happens
+        # This is critical for real-time progress feedback
+        _force_ui_refresh(max_attempts=3)
+        
+    except Exception as e:
+        logger.error(f"Failed to update loading screen progress: {e}")
+        logger.error(traceback.format_exc())
+        return False
+        
+    return at_hundred_percent
+
+def update_loading_status(message):
+    """Update just the loading screen status message.
+    
+    Args:
+        message (str): Status message to display
+        
+    Returns:
+        bool: True if update successful, False otherwise
+    """
+    global _active_loading_screen
+    
+    # Check if loading screen exists
+    if _active_loading_screen is None:
+        logger.warning("No active loading screen to update status")
+        return False
+    
+    # Try the most direct method first
+    try:
+        if hasattr(_active_loading_screen, 'update_status'):
+            _active_loading_screen.update_status(message)
+            return True
+    except Exception as e:
+        logger.warning(f"Failed to call update_status: {e}")
+            
+    # If all else fails, just log it
+    logger.info(f"Status update (no UI update possible): {message}")
+    return False
+
+def _force_ui_refresh(max_attempts=5):
+    """Force the UI to refresh using multiple methods."""
+    global _active_loading_screen
+    
+    if _active_loading_screen is None:
+        return
+        
+    for attempt in range(max_attempts):
+        # Method 1: Root window update methods
+        if hasattr(_active_loading_screen, 'root') and _active_loading_screen.root is not None:
+            try:
+                _active_loading_screen.root.update()
+                _active_loading_screen.root.update_idletasks()
+            except Exception as e:
+                logger.debug(f"Root update failed: {e}")
+                
+        # Method 2: Loading screen's own update methods
+        try:
+            if hasattr(_active_loading_screen, 'update'):
+                _active_loading_screen.update()
+            if hasattr(_active_loading_screen, 'update_idletasks'):
+                _active_loading_screen.update_idletasks()
+        except Exception as e:
+            logger.debug(f"Loading screen update failed: {e}")
+            
+        # Small pause between refresh attempts
+        time.sleep(0.05)
+
+def hide_loading_screen():
+    """Hide the loading screen."""
+    global _active_loading_screen
+    
+    if _active_loading_screen is not None:
+        _active_loading_screen.hide()
+
+def close_loading_screen():
+    """Close the loading screen with proper transition.
+    
+    This function only starts the 7-second delay countdown once the progress bar 
+    has naturally reached 100% through the actual initialization process. It does NOT
+    force the progress to 100%.
+    """
+    global _active_loading_screen
+    
+    if _active_loading_screen is None:
+        logger.warning("No active loading screen to close")
+        return False
+    
+    try:
+        # Only proceed with transition delay if progress is already at 100%
+        current_progress = 0.0
+        if hasattr(_active_loading_screen, 'progress_var') and _active_loading_screen.progress_var is not None:
+            try:
+                # For Tkinter loading screen
+                current_progress = _active_loading_screen.progress_var.get()
+            except Exception:
+                pass
+                
+        # Check ConsoleLoadingScreen progress attribute
+        if current_progress < 0.01 and hasattr(_active_loading_screen, 'progress'):
+            current_progress = _active_loading_screen.progress
+        
+        logger.info(f"Current progress before transition: {current_progress:.1%}")
+        
+        # Only start transition if progress is complete (or very close)
+        # Allow a small margin of error (0.99 instead of exactly 1.0)
+        if current_progress >= 0.99:
+            logger.info("Progress at 100%, starting transition delay")
+            
+            # Update status to indicate waiting
+            update_loading_status("Initialization complete. Preparing to launch...")
+            
+            # Force UI refresh to ensure status update is visible
+            _force_ui_refresh()
+            
+            # 7-second delay as requested, AFTER progress reaches 100%
+            logger.info("Starting 7-second countdown before closing loading screen")
+            countdown_start = time.time()
+            
+            # Show countdown in loading screen
+            for i in range(7, 0, -1):
+                # Wait for next second
+                elapsed = time.time() - countdown_start
+                remaining = i - elapsed
+                if remaining > 0:
+                    time.sleep(remaining)
+                
+                # Update status with countdown
+                update_loading_status(f"Initialization complete. Launching in {i} seconds...")
+                _force_ui_refresh()
+                    
+            logger.info("Countdown complete, closing loading screen")
+            
+            # Update status one final time
+            update_loading_status("Launching Kingdom AI...")
+            _force_ui_refresh()
+            
+            # Small pause to show final message
+            time.sleep(0.5)
+            
+            # Now close the loading screen
+            if hasattr(_active_loading_screen, 'close'):
+                _active_loading_screen.close()
+            elif hasattr(_active_loading_screen, 'destroy'):
+                _active_loading_screen.destroy()
+                
+            # Clear reference
+            _active_loading_screen = None
+            logger.info("Loading screen closed successfully after transition")
+            return True
+            
+        else:
+            # Progress not complete, issue warning
+            logger.warning(f"Attempt to close loading screen before progress complete (current: {current_progress:.1%})")
+            logger.warning("Not closing loading screen until initialization is complete")
+            return False
+    
+    except Exception as e:
+        logger.error(f"Critical error in close_loading_screen: {e}")
+        logger.error(traceback.format_exc())
+        
+        # Emergency fallback - destroy the screen anyway
+        force_close_loading_screen()
+        return False
+        
+def force_close_loading_screen():
+    """Force close the loading screen immediately without any transitions or delays.
+    
+    This is intended as an emergency fallback when the normal close_loading_screen function fails.
+    It immediately destroys the loading screen window and resets the global reference.
+    """
+    global _active_loading_screen
+    
+    if _active_loading_screen is None:
+        return
+        
+    try:
+        # Try to close/destroy the loading screen
+        try:
+            if hasattr(_active_loading_screen, 'close'):
+                _active_loading_screen.close()
+        except Exception:
+            pass
+            
+        try:
+            if hasattr(_active_loading_screen, 'destroy'):
+                _active_loading_screen.destroy()
+        except Exception:
+            pass
+            
+        # Clear reference no matter what
+        _active_loading_screen = None
+        logger.info("Loading screen forcibly closed")
+        
+    except Exception as e:
+        logger.error(f"Critical error in force_close_loading_screen: {e}")
+        logger.error(traceback.format_exc())
+        
+        # Last resort
+        _active_loading_screen = None

@@ -1,0 +1,130 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "models_dir": "ai/intent_recognition/models",
+    "data_dir": "ai/intent_recognition/data",
+    "use_cached_models": true,
+    "cache_ttl_seconds": 3600,
+    "language_models": {
+        "default": "gpt-mini",
+        "available": ["gpt-mini", "llama-7b", "bert-base", "distilbert"],
+        "gpt-mini": {
+            "path": "ollama:gpt-mini",
+            "parameters": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 256,
+                "presence_penalty": 0.0,
+                "frequency_penalty": 0.0
+            }
+        },
+        "llama-7b": {
+            "path": "ollama:llama-7b",
+            "parameters": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 512,
+                "presence_penalty": 0.0,
+                "frequency_penalty": 0.0
+            }
+        },
+        "bert-base": {
+            "path": "local:bert-base-uncased",
+            "parameters": {
+                "max_length": 512
+            }
+        },
+        "distilbert": {
+            "path": "local:distilbert-base-uncased",
+            "parameters": {
+                "max_length": 512
+            }
+        }
+    },
+    "intent_classification": {
+        "confidence_threshold": 0.7,
+        "model": "distilbert",
+        "max_intents": 3,
+        "use_fallback": true,
+        "fallback_intent": "unknown",
+        "intents": [
+            "market.price.query",
+            "market.chart.request",
+            "market.orderbook.query",
+            "account.balance.query",
+            "account.history.query",
+            "account.deposit",
+            "account.withdraw",
+            "trading.order.place",
+            "trading.order.cancel",
+            "trading.order.modify",
+            "trading.strategy.list",
+            "trading.strategy.activate",
+            "trading.strategy.deactivate",
+            "portfolio.view",
+            "portfolio.analyze",
+            "portfolio.rebalance",
+            "news.crypto",
+            "news.sentiment",
+            "system.status",
+            "system.help",
+            "mining.status",
+            "mining.start",
+            "mining.stop",
+            "mining.earnings",
+            "wallet.create",
+            "wallet.backup",
+            "wallet.recover",
+            "wallet.send",
+            "wallet.receive",
+            "vr.launch",
+            "vr.configure"
+        ]
+    },
+    "entity_extraction": {
+        "enabled": true,
+        "model": "bert-base",
+        "confidence_threshold": 0.6,
+        "entity_types": [
+            "cryptocurrency",
+            "fiat_currency",
+            "exchange",
+            "timeframe",
+            "amount",
+            "percentage",
+            "date",
+            "address",
+            "transaction_id",
+            "order_type",
+            "strategy_name"
+        ]
+    },
+    "context_handling": {
+        "context_window_size": 10,
+        "context_ttl_seconds": 300,
+        "use_entity_memory": true,
+        "memory_ttl_seconds": 1800
+    },
+    "response_templates": {
+        "enabled": true,
+        "templates_dir": "ai/intent_recognition/templates",
+        "fallback_responses": [
+            "I'm not sure I understood that. Could you please rephrase?",
+            "I didn't quite catch that. Can you explain differently?",
+            "I'm having trouble understanding your request. Could you be more specific?"
+        ]
+    },
+    "analytics": {
+        "track_intent_usage": true,
+        "track_misunderstood": true,
+        "track_response_time": true,
+        "log_full_conversations": false,
+        "analytics_dir": "ai/intent_recognition/analytics"
+    },
+    "performance": {
+        "batch_size": 16,
+        "max_workers": 4,
+        "use_gpu": true,
+        "precision": "fp16"
+    }
+}

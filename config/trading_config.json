@@ -1,0 +1,37 @@
+{
+    "enabled": true,
+    "exchanges": ["binance", "coinbase", "kraken"],
+    "trading_pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "XRP/USDT"],
+    "trading_strategies": {
+        "default_strategy": "moving_average_crossover",
+        "available_strategies": [
+            "moving_average_crossover",
+            "rsi_overbought_oversold",
+            "bollinger_bands",
+            "macd_signal"
+        ]
+    },
+    "risk_management": {
+        "max_position_size": 5,
+        "stop_loss_percentage": 2.5,
+        "take_profit_percentage": 5.0,
+        "max_daily_trades": 10
+    },
+    "api_timeout": 30,
+    "update_frequency": 60,
+    "historical_data": {
+        "enabled": true,
+        "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
+        "max_candles": 1000,
+        "providers": ["exchange", "csv", "redis"]
+    },
+    "notifications": {
+        "enabled": true,
+        "channels": ["event_bus", "email", "dashboard"]
+    },
+    "logging": {
+        "level": "INFO",
+        "to_file": true,
+        "to_console": true
+    }
+}

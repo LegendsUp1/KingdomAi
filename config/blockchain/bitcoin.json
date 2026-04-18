@@ -1,0 +1,38 @@
+{
+    "network": "mainnet",
+    "common": {
+        "timeout": 30,
+        "retry_attempts": 3,
+        "retry_delay": 5,
+        "public_nodes": [
+            "https://blockstream.info/api/",
+            "https://api.blockcypher.com/v1/btc/main",
+            "https://api.blockchair.com/bitcoin/",
+            "https://mempool.space/api/"
+        ]
+    },
+
+    "mainnet": {
+        "rpc_url": "${BITCOIN_MAINNET_RPC:https://blockstream.info/api/}",
+        "rpc_host": "${BITCOIN_MAINNET_HOST:blockstream.info}",
+        "rpc_port": 443,
+        "rpc_user": "${BITCOIN_MAINNET_USER:}",
+        "rpc_password": "${BITCOIN_MAINNET_PASS:}",
+        "use_ssl": true,
+        "verify_ssl": true,
+        "public_rpc": [
+            "https://blockstream.info/api/",
+            "https://api.blockcypher.com/v1/btc/main",
+            "https://api.blockchair.com/bitcoin/",
+            "https://mempool.space/api/"
+        ]
+    },
+    "api_keys": {
+        "blockcypher": "${BLOCKCYPHER_API_KEY:}",
+        "blockchair": "${BLOCKCHAIR_API_KEY:}",
+        "mempool": "${MEMPOOL_API_KEY:}",
+        "getblock": "${GETBLOCK_API_KEY:}",
+        "blockstream": "${BLOCKSTREAM_API_KEY:}"
+    },
+    "version": "1.0.0"
+}

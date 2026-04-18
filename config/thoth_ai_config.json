@@ -1,0 +1,102 @@
+{
+  "default_model": "mistral-nemo:latest",
+  "neural_mode": {
+    "enabled": true,
+    "description": "NEURAL MULTI-MODEL ORCHESTRATION - All models work simultaneously like neurons",
+    "consensus_threshold": 0.7,
+    "parallel_inference": true
+  },
+  "ollama": {
+    "url": "http://localhost:11434",
+    "models": [
+      "mistral-nemo:latest",
+      "cogito:latest",
+      "phi4-mini:latest",
+      "olmo-3:latest",
+      "qwen2.5:latest",
+      "mistral:latest",
+      "codellama:latest",
+      "deepseek-coder:latest",
+      "deepseek-r1:8b",
+      "phi3:latest",
+      "gemma2:latest",
+      "mixtral:latest",
+      "llava:latest",
+      "deepseek-ocr:latest"
+    ],
+    "vision_models": [
+      "llava:latest",
+      "deepseek-ocr:latest"
+    ],
+    "neural_roles": {
+      "llama3.2:latest": "coordinator",
+      "llama3.1:latest": "analyst",
+      "llama3:latest": "executor",
+      "llama2:latest": "validator",
+      "qwen2.5:latest": "analyst",
+      "mistral:latest": "creative",
+      "codellama:latest": "coder",
+      "deepseek-coder:latest": "coder",
+      "deepseek-r1:8b": "reasoner",
+      "phi3:latest": "trader",
+      "gemma2:latest": "trader",
+      "mixtral:latest": "coordinator"
+    },
+    "num_ctx": 8192,
+    "num_parallel": 4,
+    "max_loaded_models": 6
+  },
+  "gemini": {
+    "api_key": "${GEMINI_API_KEY}",
+    "enabled": true,
+    "models": ["gemini-2.0-pro", "gemini-2.0-flash", "gemini-1.5-pro"],
+    "defaults": {
+      "temperature": 0.7,
+      "max_tokens": 2048,
+      "top_p": 0.95,
+      "top_k": 40
+    }
+  },
+  "google_tpu": {
+    "enabled": false,
+    "endpoint": "",
+    "project_id": "${GOOGLE_CLOUD_PROJECT}",
+    "location": "us-central1",
+    "model": "gemini-2.0-flash",
+    "api_key": "${GOOGLE_API_KEY}",
+    "use_adc": true,
+    "timeout_seconds": 120
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6380,
+    "password": "QuantumNexus2025",
+    "db": 0,
+    "ssl": false,
+    "health_check_interval": 30,
+    "socket_timeout": 5,
+    "socket_connect_timeout": 5,
+    "retry_on_timeout": true,
+    "max_retry_attempts": 3,
+    "retry_delay": 1
+  },
+  "voice": {
+    "speech_recognition": true,
+    "text_to_speech": true,
+    "default_voice": "black_panther",
+    "speech_rate": 150,
+    "volume": 0.9
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/thoth_ai.log",
+    "max_size_mb": 10,
+    "backup_count": 5
+  },
+  "features": {
+    "enable_multi_model": true,
+    "enable_voice_commands": true,
+    "enable_streaming": true,
+    "enable_embeddings": true
+  }
+}

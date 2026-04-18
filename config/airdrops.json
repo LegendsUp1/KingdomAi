@@ -1,0 +1,218 @@
+{
+  "scan_settings": {
+    "enabled": true,
+    "scan_interval_minutes": 30,
+    "chains_to_scan": ["solana", "ethereum", "bsc", "polygon", "arbitrum", "optimism", "avalanche", "xrp"],
+    "auto_register": false,
+    "notification_enabled": true
+  },
+  "airdrops": [
+    {
+      "name": "BONK_Solana",
+      "chain": "solana",
+      "wallet_network": "solana",
+      "mode": "auto_scan",
+      "description": "BONK memecoin airdrop scanner for Solana",
+      "enabled": true,
+      "estimated_value": "$50-500",
+      "claim": {
+        "type": "external_worker",
+        "notes": "Handled by Solana airdrop worker listening on airdrop.register.requested"
+      }
+    },
+    {
+      "name": "Jupiter_Solana",
+      "chain": "solana",
+      "wallet_network": "solana",
+      "mode": "auto_scan",
+      "description": "Jupiter DEX aggregator - check for JUP airdrops",
+      "enabled": true,
+      "estimated_value": "$100-1000",
+      "claim": {
+        "type": "external_worker",
+        "notes": "Check eligibility at jup.ag"
+      }
+    },
+    {
+      "name": "Raydium_Solana",
+      "chain": "solana",
+      "wallet_network": "solana",
+      "mode": "auto_scan",
+      "description": "Raydium DEX - RAY token airdrops",
+      "enabled": true,
+      "estimated_value": "$50-300",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "WEN_Solana",
+      "chain": "solana",
+      "wallet_network": "solana",
+      "mode": "auto_scan",
+      "description": "WEN memecoin airdrop for Solana holders",
+      "enabled": true,
+      "estimated_value": "$10-100",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "XRP_Airdrops",
+      "chain": "xrp",
+      "wallet_network": "xrp",
+      "mode": "auto_scan",
+      "description": "XRP Ledger airdrops scanner - XRPL tokens",
+      "enabled": true,
+      "estimated_value": "$10-500",
+      "claim": {
+        "type": "external_worker",
+        "notes": "Scans for trustline-based airdrops on XRPL"
+      }
+    },
+    {
+      "name": "Flare_XRP",
+      "chain": "flare",
+      "wallet_network": "flare",
+      "mode": "auto_scan",
+      "description": "Flare Network FLR airdrops for XRP holders",
+      "enabled": true,
+      "estimated_value": "$50-500",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "Generic_EVM_Airdrop",
+      "chain": "ethereum",
+      "wallet_network": "ethereum",
+      "mode": "auto_scan",
+      "description": "Generic EVM airdrop scanner for Ethereum mainnet",
+      "enabled": true,
+      "estimated_value": "Variable",
+      "claim": {
+        "type": "evm_contract",
+        "contract_address": "",
+        "method": "claim",
+        "abi_name": "generic_evm_airdrop",
+        "arguments": ["wallet_address"]
+      }
+    },
+    {
+      "name": "Arbitrum_Airdrops",
+      "chain": "arbitrum",
+      "wallet_network": "arbitrum",
+      "mode": "auto_scan",
+      "description": "Arbitrum ecosystem airdrops - ARB and related tokens",
+      "enabled": true,
+      "estimated_value": "$50-1000",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "Optimism_Airdrops",
+      "chain": "optimism",
+      "wallet_network": "optimism",
+      "mode": "auto_scan",
+      "description": "Optimism ecosystem airdrops - OP tokens",
+      "enabled": true,
+      "estimated_value": "$50-500",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "BSC_Memecoin_Airdrops",
+      "chain": "bsc",
+      "wallet_network": "bsc",
+      "mode": "auto_scan",
+      "description": "BSC memecoin airdrops scanner",
+      "enabled": true,
+      "estimated_value": "$10-200",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "Polygon_Airdrops",
+      "chain": "polygon",
+      "wallet_network": "polygon",
+      "mode": "auto_scan",
+      "description": "Polygon ecosystem airdrops - MATIC and related",
+      "enabled": true,
+      "estimated_value": "$20-300",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "Base_Airdrops",
+      "chain": "base",
+      "wallet_network": "base",
+      "mode": "auto_scan",
+      "description": "Base (Coinbase L2) ecosystem airdrops",
+      "enabled": true,
+      "estimated_value": "$50-500",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "ZkSync_Airdrops",
+      "chain": "zksync",
+      "wallet_network": "zksync",
+      "mode": "auto_scan",
+      "description": "zkSync Era ecosystem airdrops",
+      "enabled": true,
+      "estimated_value": "$100-2000",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "Starknet_Airdrops",
+      "chain": "starknet",
+      "wallet_network": "starknet",
+      "mode": "auto_scan",
+      "description": "Starknet ecosystem airdrops - STRK tokens",
+      "enabled": true,
+      "estimated_value": "$100-1000",
+      "claim": {
+        "type": "external_worker"
+      }
+    },
+    {
+      "name": "LayerZero_Airdrops",
+      "chain": "multichain",
+      "wallet_network": "ethereum",
+      "mode": "auto_scan",
+      "description": "LayerZero cross-chain airdrops - ZRO tokens",
+      "enabled": true,
+      "estimated_value": "$100-2000",
+      "claim": {
+        "type": "external_worker"
+      }
+    }
+  ],
+  "airdrop_sources": [
+    {
+      "name": "DeFiLlama Airdrops",
+      "url": "https://defillama.com/airdrops",
+      "enabled": true,
+      "scan_frequency": "hourly"
+    },
+    {
+      "name": "Airdrop Alert",
+      "url": "https://airdropalert.com",
+      "enabled": true,
+      "scan_frequency": "daily"
+    },
+    {
+      "name": "CoinMarketCap Airdrops",
+      "url": "https://coinmarketcap.com/airdrop/",
+      "enabled": true,
+      "scan_frequency": "daily"
+    }
+  ]
+}

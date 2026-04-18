@@ -1,0 +1,436 @@
+    async def _subscribe_to_events(self):
+        """Subscribe to relevant system events."""
+        try:
+            if not self.event_bus:
+                self.logger.error("No event bus available to subscribe to events")
+                return
+                
+            # Update system info immediately
+            self._update_system_info()
+            
+            # Subscribe to component status events
+            await self.event_bus.subscribe("component.status", self._handle_component_status)
+            await self.event_bus.subscribe("system.metrics", self._handle_system_metrics)
+            
+            # Subscribe to event bus status events
+            await self.event_bus.subscribe("event_bus.status", self._handle_event_bus_status)
+            await self.event_bus.subscribe("api.key.update", self._handle_api_key_update)
+            
+            # Monitor all events for the event monitor
+            await self.event_bus.subscribe("*", self._monitor_all_events)
+            
+            self.logger.info("Subscribed to diagnostic events")
+        except Exception as e:
+            self.logger.error(f"Error subscribing to events: {e}")
+            self.logger.error(traceback.format_exc())
+            
+    async def _handle_component_status(self, event_type, data):
+        """Handle component status event."""
+        try:
+            if not data or 'component' not in data:
+                return
+                
+            component = data.get('component')
+            status = data.get('status', 'unknown')
+            timestamp = data.get('timestamp', time.time())
+            
+            # Update component status tracking
+            if component not in self.component_statuses:
+                self.component_statuses[component] = {}
+                
+            self.component_statuses[component]['status'] = status
+            self.component_statuses[component]['last_update'] = timestamp
+            self.component_statuses[component]['details'] = data.get('details', '')
+            
+            # Update status tree if it's visible
+            if self.notebook.index(self.notebook.select()) == 0:
+                self._update_status_tree()
+                
+        except Exception as e:
+            self.logger.error(f"Error handling component status: {e}")
+            
+    async def _handle_system_metrics(self, event_data):
+        """Handle system metrics updates.
+        
+        Args:
+            event_data: System metrics data
+        """
+        try:
+            # Update system info if we're on that tab
+            if self.notebook.index(self.notebook.select()) == 3:
+                self._update_system_info(event_data)
+        except Exception as e:
+            self.logger.error(f"Error handling system metrics: {e}")
+            
+    async def _handle_event_bus_status(self, event_type, data):
+        """Handle event bus status event."""
+        try:
+            if not data:
+                return
+                
+            # Update event bus section in system info tab
+            if 'event_bus' in self.info_sections and self.notebook.index(self.notebook.select()) == 3:
+                section = self.info_sections['event_bus']
+                
+                # Clear existing content
+                for widget in section.winfo_children():
+                    widget.destroy()
+                    
+                # Add status info
+                row = 0
+                for key, value in data.items():
+                    if key != 'timestamp':
+                        ttk.Label(section, text=f"{key}:").grid(row=row, column=0, sticky="w", padx=5, pady=2)
+                        ttk.Label(section, text=str(value)).grid(row=row, column=1, sticky="w", padx=5, pady=2)
+                        row += 1
+                        
+        except Exception as e:
+            self.logger.error(f"Error handling event bus status: {e}")
+            
+    async def _monitor_all_events(self, event_type, data):
+        """Monitor all events for the event monitor."""
+        try:
+            # Increment event counter
+            self.event_counter += 1
+            
+            # Update event stats label
+            self.event_stats_label.config(text=f"Events: {self.event_counter}")
+            
+            # Create event record
+            event_record = {
+                'timestamp': datetime.now().isoformat(),
+                'event_type': event_type,
+                'source': data.get('source', 'unknown') if isinstance(data, dict) else 'unknown',
+                'details': str(data)[:100] + ('...' if len(str(data)) > 100 else '')
+            }
+            
+            # Add to history (limit size)
+            self.event_history.append(event_record)
+            if len(self.event_history) > self.max_event_history:
+                self.event_history = self.event_history[-self.max_event_history:]
+                
+            # Update event tree if we're on the events tab
+            if self.notebook.index(self.notebook.select()) == 1:
+                self._update_event_tree()
+                
+        except Exception as e:
+            self.logger.error(f"Error monitoring events: {e}")
+            
+    async def _handle_log_entry(self, event_type, data):
+        """Handle log entry event."""
+        try:
+            if not data or 'message' not in data:
+                return
+                
+            # Get log entry details
+            timestamp = data.get('timestamp', datetime.now().isoformat())
+            level = data.get('level', 'INFO')
+            message = data.get('message', '')
+            
+            # Add to log viewer if visible and matches filter
+            if self.notebook.index(self.notebook.select()) == 2 and self._should_show_log_level(level):
+                self._add_log_entry(timestamp, level, message)
+                
+        except Exception as e:
+            self.logger.error(f"Error handling log entry: {e}")
+            
+    def _update_status_tree(self):
+        """Update the component status treeview."""
+        try:
+            # Clear existing items
+            for item in self.status_tree.get_children():
+                self.status_tree.delete(item)
+                
+            # Add component statuses
+            for component, status_data in self.component_statuses.items():
+                status = status_data.get('status', 'unknown')
+                last_update = datetime.fromtimestamp(status_data.get('last_update', 0)).strftime('%Y-%m-%d %H:%M:%S')
+                details = status_data.get('details', '')
+                
+                self.status_tree.insert('', 'end', values=(component, status, last_update, details))
+                
+            # Add API key statuses
+            for service, status_data in self.api_key_statuses.items():
+                status = status_data.get('status', 'unknown')
+                last_update = status_data.get('last_update', 'Never')
+                details = f"API Key for {service}"
+                
+                self.status_tree.insert('', 'end', values=(f"API: {service}", status, last_update, details))
+                
+        except Exception as e:
+            self.logger.error(f"Error updating status tree: {e}")
+            
+    def _update_event_tree(self):
+        """Update the event monitor treeview."""
+        try:
+            # Clear existing items
+            for item in self.event_tree.get_children():
+                self.event_tree.delete(item)
+                
+            # Get filter text
+            filter_text = self.filter_entry.get().lower()
+            
+            # Add event history
+            for event in reversed(self.event_history):
+                # Apply filter if any
+                if filter_text:
+                    if (filter_text not in event['event_type'].lower() and 
+                        filter_text not in event['source'].lower() and 
+                        filter_text not in event['details'].lower()):
+                        continue
+                        
+                self.event_tree.insert(
+                    '', 'end', 
+                    values=(
+                        event['timestamp'],
+                        event['event_type'],
+                        event['source'],
+                        event['details']
+                    )
+                )
+                
+        except Exception as e:
+            self.logger.error(f"Error updating event tree: {e}")
+            
+    def _update_system_info(self, data=None):
+        """Update the system info tab with the latest data."""
+        try:
+            # System section
+            system_section = self.info_sections['system']
+            
+            # Clear existing content
+            for widget in system_section.winfo_children():
+                widget.destroy()
+                
+            # System info
+            uptime = time.time() - self.system_start_time
+            uptime_str = f"{int(uptime // 3600)}h {int((uptime % 3600) // 60)}m {int(uptime % 60)}s"
+            
+            ttk.Label(system_section, text="Uptime:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
+            ttk.Label(system_section, text=uptime_str).grid(row=0, column=1, sticky="w", padx=5, pady=2)
+            
+            ttk.Label(system_section, text="System Time:").grid(row=1, column=0, sticky="w", padx=5, pady=2)
+            ttk.Label(system_section, text=datetime.now().strftime('%Y-%m-%d %H:%M:%S')).grid(row=1, column=1, sticky="w", padx=5, pady=2)
+            
+            ttk.Label(system_section, text="Events Monitored:").grid(row=2, column=0, sticky="w", padx=5, pady=2)
+            ttk.Label(system_section, text=str(self.event_counter)).grid(row=2, column=1, sticky="w", padx=5, pady=2)
+            
+            ttk.Label(system_section, text="Components Tracked:").grid(row=3, column=0, sticky="w", padx=5, pady=2)
+            ttk.Label(system_section, text=str(len(self.component_statuses))).grid(row=3, column=1, sticky="w", padx=5, pady=2)
+            
+            # Component section
+            component_section = self.info_sections['components']
+            
+            # Clear existing content
+            for widget in component_section.winfo_children():
+                widget.destroy()
+                
+            # Component status summary
+            statuses = {}
+            for component, status_data in self.component_statuses.items():
+                status = status_data.get('status', 'unknown')
+                if status not in statuses:
+                    statuses[status] = 0
+                statuses[status] += 1
+                
+            row = 0
+            for status, count in statuses.items():
+                ttk.Label(component_section, text=f"{status}:").grid(row=row, column=0, sticky="w", padx=5, pady=2)
+                ttk.Label(component_section, text=str(count)).grid(row=row, column=1, sticky="w", padx=5, pady=2)
+                row += 1
+                
+            # API keys section
+            api_keys_section = self.info_sections['api_keys']
+            
+            # Clear existing content
+            for widget in api_keys_section.winfo_children():
+                widget.destroy()
+                
+            # API keys status
+            if not self.api_key_statuses:
+                ttk.Label(api_keys_section, text="No API keys tracked yet").grid(row=0, column=0, sticky="w", padx=5, pady=2)
+            else:
+                row = 0
+                for service, status_data in self.api_key_statuses.items():
+                    status = status_data.get('status', 'unknown')
+                    last_update = status_data.get('last_update', 'Never')
+                    
+                    ttk.Label(api_keys_section, text=f"{service}:").grid(row=row, column=0, sticky="w", padx=5, pady=2)
+                    ttk.Label(api_keys_section, text=f"{status} (Last update: {last_update})").grid(row=row, column=1, sticky="w", padx=5, pady=2)
+                    row += 1
+                    
+        except Exception as e:
+            self.logger.error(f"Error updating system info: {e}")
+            
+    def _add_log_entry(self, timestamp, level, message):
+        """Add a log entry to the log viewer."""
+        try:
+            # Make text editable
+            self.log_text.config(state=tk.NORMAL)
+            
+            # Add timestamp and level
+            self.log_text.insert(tk.END, f"[{timestamp}] [{level}] ")
+            
+            # Set color based on level
+            tag_name = f"level_{level}"
+            
+            # Define color for each level
+            level_colors = {
+                "DEBUG": "#808080",    # Gray
+                "INFO": "#000000",     # Black
+                "WARNING": "#FF8C00",  # Dark Orange
+                "ERROR": "#FF0000",    # Red
+                "CRITICAL": "#8B0000"  # Dark Red
+            }
+            
+            # Create tag if not exists
+            if tag_name not in self.log_text.tag_names():
+                self.log_text.tag_configure(tag_name, foreground=level_colors.get(level, "#000000"))
+                
+            # Add message with tag
+            self.log_text.insert(tk.END, f"{message}\n", tag_name)
+            
+            # Scroll to end
+            self.log_text.see(tk.END)
+            
+            # Make text readonly again
+            self.log_text.config(state=tk.DISABLED)
+            
+        except Exception as e:
+            self.logger.error(f"Error adding log entry: {e}")
+            
+    def _on_refresh(self):
+        """Handle refresh button click."""
+        try:
+            # Get current tab
+            current_tab = self.notebook.index(self.notebook.select())
+            
+            # Update based on current tab
+            if current_tab == 0:  # Component Status
+                self._update_status_tree()
+            elif current_tab == 1:  # Event Monitor
+                self._update_event_tree()
+            elif current_tab == 2:  # Log Viewer
+                self._on_refresh_logs()
+            elif current_tab == 3:  # System Info
+                self._update_system_info()
+                
+        except Exception as e:
+            self.logger.error(f"Error refreshing: {e}")
+            
+    def _on_test_event_bus(self):
+        """Handle test event bus button click."""
+        try:
+            if not self.event_bus:
+                self.logger.error("No event bus available to test")
+                return
+                
+            # Create a test event
+            test_data = {
+                "source": "diagnostic_frame",
+                "timestamp": time.time(),
+                "test_id": time.time(),
+                "details": "Test event from diagnostic frame"
+            }
+            
+            # Publish test event using async approach
+            if asyncio.get_event_loop().is_running():
+                asyncio.create_task(self.event_bus.publish("diagnostics.test", test_data))
+                asyncio.create_task(self.event_bus.subscribe("diagnostics.test.response", self._handle_test_response))
+            else:
+                self.logger.error("No running event loop to publish test event")
+                
+            # Update status
+            self.update_status("Test event sent to event bus", "info")
+            
+        except Exception as e:
+            self.logger.error(f"Error testing event bus: {e}")
+            
+    def _on_clear_events(self):
+        """Handle clear events button click."""
+        try:
+            # Clear event history
+            self.event_history = []
+            
+            # Update event tree
+            self._update_event_tree()
+            
+        except Exception as e:
+            self.logger.error(f"Error clearing events: {e}")
+            
+    def _on_apply_filter(self):
+        """Handle apply filter button click."""
+        self._update_event_tree()
+        
+    def _on_log_level_changed(self, event):
+        """Handle log level changed event."""
+        self._on_refresh_logs()
+        
+    def _on_log_file_changed(self, event):
+        """Handle log file changed event."""
+        self._on_refresh_logs()
+        
+    def _on_refresh_logs(self):
+        """Handle refresh logs button click."""
+        try:
+            # Make text editable
+            self.log_text.config(state=tk.NORMAL)
+            
+            # Clear existing content
+            self.log_text.delete(1.0, tk.END)
+            
+            # Get selected log file and level
+            log_file = self.log_file_var.get()
+            log_level = self.log_level_var.get()
+            
+            # Try to load log file
+            try:
+                with open(f"logs/{log_file}", "r") as f:
+                    log_lines = f.readlines()
+                    
+                    # Filter by log level
+                    for line in log_lines:
+                        # Add log entry if it matches the selected level or higher
+                        for level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+                            if f"[{level}]" in line and self._should_show_log_level(level):
+                                self._add_log_entry(
+                                    line.split("[")[1].split("]")[0],  # timestamp
+                                    level,
+                                    line.split(f"[{level}]")[1].strip()  # message
+                                )
+                                break
+            except FileNotFoundError:
+                self.log_text.insert(tk.END, f"Log file 'logs/{log_file}' not found.")
+            except Exception as e:
+                self.log_text.insert(tk.END, f"Error loading log file: {str(e)}")
+                
+            # Make text readonly again
+            self.log_text.config(state=tk.DISABLED)
+            
+        except Exception as e:
+            self.logger.error(f"Error refreshing logs: {e}")
+            
+    def _on_auto_refresh_toggled(self):
+        """Handle auto refresh checkbox toggled."""
+        # Implementation for auto-refresh
+        pass
+        
+    def _should_show_log_level(self, level):
+        """Check if a log level should be shown based on the current filter."""
+        try:
+            # Get selected log level
+            selected_level = self.log_level_var.get()
+            
+            # Log level hierarchy
+            levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            
+            # Check if level is in hierarchy
+            if level not in levels or selected_level not in levels:
+                return True
+                
+            # Show if level is equal or higher than selected level
+            return levels.index(level) >= levels.index(selected_level)
+            
+        except Exception as e:
+            self.logger.error(f"Error checking log level: {e}")
+            return True  # Show by default

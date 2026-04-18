@@ -1,0 +1,13 @@
+{
+    "redis": {
+        "host": "localhost",
+        "port": 6380,
+        "password": "QuantumNexus2025"
+    },
+    "paths": {
+        "models": "models",
+        "data": "data",
+        "logs": "logs",
+        "config": "config"
+    }
+}

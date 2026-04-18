@@ -1,0 +1,120 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "models_dir": "ai/prediction_engine/models",
+    "data_dir": "ai/prediction_engine/data",
+    "update_interval": 3600,
+    "prediction_horizon": [1, 6, 24, 72],
+    "default_symbols": ["BTC/USDT", "ETH/USDT", "BNB/USDT", "ADA/USDT", "SOL/USDT"],
+    "features": {
+        "price": true,
+        "volume": true,
+        "technical_indicators": true,
+        "market_sentiment": true,
+        "on_chain_metrics": true,
+        "whale_movements": true
+    },
+    "technical_indicators": {
+        "moving_averages": {
+            "enabled": true,
+            "periods": [7, 25, 50, 100, 200]
+        },
+        "rsi": {
+            "enabled": true,
+            "period": 14,
+            "overbought": 70,
+            "oversold": 30
+        },
+        "macd": {
+            "enabled": true,
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9
+        },
+        "bollinger_bands": {
+            "enabled": true,
+            "period": 20,
+            "std_dev": 2
+        },
+        "stochastic": {
+            "enabled": true,
+            "k_period": 14,
+            "d_period": 3,
+            "slowing": 3
+        }
+    },
+    "model_types": {
+        "linear_regression": {
+            "enabled": true,
+            "regularization": "l2",
+            "alpha": 0.001
+        },
+        "lstm": {
+            "enabled": true,
+            "layers": [64, 32],
+            "dropout": 0.2,
+            "recurrent_dropout": 0.2,
+            "sequence_length": 60
+        },
+        "xgboost": {
+            "enabled": true,
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "n_estimators": 100
+        },
+        "prophet": {
+            "enabled": true,
+            "changepoint_prior_scale": 0.05,
+            "seasonality_prior_scale": 10,
+            "seasonality_mode": "multiplicative"
+        },
+        "ensemble": {
+            "enabled": true,
+            "models": ["linear_regression", "lstm", "xgboost"],
+            "weights": [0.2, 0.5, 0.3]
+        }
+    },
+    "training": {
+        "auto_train": true,
+        "train_interval_hours": 24,
+        "min_data_points": 1000,
+        "validation_split": 0.2,
+        "test_split": 0.1,
+        "early_stopping": {
+            "enabled": true,
+            "patience": 10,
+            "min_delta": 0.001
+        },
+        "hyperparameter_tuning": {
+            "enabled": true,
+            "method": "bayesian",
+            "max_trials": 30,
+            "timeout_hours": 6
+        }
+    },
+    "evaluation": {
+        "metrics": ["mse", "mae", "rmse", "mape", "directional_accuracy", "sharpe_ratio"],
+        "backtest": {
+            "enabled": true,
+            "periods": ["1d", "7d", "30d", "90d"],
+            "initial_capital": 10000,
+            "fee_percentage": 0.1
+        }
+    },
+    "alerts": {
+        "enabled": true,
+        "price_change_threshold": 5.0,
+        "prediction_change_threshold": 7.5,
+        "confidence_threshold": 0.7
+    },
+    "caching": {
+        "enabled": true,
+        "ttl_seconds": 300,
+        "max_items": 1000
+    },
+    "performance": {
+        "batch_size": 32,
+        "workers": 4,
+        "use_gpu": true
+    }
+}

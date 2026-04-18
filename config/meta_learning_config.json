@@ -1,0 +1,88 @@
+{
+    "enabled": true,
+    "log_level": "INFO",
+    "learning_rate": 0.01,
+    "models_dir": "ai/meta_learning/models",
+    "history_size": 1000,
+    "batch_size": 32,
+    "update_interval": 24,
+    "training": {
+        "validation_split": 0.2,
+        "epochs": 100,
+        "early_stopping_patience": 10,
+        "min_delta": 0.001,
+        "shuffle": true
+    },
+    "hyperparameters": {
+        "learning_rate_range": [0.001, 0.1],
+        "optimizer": "adam",
+        "loss_function": "mse",
+        "hidden_layers": [64, 32],
+        "activation": "relu",
+        "dropout_rate": 0.2
+    },
+    "experience_replay": {
+        "enabled": true,
+        "buffer_size": 10000,
+        "prioritized": true,
+        "alpha": 0.6,
+        "beta": 0.4
+    },
+    "market_features": [
+        "price",
+        "volume",
+        "market_cap",
+        "rsi",
+        "macd",
+        "bollinger_bands",
+        "moving_averages",
+        "support_resistance",
+        "sentiment"
+    ],
+    "transfer_learning": {
+        "enabled": true,
+        "source_models": ["market_trend", "volatility", "price_prediction"],
+        "transfer_strategies": ["fine_tuning", "feature_extraction"]
+    },
+    "model_types": {
+        "linear": {
+            "enabled": true,
+            "regularization": "l2",
+            "regularization_strength": 0.01
+        },
+        "neural_network": {
+            "enabled": true,
+            "architecture": "lstm",
+            "sequence_length": 60,
+            "embedding_size": 128
+        },
+        "reinforcement": {
+            "enabled": true,
+            "algorithm": "dqn",
+            "gamma": 0.99,
+            "epsilon_start": 1.0,
+            "epsilon_end": 0.01,
+            "epsilon_decay": 0.995
+        },
+        "ensemble": {
+            "enabled": true,
+            "models": ["linear", "neural_network", "reinforcement"],
+            "weighting": "dynamic"
+        }
+    },
+    "evaluation": {
+        "metrics": ["mse", "mae", "sharpe_ratio", "profit_factor", "win_rate"],
+        "backtest_periods": ["1d", "7d", "30d", "90d", "365d"],
+        "market_conditions": ["bull", "bear", "sideways", "volatile"]
+    },
+    "automl": {
+        "enabled": true,
+        "search_space": {
+            "learning_rate": [0.001, 0.01, 0.1],
+            "batch_size": [16, 32, 64, 128],
+            "hidden_layers": [[32], [64, 32], [128, 64, 32]]
+        },
+        "max_trials": 20,
+        "timeout_hours": 12
+    }
+}

@@ -1,0 +1,20 @@
+{
+  "voice_system": "black_panther_xtts",
+  "tts_engine": "xtts_v2",
+  "reference_voice": "processed_black_panther_CLEAN.wav",
+  "voice_cloning_enabled": true,
+  "language": "en",
+  "device": "auto",
+  "quality": "high",
+  "voice_characteristics": {
+    "description": "Black Panther character voice",
+    "pitch_range": "deep male",
+    "style": "authoritative, powerful",
+    "emotion_transfer": true
+  },
+  "performance": {
+    "gpu_acceleration": true,
+    "batch_processing": false,
+    "cache_embeddings": true
+  }
+}

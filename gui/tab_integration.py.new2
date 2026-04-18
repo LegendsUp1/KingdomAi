@@ -1,0 +1,615 @@
+#!/usr/bin/env python3
+"""Kingdom AI Tab Integration Module.
+
+This module ensures all tab frames are properly connected to the event bus
+and can display real-time data from their respective components.
+
+Updated for 2025 with modern asyncio patterns and event handling best practices.
+"""
+
+import logging
+import inspect
+import traceback
+import asyncio
+import threading
+import re
+from typing import Dict, Any, Optional, List, Callable, Set, Union, TypeVar, cast, Awaitable
+from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
+
+# Import EventBusWrapper for synchronous event bus operations
+from core.event_bus_wrapper import get_event_bus_wrapper, sync_method
+
+# Import event handler integration
+from gui.event_handler_integration import integrate_frame_event_handlers
+
+# Configure logger
+logger = logging.getLogger("kingdom.tab_integration")
+
+# Type definitions for better type hints
+T = TypeVar('T')
+EventData = Dict[str, Any]
+EventHandler = Callable[[EventData], Any]
+AsyncEventHandler = Callable[[EventData], Awaitable[Any]]
+
+# Event decorators for automatic event handling
+def event_handler(event_type: str):
+    """Decorator to mark a method as an event handler for a specific event type.
+    
+    Args:
+        event_type: The type of event this handler will process
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(self, event_data):
+            return await func(self, event_data)
+        setattr(wrapper, '_event_type', event_type)
+        return wrapper
+    return decorator
+
+
+class TabIntegrator:
+    """Integrates all tab frames with their components and ensures real-time data display.
+    
+    This class manages the connection between tab frames and their corresponding
+    components, ensuring that real-time data flows correctly between them.
+    
+    2025 Update: Implemented with modern asyncio patterns, structured event handling,
+    and improved error recovery mechanisms.
+    """
+    
+    def __init__(self, event_bus):
+        """Initialize the TabIntegrator.
+        
+        Args:
+            event_bus: The event bus for inter-component communication
+        """
+        self.event_bus = event_bus
+        self.integrated_frames: Set[str] = set()
+        self.logger = logging.getLogger("kingdom.tab_integration")
+        self.logger.info("TabIntegrator initialized with 2025 asyncio patterns")
+        self.thread_pool = ThreadPoolExecutor(max_workers=4)
+        
+        # Preserving original component mappings to ensure compatibility with existing system
+        self.component_mapping: Dict[str, List[str]] = {
+            "dashboard": ["market_data_provider", "system_monitor"],
+            "trading": ["trading_system", "market_api"],
+            "mining": ["mining_system", "blockchain_connector"],
+            "wallet": ["wallet_manager", "blockchain_connector"],
+            "vr": ["vr_system", "vr_connector"],
+            "ai": ["thoth_ai_assistant", "continuous_response_generator"],
+            "thoth": ["thoth_ai_assistant", "voice_manager"],
+            "code_generator": ["code_generator", "thoth_ai_assistant"],
+            "api_keys": ["api_key_manager"],
+            "diagnostics": ["system_monitor", "error_resolution_system"],
+            "settings": ["config_manager"]
+        }
+        
+        # Advanced frame type mapping with regex patterns for more flexible matching
+        self._frame_type_patterns: Dict[str, str] = {
+            r".*dashboard.*": "dashboard",
+            r".*trading.*": "trading",
+            r".*mining.*": "mining",
+            r".*wallet.*": "wallet",
+            r".*vr.*": "vr",
+            r".*ai.*": "ai",
+            r".*thoth.*": "thoth",
+            r".*code.*generator.*": "code_generator",
+            r".*api.*keys.*": "api_keys",
+            r".*diagnostics.*": "diagnostics",
+            r".*settings.*": "settings"
+        }
+    
+    async def integrate_frame(self, frame, frame_name: Optional[str] = None) -> bool:
+        """Integrate a frame with real-time data handlers.
+        
+        Args:
+            frame: The frame to integrate
+            frame_name: Optional name for the frame
+            
+        Returns:
+            bool: True if integration was successful, False otherwise
+        """
+        if frame is None:
+            self.logger.warning("Cannot integrate None frame")
+            return False
+            
+        try:
+            # Get frame name from class name if not provided
+            if frame_name is None:
+                frame_name = frame.__class__.__name__
+                
+            # Skip if already integrated
+            if frame_name in self.integrated_frames:
+                self.logger.debug(f"Frame {frame_name} already integrated")
+                return True
+                
+            self.logger.info(f"Integrating frame: {frame_name}")
+            
+            # Add event handlers
+            frame_name_str = str(frame_name)  # Ensure we have a string for _integrate_frame
+            success = await self._integrate_frame(frame_name_str, frame)
+                
+            if success:
+                self.integrated_frames.add(frame_name_str)
+                    
+            return success
+        except Exception as e:
+            self.logger.error(f"Error integrating frame {frame_name if frame_name else 'unknown'}: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    async def _integrate_frame(self, frame_name: str, frame) -> bool:
+        """Integrate a specific frame with real-time data handlers.
+        
+        Args:
+            frame_name: Name of the frame
+            frame: The frame instance
+            
+        Returns:
+            bool: True if integration was successful, False otherwise
+        """
+        if frame is None:
+            self.logger.warning(f"Cannot integrate {frame_name} because frame is None")
+            return False
+            
+        try:
+            # Determine frame type using advanced pattern matching
+            frame_type = self._determine_frame_type(frame_name)
+            
+            # Get EventBusWrapper for synchronous event bus operations
+            event_bus_wrapper = get_event_bus_wrapper(self.event_bus)
+            
+            self.logger.info(f"Integrating {frame_name} with real-time data handlers")
+            
+            # Use integrate_frame_event_handlers for standard event handling integration
+            await integrate_frame_event_handlers(frame, event_bus_wrapper)
+            
+            # Register standard frame handlers based on frame type
+            await self._register_frame_specific_handlers(frame_type, frame, event_bus_wrapper)
+            
+            self.logger.info(f"Integrated {frame_name} with real-time data handlers")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error integrating {frame_name} event handlers: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+    
+    def _determine_frame_type(self, frame_name: str) -> str:
+        """Determine frame type using advanced pattern matching.
+        
+        Args:
+            frame_name: The name of the frame
+            
+        Returns:
+            str: The determined frame type
+        """
+        # Convert to lowercase for case-insensitive matching
+        frame_name_lower = frame_name.lower()
+        
+        # Remove common suffixes
+        for suffix in ["_frame", "frame", "_tab", "tab"]:
+            frame_name_lower = frame_name_lower.replace(suffix, "")
+        
+        # Check against patterns
+        for pattern, frame_type in self._frame_type_patterns.items():
+            if re.match(pattern, frame_name_lower):
+                return frame_type
+        
+        # Default to the stripped name if no match found
+        return frame_name_lower.strip()
+    
+    async def _register_frame_specific_handlers(self, frame_type: str, frame, event_bus_wrapper) -> None:
+        """Register frame-specific event handlers.
+        
+        Args:
+            frame_type: The type of frame
+            frame: The frame instance
+            event_bus_wrapper: The event bus wrapper
+        """
+        handler_mappings = {
+            "trading": [
+                ("trading.update", "trading_update"),
+                ("market.update", "market_update"),
+                ("price.update", "price_update"),
+                ("market.historical_data", "historical_data"),
+                ("trading.order", "order_update")
+            ],
+            "mining": [
+                ("mining.update", "mining_update"),
+                ("mining.status", "mining_status"),
+                ("blockchain.update", "blockchain_update"),
+                ("mining.hashrate", "mining_hashrate"),
+                ("mining.devices", "mining_devices")
+            ],
+            "wallet": [
+                ("wallet.balance", "wallet_balance"),
+                ("wallet.transactions", "wallet_transaction"),
+                ("wallet.update", "wallet_update")
+            ],
+            "vr": [
+                ("vr.status", "vr_status"),
+                ("vr.environment", "vr_environment")
+            ],
+            "ai": [
+                ("ai.status", "ai_status"),
+                ("ai.response", "ai_response"),
+                ("code.templates", "code_templates"),
+                ("code.generated", "code_generated")
+            ],
+            "thoth": [
+                ("ai.status", "ai_status"),
+                ("ai.response", "ai_response"),
+                ("code.templates", "code_templates"),
+                ("code.generated", "code_generated")
+            ],
+            "code_generator": [
+                ("code.templates", "code_templates"),
+                ("code.generated", "code_generated")
+            ],
+            "api_keys": [
+                ("api_keys.updated", "api_key_update"),
+                ("api_keys.status", "api_key_status")
+            ],
+            "diagnostics": [
+                ("system.diagnostics", "system_diagnostics"),
+                ("system.metrics", "system_metrics")
+            ],
+            "dashboard": [
+                ("component.status", "component_status"),
+                ("system.metrics", "system_metrics"),
+                ("market.update", "market_update"),
+                ("market.data", "market_data")
+            ]
+        }
+        
+        # Get event handlers for the frame type
+        handlers = handler_mappings.get(frame_type, [])
+        
+        # Register handlers
+        for event_type, handler_name in handlers:
+            self._register_handler(event_bus_wrapper, event_type, frame, handler_name)
+            
+        # Default handlers for any frame type
+        if not handlers:
+            self._register_handler(event_bus_wrapper, f"{frame_type}.update", frame, "update")
+            self._register_handler(event_bus_wrapper, f"{frame_type}.status", frame, "status")
+    
+    def _register_handler(self, event_bus_wrapper, event_type: str, frame, handler_name: str) -> None:
+        """Register an event handler for a specific event type.
+        
+        Args:
+            event_bus_wrapper: The event bus wrapper
+            event_type: The type of event to handle
+            frame: The frame instance
+            handler_name: The name of the handler method
+        """
+        handler = self._create_data_handler(frame, handler_name)
+        event_bus_wrapper.subscribe(event_type, handler)
+            
+    async def integrate_tabs(self, main_window) -> bool:
+        """Integrate all tabs from the main window with their real-time data handlers.
+        
+        Args:
+            main_window: The main window containing all tabs
+            
+        Returns:
+            bool: True if all tabs were integrated successfully, False otherwise
+        """
+        if main_window is None:
+            self.logger.warning("Cannot integrate tabs from None main_window")
+            return False
+            
+        success = True
+        try:
+            # Get all frames from main window
+            frames = []
+            
+            # Add all tab frames if they exist
+            tab_frames = {
+                "dashboard_tab": getattr(main_window, "dashboard_tab", None),
+                "trading_tab": getattr(main_window, "trading_tab", None),
+                "mining_tab": getattr(main_window, "mining_tab", None),
+                "wallet_tab": getattr(main_window, "wallet_tab", None),
+                "vr_tab": getattr(main_window, "vr_tab", None),
+                "ai_tab": getattr(main_window, "ai_tab", None),
+                "thoth_tab": getattr(main_window, "thoth_tab", None),
+                "code_generator_tab": getattr(main_window, "code_generator_tab", None),
+                "api_keys_tab": getattr(main_window, "api_keys_tab", None),
+                "diagnostics_tab": getattr(main_window, "diagnostics_tab", None),
+                "settings_tab": getattr(main_window, "settings_tab", None)
+            }
+            
+            # Add each tab frame to the list
+            for tab_name, tab_frame in tab_frames.items():
+                if tab_frame is not None:
+                    frames.append((tab_name, tab_frame))
+            
+            # Integrate each frame
+            for frame_name, frame in frames:
+                frame_success = await self.integrate_frame(frame, frame_name)
+                if not frame_success:
+                    self.logger.warning(f"Failed to integrate {frame_name}")
+                    success = False
+            
+            self.logger.info("Tab integration complete")
+            return success
+        except Exception as e:
+            self.logger.error(f"Error integrating tabs: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+            
+    def _create_data_handler(self, frame, handler_name: str) -> Callable:
+        """Create a data handler function for a specific event type.
+        
+        Args:
+            frame: The frame instance
+            handler_name: The name of the handler method
+            
+        Returns:
+            function: An async function that handles the event
+        """
+        
+        async def handle_event(event_data: Dict[str, Any]) -> None:
+            """Handle the event and update the frame."""
+            try:
+                # Try to call the handler method directly
+                method_name = f"_handle_{handler_name}"
+                handler = getattr(frame, method_name, None)
+                
+                if handler is not None and callable(handler):
+                    # Check if the handler is a coroutine function or regular function
+                    if asyncio.iscoroutinefunction(handler):
+                        await handler(event_data)
+                    else:
+                        # Use thread pool for regular functions
+                        loop = asyncio.get_event_loop()
+                        await loop.run_in_executor(self.thread_pool, handler, event_data)
+                else:
+                    # Try to call a generic update method
+                    update_method = getattr(frame, "update_data", None)
+                    if update_method is not None and callable(update_method):
+                        if asyncio.iscoroutinefunction(update_method):
+                            await update_method(handler_name, event_data)
+                        else:
+                            # Use thread pool for regular functions
+                            loop = asyncio.get_event_loop()
+                            await loop.run_in_executor(
+                                self.thread_pool, 
+                                lambda: update_method(handler_name, event_data)
+                            )
+                    else:
+                        self.logger.warning(f"No handler for {handler_name} in {frame.__class__.__name__}")
+            except Exception as e:
+                self.logger.error(f"Error handling {handler_name} event: {e}")
+                self.logger.error(traceback.format_exc())
+                # Attempt recovery
+                await self._attempt_error_recovery(frame, handler_name, event_data, e)
+        
+        return handle_event
+        
+    async def _attempt_error_recovery(self, frame, handler_name: str, event_data: Dict[str, Any], error: Exception) -> None:
+        """Attempt to recover from handler errors with fallback mechanisms.
+        
+        Args:
+            frame: The frame instance
+            handler_name: The name of the handler
+            event_data: The event data
+            error: The exception that occurred
+        """
+        try:
+            # Try fallback handler if available
+            fallback_handler = getattr(frame, f"_fallback_{handler_name}", None)
+            if fallback_handler is not None and callable(fallback_handler):
+                self.logger.info(f"Attempting fallback handler for {handler_name}")
+                if asyncio.iscoroutinefunction(fallback_handler):
+                    await fallback_handler(event_data, error)
+                else:
+                    loop = asyncio.get_event_loop()
+                    await loop.run_in_executor(
+                        self.thread_pool,
+                        lambda: fallback_handler(event_data, error)
+                    )
+            else:
+                # Try generic error handler
+                error_handler = getattr(frame, "handle_error", None)
+                if error_handler is not None and callable(error_handler):
+                    self.logger.info(f"Using generic error handler for {handler_name}")
+                    if asyncio.iscoroutinefunction(error_handler):
+                        await error_handler(handler_name, event_data, error)
+                    else:
+                        loop = asyncio.get_event_loop()
+                        await loop.run_in_executor(
+                            self.thread_pool,
+                            lambda: error_handler(handler_name, event_data, error)
+                        )
+        except Exception as recovery_error:
+            self.logger.error(f"Error during recovery attempt for {handler_name}: {recovery_error}")
+            self.logger.error(traceback.format_exc())
+            
+    def get_component_requirements(self, frame_name: str) -> List[str]:
+        """Get the list of components required by a frame.
+        
+        Args:
+            frame_name: The name of the frame
+            
+        Returns:
+            List[str]: List of component names required by the frame
+        """
+        # Determine frame type using advanced pattern matching
+        frame_type = self._determine_frame_type(frame_name)
+        
+        # Get components required by this frame type
+        return self.component_mapping.get(frame_type, [])
+    
+    async def connect_components(self, frame, components: Dict[str, Any]) -> bool:
+        """Connect components to a frame.
+        
+        Args:
+            frame: The frame instance
+            components: Dictionary of components {name: component_instance}
+            
+        Returns:
+            bool: True if connection was successful, False otherwise
+        """
+        if frame is None:
+            self.logger.warning("Cannot connect components to None frame")
+            return False
+        
+        try:
+            frame_name = frame.__class__.__name__
+            required_components = self.get_component_requirements(frame_name)
+            connected = True
+            
+            for component_name in required_components:
+                component = components.get(component_name)
+                if component is not None:
+                    # Try to call the setter method
+                    setter_name = f"set_{component_name}"
+                    setter = getattr(frame, setter_name, None)
+                    
+                    if setter is not None and callable(setter):
+                        try:
+                            # Check if setter is async
+                            if asyncio.iscoroutinefunction(setter):
+                                await setter(component)
+                            else:
+                                setter(component)
+                            self.logger.info(f"Connected {component_name} to {frame_name}")
+                        except Exception as e:
+                            self.logger.error(f"Error connecting {component_name} to {frame_name}: {e}")
+                            self.logger.error(traceback.format_exc())
+                            connected = False
+                    else:
+                        # Try to set attribute directly
+                        try:
+                            setattr(frame, component_name, component)
+                            self.logger.info(f"Set {component_name} attribute on {frame_name}")
+                        except Exception as e:
+                            self.logger.error(f"Error setting {component_name} attribute on {frame_name}: {e}")
+                            self.logger.error(traceback.format_exc())
+                            connected = False
+            
+            return connected
+        except Exception as e:
+            self.logger.error(f"Error connecting components to {frame.__class__.__name__}: {e}")
+            self.logger.error(traceback.format_exc())
+            return False
+
+
+class TabIntegratorSingleton:
+    """Singleton wrapper for TabIntegrator ensuring only one instance exists.
+    
+    This class implements the Singleton pattern to ensure that only one instance of
+    TabIntegrator exists in the application, preventing duplicate event subscriptions
+    and other issues that could arise from multiple instances.
+    
+    2025 Update: Implemented with thread-safe initialization and lazy loading for
+    improved performance and memory usage.
+    """
+    _instance = None
+    _lock = threading.Lock()
+    
+    @classmethod
+    def get_instance(cls, event_bus=None) -> TabIntegrator:
+        """Get the singleton instance of TabIntegrator.
+        
+        Args:
+            event_bus: The event bus to use for creating the instance if it doesn't exist
+            
+        Returns:
+            TabIntegrator: The singleton instance
+            
+        Raises:
+            ValueError: If event_bus is not provided when creating the instance
+        """
+        if cls._instance is None:
+            with cls._lock:
+                # Double-check locking pattern for thread safety
+                if cls._instance is None:
+                    if event_bus is None:
+                        raise ValueError("event_bus must be provided when creating the TabIntegrator instance")
+                    logger.info("Creating TabIntegrator singleton instance")
+                    cls._instance = TabIntegrator(event_bus)
+        return cls._instance
+    
+    @classmethod
+    def reset_instance(cls) -> None:
+        """Reset the singleton instance.
+        
+        This method is primarily used for testing purposes to reset the state
+        between test cases.
+        """
+        with cls._lock:
+            cls._instance = None
+            logger.info("TabIntegrator singleton instance has been reset")
+
+
+# Exported functions for use by other modules
+def get_tab_integrator(event_bus=None) -> TabIntegrator:
+    """Get the singleton instance of TabIntegrator.
+    
+    This function is the primary way to get access to the TabIntegrator from other
+    modules.
+    
+    Args:
+        event_bus: The event bus to use if creating a new instance
+        
+    Returns:
+        TabIntegrator: The singleton instance of TabIntegrator
+    """
+    return TabIntegratorSingleton.get_instance(event_bus)
+
+
+async def integrate_tab_frame(frame, frame_name: Optional[str] = None, event_bus=None) -> bool:
+    """Integrate a tab frame with the event bus and data handlers.
+    
+    Convenience function for modules that need to integrate a single frame without
+    directly accessing the TabIntegrator instance.
+    
+    Args:
+        frame: The frame to integrate
+        frame_name: Optional name for the frame
+        event_bus: The event bus to use if no TabIntegrator instance exists
+        
+    Returns:
+        bool: True if integration was successful, False otherwise
+    """
+    tab_integrator = get_tab_integrator(event_bus)
+    return await tab_integrator.integrate_frame(frame, frame_name)
+
+
+async def integrate_all_tabs(main_window, event_bus=None) -> bool:
+    """Integrate all tabs from the main window.
+    
+    Convenience function for main_window.py to integrate all tabs without directly
+    accessing the TabIntegrator instance.
+    
+    Args:
+        main_window: The main window containing all tabs
+        event_bus: The event bus to use if no TabIntegrator instance exists
+        
+    Returns:
+        bool: True if all tabs were integrated successfully, False otherwise
+    """
+    tab_integrator = get_tab_integrator(event_bus)
+    return await tab_integrator.integrate_tabs(main_window)
+
+
+async def connect_tab_components(frame, components: Dict[str, Any], event_bus=None) -> bool:
+    """Connect components to a frame.
+    
+    Convenience function for modules that need to connect components to a frame without
+    directly accessing the TabIntegrator instance.
+    
+    Args:
+        frame: The frame to connect components to
+        components: Dictionary of components {name: component_instance}
+        event_bus: The event bus to use if no TabIntegrator instance exists
+        
+    Returns:
+        bool: True if connection was successful, False otherwise
+    """
+    tab_integrator = get_tab_integrator(event_bus)
+    return await tab_integrator.connect_components(frame, components)

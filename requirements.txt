@@ -1,0 +1,17 @@
+scikit-learn>=1.0.0
+
+# Trading / async IO (core autonomous stack; full matrix in requirements-trading.txt)
+aiohttp>=3.9.0
+websockets>=12.0
+pandas>=2.0.0
+
+# Web MCP (SOTA 2026) — optional, for MCP server mode
+# mcp[cli]>=1.0.0
+# httpx>=0.24.0
+
+# Optional packages
+# matplotlib>=3.4.0
+# plotly>=5.0.0
+# pydantic>=1.8.0
+# fastapi>=0.68.0
+# uvicorn>=0.15.0

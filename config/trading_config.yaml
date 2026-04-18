@@ -1,0 +1,149 @@
+---
+trading:
+  type: "trading"
+  status: "active"
+  base_currency: "USDT"
+  quote_currencies: ["BTC", "ETH", "BNB", "SOL", "MATIC", "AVAX"]
+  mode: "live"
+
+  platforms:
+    type: "platforms"
+    status: "active"
+
+    stock_trading:
+      type: "stock_trading"
+      status: "active"
+
+      tradingview:
+        type: "platform"
+        status: "running"
+        enabled: true
+        features: ["charting", "alerts", "screener", "paper_trading"]
+        api_version: "v1.1"
+        websocket_support: true
+        real_time_data: true
+        mode: "active"
+
+      tastyworks:
+        type: "platform"
+        status: "running"
+        enabled: true
+        features: ["stocks", "options", "futures"]
+        api_version: "v1"
+        margin_support: true
+        options_chains: true
+        mode: "active"
+
+      tradestation:
+        type: "platform"
+        status: "running"
+        enabled: true
+        features: ["stocks", "options", "futures", "crypto"]
+        api_version: "v3"
+        websocket_support: true
+        real_time_data: true
+        mode: "active"
+
+      oanda:
+        type: "platform"
+        status: "running"
+        enabled: true
+        features: ["forex", "cfds", "metals"]
+        api_version: "v20"
+        margin_trading: true
+        leverage_options: [1, 5, 10, 20, 30]
+        mode: "active"
+
+      metatrader5:
+        type: "platform"
+        status: "running"
+        enabled: true
+        features: ["forex", "stocks", "cfds", "crypto"]
+        server_types: ["demo", "live"]
+        expert_advisors: true
+        custom_indicators: true
+        mode: "active"
+
+    data_providers:
+      type: "providers"
+      status: "active"
+
+      alpha_vantage:
+        type: "provider"
+        status: "running"
+        enabled: true
+        features: ["stocks", "forex", "crypto", "technical_indicators"]
+        update_interval: 60
+        data_formats: ["json", "csv"]
+        mode: "active"
+
+      coinmarketcap:
+        type: "provider"
+        status: "running"
+        enabled: true
+        features: ["crypto", "exchanges", "derivatives"]
+        update_interval: 300
+        endpoints: ["v1", "v2"]
+        mode: "active"
+
+    infrastructure:
+      type: "infrastructure"
+      status: "active"
+
+      chainalysis:
+        type: "infrastructure"
+        status: "running"
+        enabled: true
+        features: ["transaction_monitoring", "risk_assessment"]
+        api_version: "v2"
+        compliance_tools: true
+        mode: "active"
+
+      elliptic:
+        type: "infrastructure"
+        status: "running"
+        enabled: true
+        features: ["blockchain_analytics", "risk_scoring"]
+        api_version: "v2"
+        real_time_monitoring: true
+        mode: "active"
+
+    wallets:
+      type: "wallets"
+      status: "active"
+
+      metamask:
+        type: "wallet"
+        status: "running"
+        enabled: true
+        features: ["ethereum", "tokens", "dapps"]
+        mode: "active"
+        security_level: "high"
+
+      phantom:
+        type: "wallet"
+        status: "running"
+        enabled: true
+        features: ["solana", "tokens", "nfts"]
+        mode: "active"
+        security_level: "high"
+
+    exchanges:
+      type: "exchanges"
+      status: "active"
+
+      binance:
+        type: "exchange"
+        status: "running"
+        enabled: true
+        features: ["spot", "futures", "margin"]
+        mode: "active"
+        api_version: "v3"
+
+      coinbase:
+        type: "exchange"
+        status: "running"
+        enabled: true
+        features: ["spot", "pro", "prime"]
+        mode: "active"
+        api_version: "v2"

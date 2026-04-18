@@ -1,0 +1,311 @@
+    def _request_initial_data_sync(self):
+        """Synchronously request initial data from the VR system component."""
+        try:
+            if not hasattr(self, 'event_bus') or not self.event_bus:
+                self.logger.warning("No event bus available for initial data request")
+                return
+            
+            # Request device list
+            self._publish_event("vr.device.list.request", {"source": "vr_frame"})
+            
+            # Request environment list
+            self._publish_event("vr.environment.list.request", {"source": "vr_frame"})
+            
+            # Request connection status
+            self._publish_event("vr.connection.status.request", {"source": "vr_frame"})
+            
+            # Request battery status
+            self._publish_event("vr.battery.status.request", {"source": "vr_frame"})
+            
+            self.logger.info("Initial data requests sent")
+        except Exception as e:
+            self.logger.error(f"Error requesting initial data: {e}")
+            self._add_status_message(f"Error requesting initial data: {e}", "error")
+    
+    async def _request_initial_data(self):
+        """Asynchronously request initial data from the VR system component."""
+        try:
+            if not hasattr(self, 'event_bus') or not self.event_bus:
+                self.logger.warning("No event bus available for initial data request")
+                return
+            
+            # Request device list
+            await self._publish_event_async("vr.device.list.request", {"source": "vr_frame"})
+            
+            # Request environment list
+            await self._publish_event_async("vr.environment.list.request", {"source": "vr_frame"})
+            
+            # Request connection status
+            await self._publish_event_async("vr.connection.status.request", {"source": "vr_frame"})
+            
+            # Request battery status
+            await self._publish_event_async("vr.battery.status.request", {"source": "vr_frame"})
+            
+            self.logger.info("Initial data requests sent asynchronously")
+        except Exception as e:
+            self.logger.error(f"Error requesting initial data asynchronously: {e}")
+            self._add_status_message(f"Error requesting initial data: {e}", "error")
+    
+    def _subscribe_to_events_sync(self):
+        """Subscribe to VR system events synchronously."""
+        if not hasattr(self, 'event_bus') or not self.event_bus:
+            self.logger.warning("No event bus available for VR frame")
+            return
+        
+        # Subscribe to events
+        try:
+            self.event_bus.subscribe("vr.connection.status", self._handle_connection_status)
+            self.event_bus.subscribe("vr.device.detected", self._handle_device_detected)
+            self.event_bus.subscribe("vr.tracking.status", self._handle_tracking_status)
+            self.event_bus.subscribe("vr.tracking.data", self._handle_tracking_data)
+            self.event_bus.subscribe("vr.tracking.quality", self._handle_tracking_quality)
+            self.event_bus.subscribe("vr.battery.status", self._handle_battery_status)
+            self.event_bus.subscribe("vr.environment.loaded", self._handle_environment_loaded)
+            self.event_bus.subscribe("vr.environment.error", self._handle_environment_error)
+            
+            self.logger.info("Subscribed to VR events")
+        except Exception as e:
+            self.logger.error(f"Error subscribing to events: {e}")
+    
+    async def _subscribe_to_events(self):
+        """Subscribe to VR system events asynchronously."""
+        if not hasattr(self, 'event_bus') or not self.event_bus:
+            self.logger.warning("No event bus available for VR frame")
+            return
+        
+        # Subscribe to events
+        try:
+            await self.event_bus.subscribe_async("vr.connection.status", self._handle_connection_status)
+            await self.event_bus.subscribe_async("vr.device.detected", self._handle_device_detected)
+            await self.event_bus.subscribe_async("vr.tracking.status", self._handle_tracking_status)
+            await self.event_bus.subscribe_async("vr.tracking.data", self._handle_tracking_data)
+            await self.event_bus.subscribe_async("vr.tracking.quality", self._handle_tracking_quality)
+            await self.event_bus.subscribe_async("vr.battery.status", self._handle_battery_status)
+            await self.event_bus.subscribe_async("vr.environment.loaded", self._handle_environment_loaded)
+            await self.event_bus.subscribe_async("vr.environment.error", self._handle_environment_error)
+            
+            self.logger.info("Subscribed to VR events asynchronously")
+        except Exception as e:
+            self.logger.error(f"Error subscribing to events asynchronously: {e}")
+    
+    def _handle_connection_status(self, event_name, data):
+        """Handle VR connection status event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing connection status
+        """
+        try:
+            if "status" in data:
+                self.connection_status = data["status"]
+                self.connected = (self.connection_status == "connected")
+                
+                # Update UI
+                self._refresh_status()
+                self._add_status_message(f"Connection status: {self.connection_status}", "info")
+                
+                # Enable/disable controls based on connection status
+                self._update_controls_state()
+        except Exception as e:
+            self.logger.error(f"Error handling connection status event: {e}")
+    
+    def _handle_device_detected(self, event_name, data):
+        """Handle VR device detected event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing device information
+        """
+        try:
+            if "devices" in data:
+                self.available_devices = data["devices"]
+                
+                # Update dropdown
+                if hasattr(self, 'device_dropdown') and self.device_dropdown is not None:
+                    self.device_dropdown['values'] = self.available_devices
+                
+                # Log detection
+                device_count = len(self.available_devices)
+                self._add_status_message(f"Detected {device_count} VR devices", "info")
+        except Exception as e:
+            self.logger.error(f"Error handling device detected event: {e}")
+    
+    def _handle_tracking_status(self, event_name, data):
+        """Handle VR tracking status event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing tracking status
+        """
+        try:
+            if "enabled" in data:
+                self.tracking_enabled = data["enabled"]
+                
+                # Update checkbox without triggering the command
+                if hasattr(self, 'tracking_var') and self.tracking_var is not None:
+                    self.tracking_var.set(self.tracking_enabled)
+                
+                # Update status indicators
+                self._refresh_status()
+                
+                status_text = "Enabled" if self.tracking_enabled else "Disabled"
+                self._add_status_message(f"Tracking status: {status_text}", "info")
+        except Exception as e:
+            self.logger.error(f"Error handling tracking status event: {e}")
+    
+    def _handle_tracking_data(self, event_name, data):
+        """Handle VR tracking data event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing tracking position data
+        """
+        try:
+            # Update tracking data
+            if "head" in data:
+                self.tracking_data["head"] = data["head"]
+            if "left" in data:
+                self.tracking_data["left"] = data["left"]
+            if "right" in data:
+                self.tracking_data["right"] = data["right"]
+            
+            # Refresh visualization
+            self._refresh_visualization()
+        except Exception as e:
+            self.logger.error(f"Error handling tracking data event: {e}")
+    
+    def _handle_tracking_quality(self, event_name, data):
+        """Handle VR tracking quality event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing tracking quality
+        """
+        try:
+            if "quality" in data:
+                self.tracking_quality = data["quality"]
+                
+                # Update quality indicator
+                if "quality" in self.status_indicators:
+                    quality_label = self.status_indicators["quality"]
+                    
+                    # Set text and color based on quality
+                    if self.tracking_quality == "good":
+                        quality_label.config(text="Good", foreground="green")
+                    elif self.tracking_quality == "fair":
+                        quality_label.config(text="Fair", foreground="orange")
+                    elif self.tracking_quality == "poor":
+                        quality_label.config(text="Poor", foreground="red")
+                    else:
+                        quality_label.config(text="Unknown", foreground="gray")
+                
+                self._add_status_message(f"Tracking quality: {self.tracking_quality}", "info")
+        except Exception as e:
+            self.logger.error(f"Error handling tracking quality event: {e}")
+    
+    def _handle_battery_status(self, event_name, data):
+        """Handle VR battery status event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing battery levels
+        """
+        try:
+            updated = False
+            
+            if "headset" in data:
+                self.battery_level["headset"] = data["headset"]
+                updated = True
+            
+            if "left" in data:
+                self.battery_level["left"] = data["left"]
+                updated = True
+            
+            if "right" in data:
+                self.battery_level["right"] = data["right"]
+                updated = True
+            
+            if updated:
+                # Update battery indicators
+                if "battery_headset" in self.status_indicators:
+                    self.status_indicators["battery_headset"].config(
+                        text=f"Headset: {self.battery_level['headset']}%",
+                        foreground=self._get_battery_color(self.battery_level["headset"])
+                    )
+                
+                if "battery_left" in self.status_indicators:
+                    self.status_indicators["battery_left"].config(
+                        text=f"Left: {self.battery_level['left']}%",
+                        foreground=self._get_battery_color(self.battery_level["left"])
+                    )
+                
+                if "battery_right" in self.status_indicators:
+                    self.status_indicators["battery_right"].config(
+                        text=f"Right: {self.battery_level['right']}%",
+                        foreground=self._get_battery_color(self.battery_level["right"])
+                    )
+                
+                # Log if any battery is low
+                self._check_low_battery()
+        except Exception as e:
+            self.logger.error(f"Error handling battery status event: {e}")
+    
+    def _handle_environment_loaded(self, event_name, data):
+        """Handle VR environment loaded event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing environment information
+        """
+        try:
+            if "environment" in data:
+                self.environment = data["environment"]
+                self.environment_loaded = True
+                
+                # Update environment dropdown
+                if hasattr(self, 'environment_var') and self.environment_var is not None:
+                    self.environment_var.set(self.environment)
+                
+                # Update status indicators
+                if "environment" in self.status_indicators:
+                    self.status_indicators["environment"].config(text="Loaded", foreground="green")
+                
+                if "status_environment" in self.status_indicators:
+                    self.status_indicators["status_environment"].config(text="Loaded", foreground="green")
+                
+                # Update visualization
+                self._refresh_visualization()
+                
+                self._add_status_message(f"Environment '{self.environment}' loaded successfully", "info")
+        except Exception as e:
+            self.logger.error(f"Error handling environment loaded event: {e}")
+    
+    def _handle_environment_error(self, event_name, data):
+        """Handle VR environment error event.
+        
+        Args:
+            event_name: Event name
+            data: Event data containing error information
+        """
+        try:
+            error_msg = data.get("error", "Unknown error")
+            env_name = data.get("environment", "unknown")
+            
+            self.environment_loaded = False
+            
+            # Update status indicators
+            if "environment" in self.status_indicators:
+                self.status_indicators["environment"].config(text="Error", foreground="red")
+            
+            if "status_environment" in self.status_indicators:
+                self.status_indicators["status_environment"].config(text="Error", foreground="red")
+            
+            # Update visualization
+            self._refresh_visualization()
+            
+            self._add_status_message(f"Environment error: {error_msg}", "error")
+            
+            # Show error message
+            messagebox.showerror("Environment Error", f"Failed to load environment '{env_name}': {error_msg}")
+        except Exception as e:
+            self.logger.error(f"Error handling environment error event: {e}")

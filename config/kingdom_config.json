@@ -1,0 +1,34 @@
+{
+    "system": {
+        "name": "KingdomAI",
+        "version": "1.0.0",
+        "log_level": "INFO"
+    },
+    "modules": {
+        "trading": {
+            "enabled": true,
+            "api_key": "",
+            "secret_key": ""
+        },
+        "mining": {
+            "enabled": true,
+            "workers": 4
+        },
+        "ai": {
+            "enabled": true,
+            "model": "default"
+        }
+    },
+    "security": {
+        "encryption_enabled": true,
+        "authentication_required": true,
+        "users": {
+            "admin": {
+                "password_hash": "",
+                "salt": "",
+                "role": "admin"
+            }
+        },
+        "access_tokens": {}
+    }
+}

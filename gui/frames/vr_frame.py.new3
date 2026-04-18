@@ -1,0 +1,142 @@
+    def _create_environment_panel(self, parent):
+        """Create the environment control panel.
+        
+        Args:
+            parent: Parent widget
+        """
+        # Create panel frame
+        panel = ttk.LabelFrame(parent, text="Environment")
+        panel.pack(fill=tk.X, pady=5)
+        self.environment_panel = panel
+        
+        # Environment selection
+        env_frame = ttk.Frame(panel)
+        env_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(env_frame, text="Environment:").pack(side=tk.LEFT, padx=5)
+        self.environment_var = tk.StringVar(value=self.environment)
+        self.environment_dropdown = ttk.Combobox(env_frame, textvariable=self.environment_var, 
+                                               values=self.available_environments)
+        self.environment_dropdown.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.environment_dropdown.bind("<<ComboboxSelected>>", self._on_environment_changed)
+        
+        # Environment control buttons
+        button_frame = ttk.Frame(panel)
+        button_frame.pack(fill=tk.X, pady=5)
+        
+        load_button = ttk.Button(button_frame, text="Load", command=self._on_load_environment)
+        load_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.control_buttons["load"] = load_button
+        
+        customize_button = ttk.Button(button_frame, text="Customize", command=self._customize_environment)
+        customize_button.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.control_buttons["customize"] = customize_button
+        
+        # Passthrough transparency slider
+        passthrough_frame = ttk.Frame(panel)
+        passthrough_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(passthrough_frame, text="Passthrough:").pack(side=tk.LEFT, padx=5)
+        
+        self.passthrough_var = tk.IntVar(value=0)
+        self.passthrough_slider = ttk.Scale(passthrough_frame, from_=0, to=100, 
+                                          orient=tk.HORIZONTAL, variable=self.passthrough_var,
+                                          command=self._update_passthrough)
+        self.passthrough_slider.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        
+        value_label = ttk.Label(passthrough_frame, text="0%")
+        value_label.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["passthrough"] = value_label
+        
+        # Environment status
+        status_frame = ttk.Frame(panel)
+        status_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT, padx=5)
+        
+        env_status = ttk.Label(status_frame, text="Not Loaded", foreground="red")
+        env_status.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["environment"] = env_status
+    
+    def _create_status_panel(self, parent):
+        """Create the status panel.
+        
+        Args:
+            parent: Parent widget
+        """
+        # Create panel frame
+        panel = ttk.LabelFrame(parent, text="Status Messages")
+        panel.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.status_panel = panel
+        
+        # Status text widget with scrollbar
+        text_frame = ttk.Frame(panel)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        scrollbar = ttk.Scrollbar(text_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.status_text = tk.Text(text_frame, height=6, wrap=tk.WORD, 
+                                 yscrollcommand=scrollbar.set)
+        self.status_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=self.status_text.yview)
+        
+        # Configure text tags
+        self.status_text.tag_configure("warning", foreground="orange")
+        self.status_text.tag_configure("error", foreground="red")
+        
+        # Add initial status message
+        self._add_status_message("VR system initialized and ready to connect.", "info")
+    
+    def _create_visualization_panel(self, parent):
+        """Create the visualization panel.
+        
+        Args:
+            parent: Parent widget
+        """
+        # Create panel frame
+        panel = ttk.LabelFrame(parent, text="VR Visualization")
+        panel.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.visualization_panel = panel
+        
+        # Canvas for visualization
+        canvas_frame = ttk.Frame(panel)
+        canvas_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        self.visualization_canvas = tk.Canvas(canvas_frame, bg="white")
+        self.visualization_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Draw initial visualization
+        self._refresh_visualization()
+    
+    def _setup_status_bar(self):
+        """Set up status bar at the bottom of the frame."""
+        status_bar = ttk.Frame(self)
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
+        
+        # Connection status
+        connection_frame = ttk.Frame(status_bar)
+        connection_frame.pack(side=tk.LEFT, padx=10)
+        
+        ttk.Label(connection_frame, text="Connection:").pack(side=tk.LEFT)
+        conn_status = ttk.Label(connection_frame, text="Disconnected", foreground="red")
+        conn_status.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["status_connection"] = conn_status
+        
+        # Tracking status
+        tracking_frame = ttk.Frame(status_bar)
+        tracking_frame.pack(side=tk.LEFT, padx=10)
+        
+        ttk.Label(tracking_frame, text="Tracking:").pack(side=tk.LEFT)
+        track_status = ttk.Label(tracking_frame, text="Disabled", foreground="gray")
+        track_status.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["status_tracking"] = track_status
+        
+        # Environment status
+        env_frame = ttk.Frame(status_bar)
+        env_frame.pack(side=tk.LEFT, padx=10)
+        
+        ttk.Label(env_frame, text="Environment:").pack(side=tk.LEFT)
+        env_status = ttk.Label(env_frame, text="Not Loaded", foreground="red")
+        env_status.pack(side=tk.LEFT, padx=5)
+        self.status_indicators["status_environment"] = env_status

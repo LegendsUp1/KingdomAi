@@ -1,0 +1,260 @@
+"""
+Kingdom AI - Event Bus Wrapper
+Provides compatibility between synchronous code and the async EventBus.
+"""
+
+import asyncio
+import logging
+import threading
+import traceback
+from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Union, Coroutine, TypeVar, cast
+
+# Import the original EventBus
+from core.event_bus import EventBus
+
+T = TypeVar('T')
+
+class EventBusWrapper:
+    """
+    Wrapper around EventBus to provide a synchronous interface 
+    while handling async operations correctly.
+    
+    This wrapper ensures that coroutines are properly awaited and
+    executed in the event loop, preventing 'coroutine not awaited' warnings.
+    """
+    
+    def __init__(self, event_bus=None):
+        """
+        Initialize the EventBusWrapper with an EventBus instance.
+        
+        Args:
+            event_bus: The EventBus instance to wrap, or None to create a new one
+        """
+        self._event_bus = event_bus if event_bus is not None else EventBus()
+        self.logger = logging.getLogger("KingdomAI.EventBusWrapper")
+        
+    @property
+    def event_bus(self):
+        """
+        Get the wrapped EventBus instance.
+        
+        Returns:
+            The wrapped EventBus instance
+        """
+        return self._event_bus
+        
+    def subscribe(self, event_type: str, handler: Callable) -> bool:
+        """
+        Subscribe to an event.
+        
+        Args:
+            event_type: The event type to subscribe to
+            handler: The callback function to call when the event is triggered
+            
+        Returns:
+            bool: True if subscribed successfully
+        """
+        try:
+            # Check if the event bus has a synchronous method
+            if hasattr(self._event_bus, 'subscribe_sync'):
+                # Use the synchronous version from EventBus
+                return self._event_bus.subscribe_sync(event_type, handler)
+            elif hasattr(self._event_bus, 'subscribe'):
+                # Handle async subscription safely
+                if asyncio.iscoroutinefunction(self._event_bus.subscribe):
+                    return self._run_coroutine_safely(self._event_bus.subscribe(event_type, handler))
+                else:
+                    return self._event_bus.subscribe(event_type, handler)
+            # Default fallback
+            return False
+        except Exception as e:
+            self.logger.error(f"Error subscribing to {event_type}: {e}")
+            return False
+        
+    def unsubscribe(self, event_type: str, handler: Callable) -> bool:
+        """
+        Unsubscribe from an event.
+        
+        Args:
+            event_type: The event type to unsubscribe from
+            handler: The callback function to remove
+            
+        Returns:
+            bool: True if unsubscribed successfully
+        """
+        try:
+            if hasattr(self._event_bus, 'unsubscribe_sync'):
+                return self._event_bus.unsubscribe_sync(event_type, handler)
+            elif hasattr(self._event_bus, 'unsubscribe'):
+                if asyncio.iscoroutinefunction(self._event_bus.unsubscribe):
+                    return self._run_coroutine_safely(self._event_bus.unsubscribe(event_type, handler))
+                else:
+                    return self._event_bus.unsubscribe(event_type, handler)
+            return False
+        except Exception as e:
+            self.logger.error(f"Error unsubscribing from {event_type}: {e}")
+            return False
+        
+    def publish(self, event_type: str, data: Any = None) -> None:
+        """Publish an event to subscribers.
+        
+        Args:
+            event_type: The event type to publish
+            data: The data to pass to handlers
+        """
+        try:
+            # Check if the event bus has a synchronous method
+            if hasattr(self._event_bus, 'publish_sync'):
+                # Use the synchronous version from EventBus
+                self._event_bus.publish_sync(event_type, data)
+            elif hasattr(self._event_bus, 'publish'):
+                # Handle async publish safely
+                if asyncio.iscoroutinefunction(self._event_bus.publish):
+                    self._run_coroutine_safely(self._event_bus.publish(event_type, data))
+                else:
+                    self._event_bus.publish(event_type, data)
+        except Exception as e:
+            self.logger.error(f"Error publishing event {event_type}: {e}")
+            
+    def publish_sync(self, event_type: str, data: Any = None) -> None:
+        """Publish an event synchronously.
+        
+        This method is guaranteed to complete before returning.
+        
+        Args:
+            event_type: The event type to publish
+            data: The data to pass to handlers
+        """
+        try:
+            if hasattr(self._event_bus, 'publish_sync'):
+                self._event_bus.publish_sync(event_type, data)
+            else:
+                # Create a new loop if needed and run the coroutine to completion
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    if asyncio.iscoroutinefunction(self._event_bus.publish):
+                        loop.run_until_complete(self._event_bus.publish(event_type, data))
+                    else:
+                        self._event_bus.publish(event_type, data)
+                finally:
+                    loop.close()
+        except Exception as e:
+            self.logger.error(f"Error in sync publish for event {event_type}: {e}")
+            
+    def emit(self, event_type: str, data: Any = None) -> None:
+        """Alias for publish for compatibility with components expecting emit.
+        
+        Args:
+            event_type: The event type to emit
+            data: The data to pass to handlers
+        """
+        self.publish(event_type, data)
+        
+    def wait_for(self, event_type: str, timeout: Optional[float] = None) -> Any:
+        """Wait for an event to be published.
+        
+        Args:
+            event_type: The event type to wait for
+            timeout: Maximum time to wait in seconds
+            
+        Returns:
+            The event data or None if timed out
+        """
+        if hasattr(self._event_bus, 'wait_for'):
+            if asyncio.iscoroutinefunction(self._event_bus.wait_for):
+                try:
+                    return self._run_coroutine_safely(self._event_bus.wait_for(event_type, timeout))
+                except Exception as e:
+                    self.logger.error(f"Error in wait_for({event_type}): {e}")
+                    return None
+            else:
+                return self._event_bus.wait_for(event_type, timeout)
+        else:
+            self.logger.warning("wait_for not supported by the event bus implementation")
+            return None
+            
+    def get_subscribers(self, event_type: Optional[str] = None) -> Dict[str, List[Callable]]:
+        """Get all subscribers for an event type or all event types.
+        
+        Args:
+            event_type: The event type to get subscribers for, or None for all
+            
+        Returns:
+            A dictionary mapping event types to lists of handlers
+        """
+        if hasattr(self._event_bus, 'get_subscribers'):
+            if asyncio.iscoroutinefunction(self._event_bus.get_subscribers):
+                try:
+                    result = self._run_coroutine_safely(self._event_bus.get_subscribers(event_type))
+                    if isinstance(result, dict):
+                        return result
+                    return {}
+                except Exception as e:
+                    self.logger.error(f"Error in get_subscribers: {e}")
+                    return {}
+            else:
+                return self._event_bus.get_subscribers(event_type)
+        else:
+            self.logger.warning("get_subscribers not supported by the event bus implementation")
+            return {}
+            
+    def _run_coroutine_safely(self, coro: Coroutine) -> Any:
+        """Safely run a coroutine in the current event loop or a new one.
+        
+        Args:
+            coro: The coroutine to run
+            
+        Returns:
+            The result of the coroutine or True if it was scheduled in a running loop
+        """
+        is_new_loop = False
+        
+        try:
+            # Try to get the current event loop
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                # No event loop in this thread, create one
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                is_new_loop = True
+                
+            if loop.is_running() and not is_new_loop:
+                # If the loop is running and we didn't create it,
+                # we can't wait for the result in this thread
+                future = asyncio.run_coroutine_threadsafe(coro, loop)
+                # Return a default True value since we can't wait for the future
+                return True
+            else:
+                # We can wait for the result
+                return loop.run_until_complete(coro)
+        except Exception as e:
+            self.logger.error(f"Error running coroutine: {e}")
+            # Return a safe default
+            return False
+        finally:
+            # Only close the loop if we created it
+            if is_new_loop and 'loop' in locals():
+                loop.close()
+                
+    def __getattr__(self, name: str) -> Any:
+        """Pass through any attribute access to the underlying event bus.
+        
+        Args:
+            name: The attribute name
+            
+        Returns:
+            The attribute from the underlying event bus
+        """
+        if hasattr(self._event_bus, name):
+            attr = getattr(self._event_bus, name)
+            # If this is a method, we need to handle coroutines
+            if callable(attr) and asyncio.iscoroutinefunction(attr):
+                @wraps(attr)
+                def wrapper(*args, **kwargs):
+                    return self._run_coroutine_safely(attr(*args, **kwargs))
+                return wrapper
+            return attr
+        raise AttributeError(f"'EventBusWrapper' has no attribute '{name}'")

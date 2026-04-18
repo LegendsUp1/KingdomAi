@@ -1,0 +1,20 @@
+state_dim: 32               # set to your state vector dimension
+action_dim: 1               # fraction scalar (1)
+max_action: 0.05
+hidden: [256, 256]
+lr: 3e-4
+weight_decay: 0.0
+cql_alpha: 1.0
+gamma: 0.99
+batch_size: 256
+num_epochs: 50
+save_dir: "checkpoints"
+log_dir: "runs/cql"
+device: "cuda"
+update_target_every: 1
+tau: 0.005
+random_action_samples: 10
+max_fraction: 0.05
+max_train_rows: 2000000
+max_val_rows: 200000
+eval_cvar_alpha: 0.05

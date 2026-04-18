@@ -1,0 +1,663 @@
+{
+  "version": "2025.1.0",
+  "last_updated": "2025-11-15",
+  "description": "Per-coin node configuration and solo-mining recommendations for all 82 PoW coins. Used by GUI / MiningSystem to know how to connect to full nodes.",
+  "nodes": {
+    "BTC": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BTC_RPC_URL",
+      "rpc_user_env": "BTC_RPC_USER",
+      "rpc_password_env": "BTC_RPC_PASSWORD",
+      "software_hint": "Bitcoin full node (e.g. Bitcoin Core)"
+    },
+    "ETH": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ETH_RPC_URL",
+      "rpc_user_env": "ETH_RPC_USER",
+      "rpc_password_env": "ETH_RPC_PASSWORD",
+      "software_hint": "Ethereum-compatible full node for this chain (symbol ETH in pow_blockchains)"
+    },
+    "LTC": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "LTC_RPC_URL",
+      "rpc_user_env": "LTC_RPC_USER",
+      "rpc_password_env": "LTC_RPC_PASSWORD",
+      "software_hint": "Litecoin full node (e.g. Litecoin Core)"
+    },
+    "DOGE": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "DOGE_RPC_URL",
+      "rpc_user_env": "DOGE_RPC_USER",
+      "rpc_password_env": "DOGE_RPC_PASSWORD",
+      "software_hint": "Dogecoin full node (e.g. dogecoind)"
+    },
+    "XMR": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XMR_RPC_URL",
+      "rpc_user_env": "XMR_RPC_USER",
+      "rpc_password_env": "XMR_RPC_PASSWORD",
+      "software_hint": "Monero full node (monerod)"
+    },
+    "ZEC": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ZEC_RPC_URL",
+      "rpc_user_env": "ZEC_RPC_USER",
+      "rpc_password_env": "ZEC_RPC_PASSWORD",
+      "software_hint": "Zcash full node (zcashd or equivalent)"
+    },
+    "DASH": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "DASH_RPC_URL",
+      "rpc_user_env": "DASH_RPC_USER",
+      "rpc_password_env": "DASH_RPC_PASSWORD",
+      "software_hint": "Dash full node (dashd or equivalent)"
+    },
+    "BCH": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BCH_RPC_URL",
+      "rpc_user_env": "BCH_RPC_USER",
+      "rpc_password_env": "BCH_RPC_PASSWORD",
+      "software_hint": "Bitcoin Cash full node"
+    },
+    "BSV": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BSV_RPC_URL",
+      "rpc_user_env": "BSV_RPC_USER",
+      "rpc_password_env": "BSV_RPC_PASSWORD",
+      "software_hint": "Bitcoin SV full node"
+    },
+    "ZEN": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ZEN_RPC_URL",
+      "rpc_user_env": "ZEN_RPC_USER",
+      "rpc_password_env": "ZEN_RPC_PASSWORD",
+      "software_hint": "Horizen full node"
+    },
+    "RVN": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "RVN_RPC_URL",
+      "rpc_user_env": "RVN_RPC_USER",
+      "rpc_password_env": "RVN_RPC_PASSWORD",
+      "software_hint": "Ravencoin full node"
+    },
+    "ERG": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ERG_RPC_URL",
+      "rpc_user_env": "ERG_RPC_USER",
+      "rpc_password_env": "ERG_RPC_PASSWORD",
+      "software_hint": "Ergo full node"
+    },
+    "ETC": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ETC_RPC_URL",
+      "rpc_user_env": "ETC_RPC_USER",
+      "rpc_password_env": "ETC_RPC_PASSWORD",
+      "software_hint": "Ethereum Classic full node"
+    },
+    "FLUX": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "FLUX_RPC_URL",
+      "rpc_user_env": "FLUX_RPC_USER",
+      "rpc_password_env": "FLUX_RPC_PASSWORD",
+      "software_hint": "Flux full node"
+    },
+    "KAS": {
+      "solo_recommended": true,
+      "node_required_for_solo": true,
+      "rpc_url_env": "KAS_RPC_URL",
+      "rpc_user_env": "KAS_RPC_USER",
+      "rpc_password_env": "KAS_RPC_PASSWORD",
+      "software_hint": "Kaspa full node (kaspad)"
+    },
+    "ALPH": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ALPH_RPC_URL",
+      "rpc_user_env": "ALPH_RPC_USER",
+      "rpc_password_env": "ALPH_RPC_PASSWORD",
+      "software_hint": "Alephium full node"
+    },
+    "NEXA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "NEXA_RPC_URL",
+      "rpc_user_env": "NEXA_RPC_USER",
+      "rpc_password_env": "NEXA_RPC_PASSWORD",
+      "software_hint": "Nexa full node"
+    },
+    "CFX": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "CFX_RPC_URL",
+      "rpc_user_env": "CFX_RPC_USER",
+      "rpc_password_env": "CFX_RPC_PASSWORD",
+      "software_hint": "Conflux full node"
+    },
+    "FIRO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "FIRO_RPC_URL",
+      "rpc_user_env": "FIRO_RPC_USER",
+      "rpc_password_env": "FIRO_RPC_PASSWORD",
+      "software_hint": "Firo full node"
+    },
+    "BTG": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BTG_RPC_URL",
+      "rpc_user_env": "BTG_RPC_USER",
+      "rpc_password_env": "BTG_RPC_PASSWORD",
+      "software_hint": "Bitcoin Gold full node"
+    },
+    "CKB": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "CKB_RPC_URL",
+      "rpc_user_env": "CKB_RPC_USER",
+      "rpc_password_env": "CKB_RPC_PASSWORD",
+      "software_hint": "Nervos CKB full node"
+    },
+    "CLORE": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "CLORE_RPC_URL",
+      "rpc_user_env": "CLORE_RPC_USER",
+      "rpc_password_env": "CLORE_RPC_PASSWORD",
+      "software_hint": "Clore.ai full node"
+    },
+    "OCTA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "OCTA_RPC_URL",
+      "rpc_user_env": "OCTA_RPC_USER",
+      "rpc_password_env": "OCTA_RPC_PASSWORD",
+      "software_hint": "Octaspace full node"
+    },
+    "NEOX": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "NEOX_RPC_URL",
+      "rpc_user_env": "NEOX_RPC_USER",
+      "rpc_password_env": "NEOX_RPC_PASSWORD",
+      "software_hint": "Neoxa full node"
+    },
+    "SERO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "SERO_RPC_URL",
+      "rpc_user_env": "SERO_RPC_USER",
+      "rpc_password_env": "SERO_RPC_PASSWORD",
+      "software_hint": "Super Zero full node"
+    },
+    "VTC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "VTC_RPC_URL",
+      "rpc_user_env": "VTC_RPC_USER",
+      "rpc_password_env": "VTC_RPC_PASSWORD",
+      "software_hint": "Vertcoin full node"
+    },
+    "RXD": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "RXD_RPC_URL",
+      "rpc_user_env": "RXD_RPC_USER",
+      "rpc_password_env": "RXD_RPC_PASSWORD",
+      "software_hint": "Radiant full node"
+    },
+    "DNX": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "DNX_RPC_URL",
+      "rpc_user_env": "DNX_RPC_USER",
+      "rpc_password_env": "DNX_RPC_PASSWORD",
+      "software_hint": "Dynex full node"
+    },
+    "BEAM": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BEAM_RPC_URL",
+      "rpc_user_env": "BEAM_RPC_USER",
+      "rpc_password_env": "BEAM_RPC_PASSWORD",
+      "software_hint": "Beam full node"
+    },
+    "GRIN": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "GRIN_RPC_URL",
+      "rpc_user_env": "GRIN_RPC_USER",
+      "rpc_password_env": "GRIN_RPC_PASSWORD",
+      "software_hint": "Grin full node"
+    },
+    "AION": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "AION_RPC_URL",
+      "rpc_user_env": "AION_RPC_USER",
+      "rpc_password_env": "AION_RPC_PASSWORD",
+      "software_hint": "Aion full node"
+    },
+    "AE": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "AE_RPC_URL",
+      "rpc_user_env": "AE_RPC_USER",
+      "rpc_password_env": "AE_RPC_PASSWORD",
+      "software_hint": "Aeternity full node"
+    },
+    "BTM": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BTM_RPC_URL",
+      "rpc_user_env": "BTM_RPC_USER",
+      "rpc_password_env": "BTM_RPC_PASSWORD",
+      "software_hint": "Bytom full node"
+    },
+    "SBTC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "SBTC_RPC_URL",
+      "rpc_user_env": "SBTC_RPC_USER",
+      "rpc_password_env": "SBTC_RPC_PASSWORD",
+      "software_hint": "Super Bitcoin full node"
+    },
+    "BCD": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BCD_RPC_URL",
+      "rpc_user_env": "BCD_RPC_USER",
+      "rpc_password_env": "BCD_RPC_PASSWORD",
+      "software_hint": "Bitcoin Diamond full node"
+    },
+    "PPC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "PPC_RPC_URL",
+      "rpc_user_env": "PPC_RPC_USER",
+      "rpc_password_env": "PPC_RPC_PASSWORD",
+      "software_hint": "Peercoin full node"
+    },
+    "NMC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "NMC_RPC_URL",
+      "rpc_user_env": "NMC_RPC_USER",
+      "rpc_password_env": "NMC_RPC_PASSWORD",
+      "software_hint": "Namecoin full node"
+    },
+    "SYS": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "SYS_RPC_URL",
+      "rpc_user_env": "SYS_RPC_USER",
+      "rpc_password_env": "SYS_RPC_PASSWORD",
+      "software_hint": "Syscoin full node"
+    },
+    "DGB": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "DGB_RPC_URL",
+      "rpc_user_env": "DGB_RPC_USER",
+      "rpc_password_env": "DGB_RPC_PASSWORD",
+      "software_hint": "DigiByte full node"
+    },
+    "VIA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "VIA_RPC_URL",
+      "rpc_user_env": "VIA_RPC_USER",
+      "rpc_password_env": "VIA_RPC_PASSWORD",
+      "software_hint": "Viacoin full node"
+    },
+    "XVG": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XVG_RPC_URL",
+      "rpc_user_env": "XVG_RPC_USER",
+      "rpc_password_env": "XVG_RPC_PASSWORD",
+      "software_hint": "Verge full node"
+    },
+    "GRS": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "GRS_RPC_URL",
+      "rpc_user_env": "GRS_RPC_USER",
+      "rpc_password_env": "GRS_RPC_PASSWORD",
+      "software_hint": "Groestlcoin full node"
+    },
+    "MWC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "MWC_RPC_URL",
+      "rpc_user_env": "MWC_RPC_USER",
+      "rpc_password_env": "MWC_RPC_PASSWORD",
+      "software_hint": "MimbleWimbleCoin full node"
+    },
+    "ARRR": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ARRR_RPC_URL",
+      "rpc_user_env": "ARRR_RPC_USER",
+      "rpc_password_env": "ARRR_RPC_PASSWORD",
+      "software_hint": "Pirate Chain full node"
+    },
+    "PIRL": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "PIRL_RPC_URL",
+      "rpc_user_env": "PIRL_RPC_USER",
+      "rpc_password_env": "PIRL_RPC_PASSWORD",
+      "software_hint": "Pirl full node"
+    },
+    "UBQ": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "UBQ_RPC_URL",
+      "rpc_user_env": "UBQ_RPC_USER",
+      "rpc_password_env": "UBQ_RPC_PASSWORD",
+      "software_hint": "Ubiq full node"
+    },
+    "EXP": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "EXP_RPC_URL",
+      "rpc_user_env": "EXP_RPC_USER",
+      "rpc_password_env": "EXP_RPC_PASSWORD",
+      "software_hint": "Expanse full node"
+    },
+    "MUSIC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "MUSIC_RPC_URL",
+      "rpc_user_env": "MUSIC_RPC_USER",
+      "rpc_password_env": "MUSIC_RPC_PASSWORD",
+      "software_hint": "Musicoin full node"
+    },
+    "ELLA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ELLA_RPC_URL",
+      "rpc_user_env": "ELLA_RPC_USER",
+      "rpc_password_env": "ELLA_RPC_PASSWORD",
+      "software_hint": "Ellaism full node"
+    },
+    "CLO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "CLO_RPC_URL",
+      "rpc_user_env": "CLO_RPC_USER",
+      "rpc_password_env": "CLO_RPC_PASSWORD",
+      "software_hint": "Callisto full node"
+    },
+    "NULS": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "NULS_RPC_URL",
+      "rpc_user_env": "NULS_RPC_USER",
+      "rpc_password_env": "NULS_RPC_PASSWORD",
+      "software_hint": "Nuls full node"
+    },
+    "MONA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "MONA_RPC_URL",
+      "rpc_user_env": "MONA_RPC_USER",
+      "rpc_password_env": "MONA_RPC_PASSWORD",
+      "software_hint": "Monacoin full node"
+    },
+    "XZC": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XZC_RPC_URL",
+      "rpc_user_env": "XZC_RPC_USER",
+      "rpc_password_env": "XZC_RPC_PASSWORD",
+      "software_hint": "Zcoin/Firo full node"
+    },
+    "ZEL": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ZEL_RPC_URL",
+      "rpc_user_env": "ZEL_RPC_USER",
+      "rpc_password_env": "ZEL_RPC_PASSWORD",
+      "software_hint": "Zelcash full node"
+    },
+    "BTCP": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BTCP_RPC_URL",
+      "rpc_user_env": "BTCP_RPC_USER",
+      "rpc_password_env": "BTCP_RPC_PASSWORD",
+      "software_hint": "Bitcoin Private full node"
+    },
+    "ZANO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ZANO_RPC_URL",
+      "rpc_user_env": "ZANO_RPC_USER",
+      "rpc_password_env": "ZANO_RPC_PASSWORD",
+      "software_hint": "Zano full node"
+    },
+    "XHV": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XHV_RPC_URL",
+      "rpc_user_env": "XHV_RPC_USER",
+      "rpc_password_env": "XHV_RPC_PASSWORD",
+      "software_hint": "Haven Protocol full node"
+    },
+    "WOW": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "WOW_RPC_URL",
+      "rpc_user_env": "WOW_RPC_USER",
+      "rpc_password_env": "WOW_RPC_PASSWORD",
+      "software_hint": "Wownero full node"
+    },
+    "SUMO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "SUMO_RPC_URL",
+      "rpc_user_env": "SUMO_RPC_USER",
+      "rpc_password_env": "SUMO_RPC_PASSWORD",
+      "software_hint": "Sumokoin full node"
+    },
+    "TUBE": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "TUBE_RPC_URL",
+      "rpc_user_env": "TUBE_RPC_USER",
+      "rpc_password_env": "TUBE_RPC_PASSWORD",
+      "software_hint": "BitTube full node"
+    },
+    "MSR": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "MSR_RPC_URL",
+      "rpc_user_env": "MSR_RPC_USER",
+      "rpc_password_env": "MSR_RPC_PASSWORD",
+      "software_hint": "Masari full node"
+    },
+    "ARQ": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ARQ_RPC_URL",
+      "rpc_user_env": "ARQ_RPC_USER",
+      "rpc_password_env": "ARQ_RPC_PASSWORD",
+      "software_hint": "ArQmA full node"
+    },
+    "DERO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "DERO_RPC_URL",
+      "rpc_user_env": "DERO_RPC_USER",
+      "rpc_password_env": "DERO_RPC_PASSWORD",
+      "software_hint": "Dero full node"
+    },
+    "XEQ": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XEQ_RPC_URL",
+      "rpc_user_env": "XEQ_RPC_USER",
+      "rpc_password_env": "XEQ_RPC_PASSWORD",
+      "software_hint": "Equilibria full node"
+    },
+    "LOKI": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "LOKI_RPC_URL",
+      "rpc_user_env": "LOKI_RPC_USER",
+      "rpc_password_env": "LOKI_RPC_PASSWORD",
+      "software_hint": "Loki full node"
+    },
+    "TRTL": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "TRTL_RPC_URL",
+      "rpc_user_env": "TRTL_RPC_USER",
+      "rpc_password_env": "TRTL_RPC_PASSWORD",
+      "software_hint": "TurtleCoin full node"
+    },
+    "XTA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XTA_RPC_URL",
+      "rpc_user_env": "XTA_RPC_USER",
+      "rpc_password_env": "XTA_RPC_PASSWORD",
+      "software_hint": "Italo full node"
+    },
+    "XLA": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XLA_RPC_URL",
+      "rpc_user_env": "XLA_RPC_USER",
+      "rpc_password_env": "XLA_RPC_PASSWORD",
+      "software_hint": "Scala full node"
+    },
+    "CCX": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "CCX_RPC_URL",
+      "rpc_user_env": "CCX_RPC_USER",
+      "rpc_password_env": "CCX_RPC_PASSWORD",
+      "software_hint": "Conceal full node"
+    },
+    "XMV": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XMV_RPC_URL",
+      "rpc_user_env": "XMV_RPC_USER",
+      "rpc_password_env": "XMV_RPC_PASSWORD",
+      "software_hint": "MoneroV full node"
+    },
+    "RYO": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "RYO_RPC_URL",
+      "rpc_user_env": "RYO_RPC_USER",
+      "rpc_password_env": "RYO_RPC_PASSWORD",
+      "software_hint": "Ryo Currency full node"
+    },
+    "XWP": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XWP_RPC_URL",
+      "rpc_user_env": "XWP_RPC_USER",
+      "rpc_password_env": "XWP_RPC_PASSWORD",
+      "software_hint": "Swap full node"
+    },
+    "AEON": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "AEON_RPC_URL",
+      "rpc_user_env": "AEON_RPC_USER",
+      "rpc_password_env": "AEON_RPC_PASSWORD",
+      "software_hint": "Aeon full node"
+    },
+    "KRB": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "KRB_RPC_URL",
+      "rpc_user_env": "KRB_RPC_USER",
+      "rpc_password_env": "KRB_RPC_PASSWORD",
+      "software_hint": "Karbo full node"
+    },
+    "XDN": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XDN_RPC_URL",
+      "rpc_user_env": "XDN_RPC_USER",
+      "rpc_password_env": "XDN_RPC_PASSWORD",
+      "software_hint": "DigitalNote full node"
+    },
+    "BCN": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BCN_RPC_URL",
+      "rpc_user_env": "BCN_RPC_USER",
+      "rpc_password_env": "BCN_RPC_PASSWORD",
+      "software_hint": "Bytecoin full node"
+    },
+    "QRL": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "QRL_RPC_URL",
+      "rpc_user_env": "QRL_RPC_USER",
+      "rpc_password_env": "QRL_RPC_PASSWORD",
+      "software_hint": "Quantum Resistant Ledger full node"
+    },
+    "ETN": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "ETN_RPC_URL",
+      "rpc_user_env": "ETN_RPC_USER",
+      "rpc_password_env": "ETN_RPC_PASSWORD",
+      "software_hint": "Electroneum full node"
+    },
+    "XUN": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "XUN_RPC_URL",
+      "rpc_user_env": "XUN_RPC_USER",
+      "rpc_password_env": "XUN_RPC_PASSWORD",
+      "software_hint": "UltraNote full node"
+    },
+    "BBR": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "BBR_RPC_URL",
+      "rpc_user_env": "BBR_RPC_USER",
+      "rpc_password_env": "BBR_RPC_PASSWORD",
+      "software_hint": "Boolberry full node"
+    },
+    "IRL": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "IRL_RPC_URL",
+      "rpc_user_env": "IRL_RPC_USER",
+      "rpc_password_env": "IRL_RPC_PASSWORD",
+      "software_hint": "IridiumCoin full node"
+    },
+    "GRFT": {
+      "solo_recommended": false,
+      "node_required_for_solo": true,
+      "rpc_url_env": "GRFT_RPC_URL",
+      "rpc_user_env": "GRFT_RPC_USER",
+      "rpc_password_env": "GRFT_RPC_PASSWORD",
+      "software_hint": "Graft full node"
+    }
+  }
+}

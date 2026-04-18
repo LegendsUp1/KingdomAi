@@ -1,0 +1,12 @@
+    def show(self) -> None:
+        """Show the main window."""
+        try:
+            self.root.mainloop()
+        except Exception as e:
+            self.logger.error(f"Error in main event loop: {e}")
+
+
+# End of main_window.py
+
+# Apply event handlers integration
+MainWindow = integrate_event_handlers(MainWindow)

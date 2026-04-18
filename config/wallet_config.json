@@ -1,0 +1,66 @@
+{
+    "enabled": true,
+    "wallets": {
+        "btc": {
+            "enabled": true,
+            "node_type": "full",
+            "rpc_url": "http://127.0.0.1:8332",
+            "rpc_username": "kingdom",
+            "rpc_password": "YOUR_PASSWORD_HERE"
+        },
+        "eth": {
+            "enabled": true,
+            "node_type": "light",
+            "rpc_url": "http://127.0.0.1:8545",
+            "web3_provider": "http"
+        },
+        "xrp": {
+            "enabled": true,
+            "node_type": "public",
+            "server_url": "wss://s.altnet.rippletest.net:51233"
+        },
+        "sol": {
+            "enabled": true,
+            "node_type": "public",
+            "rpc_url": "https://api.mainnet-beta.solana.com"
+        }
+    },
+    "key_management": {
+        "storage_type": "encrypted_file",
+        "encryption_method": "AES-256",
+        "auto_backup": true,
+        "backup_interval_hours": 24
+    },
+    "transaction_settings": {
+        "default_fee_level": "medium",
+        "auto_fee_adjustment": true,
+        "confirmation_blocks": {
+            "btc": 6,
+            "eth": 12,
+            "xrp": 1,
+            "sol": 32
+        },
+        "gas_settings": {
+            "eth_gas_price_strategy": "medium",
+            "sol_compute_budget": "default"
+        }
+    },
+    "security": {
+        "require_password_for_sending": true,
+        "transaction_limits": {
+            "daily_limit_usd": 1000,
+            "per_transaction_limit_usd": 500,
+            "require_2fa_above_usd": 100
+        }
+    },
+    "address_book": {
+        "enabled": true,
+        "require_verification": true,
+        "verification_period_days": 3
+    },
+    "logging": {
+        "level": "INFO",
+        "to_file": true,
+        "to_console": true
+    }
+}

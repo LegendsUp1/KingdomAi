@@ -1,0 +1,33 @@
+
+# Exclude corrupted large temp files
+kingdom_temp_stage*.py
+
+# Local Netlify folder
+.netlify
+
+# Local voice-only venvs (bootstrap_voice_runtime_venv.sh); not the main app venv
+voice_runtime_env/
+kingdom_voice_env/
+
+.private_backups/
+config/api_keys.json.bak-*
+*.env.bak
+
+# ==== Kingdom AI hardening (Phase A+) ====
+# Live creator secrets -- never committed. Loaded only when KINGDOM_APP_MODE=creator.
+config/.secrets.env
+config/.secrets.env.*
+
+# Release signing keystore -- kept outside the repo proper.
+*.jks
+release-keystore/
+mobile_build/build/flutter/android/app/release.keystore
+mobile_build/build/flutter/android/key.properties
+
+# Creator-only private artifacts (never in repo, never in Netlify, never in backups)
+KingdomAI-Private/
+# and a hint about the home-path sibling used by scripts/build_creator_*.sh:
+#   ~/KingdomAI-Private/ (outside the repo)
+
+# Internal one-shot helpers
+scripts/_internal_*.py

@@ -1,0 +1,26 @@
+{
+  "miners": {
+    "xmrig": {
+      "path": "/usr/local/bin/xmrig",
+      "type": "cpu",
+      "algorithms": ["randomx", "cryptonight"]
+    },
+    "trex": {
+      "path": "/usr/local/bin/t-rex",
+      "type": "gpu",
+      "algorithms": ["kawpow", "ethash", "octopus"]
+    },
+    "lolminer": {
+      "path": "/usr/local/bin/lolMiner",
+      "type": "gpu",
+      "algorithms": ["ethash", "autolykos2", "equihash", "beam"]
+    },
+    "srbminer": {
+      "path": "/usr/local/bin/srbminer",
+      "type": "both",
+      "algorithms": ["multiple"]
+    }
+  },
+  "auto_detect": true,
+  "mining_mode": "all_coins"
+}
