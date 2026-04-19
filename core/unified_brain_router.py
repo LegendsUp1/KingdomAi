@@ -47,9 +47,78 @@ import os
 import threading
 import time
 import uuid
+from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("kingdom_ai.unified_brain_router")
+
+
+class BackendType(str, Enum):
+    """Generation backends the UnifiedBrainRouter can route through.
+
+    Values match the strings used by :class:`KingdomInferenceStack` so a
+    router decision and the stack's ``_active_gen_backend`` can be
+    compared directly.
+    """
+
+    TENSORRT_LLM = "tensorrt_llm"
+    VLLM = "vllm"
+    OLLAMA_HTTP = "ollama_http"
+    OFFLINE = "offline"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def from_string(cls, value: Optional[str]) -> "BackendType":
+        """Best-effort coerce a stack-reported string into a ``BackendType``."""
+        if not value:
+            return cls.UNKNOWN
+        v = str(value).strip().lower().replace("-", "_")
+        for member in cls:
+            if member.value == v:
+                return member
+        return cls.UNKNOWN
+
+
+@dataclass
+class RoutingDecision:
+    """Record of how a single ``UnifiedBrainRouter.ask()`` call was routed.
+
+    The router fills this in as each pipeline stage runs and attaches it
+    to the response so callers, tests, and the GUI "why did it answer
+    that way?" inspector can see exactly which subsystems participated.
+    """
+
+    request_id: str
+    backend: BackendType = BackendType.UNKNOWN
+    neuroprotection_ran: bool = False
+    neuroprotection_allowed: bool = True
+    dictionary_enriched: bool = False
+    mempalace_hits: int = 0
+    language_context_applied: bool = False
+    tools_invoked: List[str] = field(default_factory=list)
+    stages: List[str] = field(default_factory=list)
+    latency_ms: float = 0.0
+    role: str = "consumer"
+    platform: str = "desktop"
+    notes: List[str] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "request_id": self.request_id,
+            "backend": self.backend.value,
+            "neuroprotection_ran": self.neuroprotection_ran,
+            "neuroprotection_allowed": self.neuroprotection_allowed,
+            "dictionary_enriched": self.dictionary_enriched,
+            "mempalace_hits": self.mempalace_hits,
+            "language_context_applied": self.language_context_applied,
+            "tools_invoked": list(self.tools_invoked),
+            "stages": list(self.stages),
+            "latency_ms": self.latency_ms,
+            "role": self.role,
+            "platform": self.platform,
+            "notes": list(self.notes),
+        }
 
 
 def _event_names() -> Dict[str, str]:
@@ -175,43 +244,65 @@ class UnifiedBrainRouter:
         ``trace`` (per-stage dict), ``request_id``.
         """
         rid = request_id or uuid.uuid4().hex[:12]
+        started_at = time.time()
         trace: Dict[str, Any] = {
             "request_id": rid,
-            "started_at": time.time(),
+            "started_at": started_at,
             "role": self._role,
             "platform": self._platform,
             "stages": [],
         }
+        decision = RoutingDecision(
+            request_id=rid,
+            role=self._role,
+            platform=self._platform,
+        )
         with self._lock:
             self._ask_total += 1
 
         if not prompt:
+            decision.latency_ms = (time.time() - started_at) * 1000.0
+            decision.notes.append("empty_prompt")
             return {
                 "prompt": prompt, "enriched_prompt": "", "answer": "",
                 "backend": None, "trace": trace, "request_id": rid,
+                "decision": decision.to_dict(),
             }
 
         # Stage 1 — neuroprotection
         allowed, reason = self._neuroprotect(prompt)
+        decision.neuroprotection_ran = self.neuroprotection is not None
+        decision.neuroprotection_allowed = allowed
+        decision.stages.append("neuroprotection")
         trace["stages"].append({"name": "neuroprotection",
                                 "allowed": allowed, "reason": reason})
         if not allowed:
             with self._lock:
                 self._refusals_total += 1
+            decision.latency_ms = (time.time() - started_at) * 1000.0
+            decision.notes.append(f"refused: {reason}")
             return {
                 "prompt": prompt, "enriched_prompt": prompt, "answer": "",
                 "backend": "refused",
                 "refused": True, "refusal_reason": reason,
                 "trace": trace, "request_id": rid,
+                "decision": decision.to_dict(),
             }
 
         # Stage 2 — dictionary enrichment
         enriched = self._dictionary_enrich(prompt)
+        delta = len(enriched) - len(prompt)
+        decision.dictionary_enriched = delta > 0
+        if decision.dictionary_enriched:
+            decision.stages.append("dictionary_enrichment")
         trace["stages"].append({"name": "dictionary_enrichment",
-                                "delta_chars": len(enriched) - len(prompt)})
+                                "delta_chars": delta})
 
         # Stage 3 — mempalace recall
         recall_blocks = self._mempalace_recall(prompt, top_k=top_k_memory)
+        decision.mempalace_hits = len(recall_blocks)
+        if recall_blocks:
+            decision.stages.append("mempalace_recall")
         trace["stages"].append({"name": "mempalace_recall",
                                 "hits": len(recall_blocks)})
         if recall_blocks:
@@ -232,6 +323,8 @@ class UnifiedBrainRouter:
                         f"[translation {source_lang}→{target_lang}] "
                         f"{tr['translation']}"
                     )
+                    decision.language_context_applied = True
+                    decision.stages.append("language_hub")
                 trace["stages"].append({"name": "language_hub",
                                         "source": source_lang,
                                         "target": target_lang})
@@ -253,6 +346,8 @@ class UnifiedBrainRouter:
             max_tokens=max_tokens,
             system=effective_system,
         )
+        decision.backend = BackendType.from_string(backend)
+        decision.stages.append("inference")
         trace["stages"].append({"name": "inference",
                                 "backend": backend,
                                 "chars": len(answer)})
@@ -260,9 +355,12 @@ class UnifiedBrainRouter:
         # Stage 7 — writeback
         if store_result and answer:
             self._writeback(prompt, answer, rid)
+            decision.stages.append("writeback")
             trace["stages"].append({"name": "writeback", "stored": True})
 
-        trace["finished_at"] = time.time()
+        finished_at = time.time()
+        trace["finished_at"] = finished_at
+        decision.latency_ms = (finished_at - started_at) * 1000.0
         result = {
             "prompt": prompt,
             "enriched_prompt": enriched,
@@ -270,6 +368,7 @@ class UnifiedBrainRouter:
             "backend": backend,
             "trace": trace,
             "request_id": rid,
+            "decision": decision.to_dict(),
         }
 
         if self.event_bus is not None:
@@ -560,6 +659,8 @@ def reset_unified_brain_router() -> None:
 
 __all__ = [
     "UnifiedBrainRouter",
+    "BackendType",
+    "RoutingDecision",
     "get_unified_brain_router",
     "reset_unified_brain_router",
 ]
