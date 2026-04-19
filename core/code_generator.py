@@ -529,6 +529,16 @@ class RealCodeGenerator(BaseComponent):
                         'success': result.get('success', False),
                         'message': 'Code generated successfully' if result.get('success') else result.get('error', 'Generation failed')
                     })
+                    if result.get('success') and description:
+                        try:
+                            from core.kingdom_event_names import REQUEST_CLAW_CODING_TASK
+                            self.event_bus.publish(REQUEST_CLAW_CODING_TASK, {
+                                "task": description,
+                                "language": language,
+                                "code_type": code_type,
+                            })
+                        except Exception:
+                            pass
             
             try:
                 loop = asyncio.get_running_loop()

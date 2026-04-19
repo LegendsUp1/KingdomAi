@@ -3526,8 +3526,49 @@ class MobileSyncServer(BaseComponent):
     # ------------------------------------------------------------------
 
     async def initialize(self) -> bool:
-        self._initialized = True
-        return True
+        """Prepare the server for start_server(): validate config, load state, verify deps."""
+        try:
+            # Validate websockets dependency before anything else
+            if not HAS_WEBSOCKETS:
+                logger.error("initialize: websockets package not installed — mobile sync will be unavailable")
+
+            # Validate port is in usable range
+            if not (1024 <= self._port <= 65535):
+                logger.warning("Port %d out of range, falling back to default %d", self._port, SYNC_PORT)
+                self._port = SYNC_PORT
+
+            # Ensure config directory exists for link persistence
+            os.makedirs(os.path.dirname(LINK_CONFIG_PATH), exist_ok=True)
+
+            # Reload persisted linked devices in case they changed since __init__
+            self._load_links()
+            logger.info("initialize: %d previously linked devices loaded", len(self._linked_devices))
+
+            # Ensure desktop identity is ready (generates if missing)
+            desktop_id = self._get_desktop_id()
+            desktop_name = self._get_desktop_name()
+            logger.info("initialize: desktop identity ready — id=%s name=%s", desktop_id, desktop_name)
+
+            # Re-subscribe events in case event_bus was attached after __init__
+            self._subscribe_events()
+
+            # Pre-warm security engine if available
+            if HAS_AI_SECURITY and self._security_engine is None:
+                try:
+                    redis_conn = getattr(self, 'redis', None)
+                    self._security_engine = get_ai_security_engine(redis_client=redis_conn)
+                    logger.info("[SECURITY] AISecurityEngine activated during initialize()")
+                except Exception as sec_err:
+                    logger.warning("AISecurityEngine init in initialize() failed (non-fatal): %s", sec_err)
+
+            self._initialized = True
+            logger.info("MobileSyncServer initialize() complete — ready for start_server()")
+            return True
+
+        except Exception as e:
+            logger.error("MobileSyncServer initialize() failed: %s", e)
+            self._initialized = False
+            return False
 
     async def close(self):
         await self.stop_server()

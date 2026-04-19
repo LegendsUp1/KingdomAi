@@ -89,7 +89,46 @@ class CharacterConsistencyEngine:
         self._character_sheets: Dict[str, CharacterSheet] = {}
         self._active_shots: List[Shot] = []
         
+        if self.event_bus:
+            self._register_event_handlers()
+        
         logger.info("🎭 CharacterConsistencyEngine initialized")
+    
+    def _register_event_handlers(self):
+        """Wire up event bus subscriptions."""
+        subscribe = getattr(self.event_bus, 'subscribe', None) or getattr(self.event_bus, 'on', None)
+        if subscribe:
+            subscribe('character.consistency.check', self._handle_consistency_check)
+    
+    async def _handle_consistency_check(self, data: Dict[str, Any]):
+        """Handle incoming consistency check requests and publish results."""
+        shot_desc = data.get('shot_description', '')
+        character_ids = data.get('character_ids', [])
+        method = data.get('method', 'query_sharing')
+        
+        results = {}
+        for char_id in character_ids:
+            shot = self.create_shot_with_anchoring(
+                description=shot_desc,
+                character_ids=[char_id],
+            )
+            shots = await self.enforce_consistency([shot], method=method)
+            score = self.measure_consistency(shots[0], char_id)
+            results[char_id] = {
+                'consistency_score': score,
+                'shot_id': shot.id,
+                'has_reference': shot.reference_frame is not None,
+            }
+        
+        result_payload = {
+            'request': data,
+            'results': results,
+            'timestamp': time.time(),
+        }
+        
+        publish = getattr(self.event_bus, 'publish', None) or getattr(self.event_bus, 'emit', None)
+        if publish:
+            publish('character.consistency.result', result_payload)
     
     async def generate_character_sheet(
         self,

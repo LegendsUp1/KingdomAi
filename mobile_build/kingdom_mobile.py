@@ -92,6 +92,11 @@ RED = "#FF3333"
 APP_MODE = os.environ.get("KINGDOM_APP_MODE", "consumer").lower()
 IS_CREATOR = APP_MODE == "creator"
 
+# This engine only runs inside the mobile APK/PWA, so default PLATFORM to
+# ``mobile`` if nobody set it. That locks the inference stack to the light
+# dependency tier.
+os.environ.setdefault("KINGDOM_APP_PLATFORM", "mobile")
+
 # API endpoint for desktop sync (local network)
 SYNC_API_PORT = 8765
 # Landing page URL (update once deployed to Netlify/custom domain)

@@ -1815,7 +1815,7 @@ class VRSystem(BaseComponent):
                 if hasattr(self, 'event_bus') and self.event_bus:
                     try:
                         # Use run_coroutine_threadsafe since we're in a thread
-                        emit_result = self.event_bus.emit('vr_tracking_update', tracking_data)
+                        emit_result = self.event_bus.emit('vr.tracking.update', tracking_data)
                         if asyncio.iscoroutine(emit_result):
                             try:
                                 loop = asyncio.get_running_loop()

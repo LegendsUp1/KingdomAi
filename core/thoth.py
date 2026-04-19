@@ -7318,8 +7318,39 @@ class ThothAI(BaseComponent):
                 else:
                     self.logger.warning("AI Sentience Detection Framework initialization failed")
             
-            # Initialize other components
-            # [Implementation of other initializations would go here]
+            # Verify Ollama connectivity and discover available models
+            try:
+                ollama_host = "localhost"
+                ollama_port = 11434
+                if hasattr(self, 'mcp_connector') and self.mcp_connector is not None:
+                    ollama_host = self.mcp_connector.mcp_host
+                    ollama_port = self.mcp_connector.mcp_port
+                ollama_url = f"http://{ollama_host}:{ollama_port}"
+
+                req = urllib.request.Request(f"{ollama_url}/api/version", method="GET")
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    version_data = json.loads(resp.read().decode("utf-8"))
+                    self.logger.info(f"Ollama reachable (v{version_data.get('version', '?')}) at {ollama_url}")
+            except Exception as ollama_err:
+                self.logger.warning(f"Ollama not reachable: {ollama_err} — AI generation may be limited")
+
+            # Discover and cache available Ollama models
+            try:
+                self.ollama_models = await self.discover_ollama_models()
+                model_count = self.ollama_models.get('total_count', 0) if isinstance(self.ollama_models, dict) else 0
+                self.logger.info(f"Ollama model discovery complete: {model_count} models available")
+            except Exception as model_err:
+                self.ollama_models = {'models': [], 'total_count': 0, 'status': 'error'}
+                self.logger.warning(f"Ollama model discovery failed: {model_err}")
+
+            # Register any pending event handlers that require async context
+            if self.event_bus:
+                try:
+                    self._register_event_handlers()
+                    self._register_gui_event_handlers()
+                    self.logger.info("Event handlers registered during initialize()")
+                except Exception as eh_err:
+                    self.logger.warning(f"Event handler registration during initialize() failed: {eh_err}")
             
             # Signal successful initialization
             if self.event_bus:

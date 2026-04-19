@@ -4,6 +4,8 @@ import os
 import sys
 
 os.environ["KINGDOM_APP_MODE"] = "consumer"
+# Mobile platform — light dependency tier (no torch/TRT-LLM/vLLM).
+os.environ["KINGDOM_APP_PLATFORM"] = "mobile"
 
 
 def _assert_consumer_bundle_clean() -> None:

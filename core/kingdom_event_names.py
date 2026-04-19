@@ -19,3 +19,52 @@ CREATOR_CHEMISTRY_VISUALIZE = "creator_chemistry_visualize"
 CREATOR_EQUIPMENT_CREATE = "creator_equipment_create"
 MEMORY_WRITE_REQUEST = "memory_write_request"
 MEMORY_READ_REQUEST = "memory_read_request"
+
+# ── Chemistry / Manufacturing sub-engine events ─────────────────────────────
+CHEMISTRY_DB_QUERY = "chemistry.database.query"
+CHEMISTRY_DB_RESULT = "chemistry.database.result"
+SCHEMATIC_REQUEST = "chemistry.schematic.request"
+SCHEMATIC_RESULT = "chemistry.schematic.result"
+BLUEPRINT_REQUEST = "manufacturing.blueprint.request"
+BLUEPRINT_RESULT = "manufacturing.blueprint.result"
+EXPLODED_VIEW_REQUEST = "manufacturing.exploded_view.request"
+EXPLODED_VIEW_RESULT = "manufacturing.exploded_view.result"
+METALLURGY_REQUEST = "metallurgy.analyze.request"
+METALLURGY_RESULT = "metallurgy.analyze.result"
+BIOLOGY_MODEL_REQUEST = "biology.model.request"
+BIOLOGY_MODEL_RESULT = "biology.model.result"
+ALCHEMY_TRANSMUTE_REQUEST = "alchemy.transmute.request"
+ALCHEMY_TRANSMUTE_RESULT = "alchemy.transmute.result"
+MANUFACTURING_SIMULATE_REQUEST = "manufacturing.simulate.request"
+MANUFACTURING_SIMULATE_RESULT = "manufacturing.simulate.result"
+DASHBOARD_REQUEST = "chemistry.dashboard.request"
+DASHBOARD_UPDATE = "chemistry.dashboard.update"
+
+# ── DictionaryBrain events (multi-era dictionary + etymology + meta-cog) ────
+DICTIONARY_LOOKUP_REQUEST = "dictionary.lookup.request"
+DICTIONARY_LOOKUP_RESULT = "dictionary.lookup.result"
+DICTIONARY_ETYMOLOGY_REQUEST = "dictionary.etymology.request"
+DICTIONARY_ETYMOLOGY_RESULT = "dictionary.etymology.result"
+DICTIONARY_EVALUATE_REQUEST = "dictionary.evaluate.request"
+DICTIONARY_EVALUATE_RESULT = "dictionary.evaluate.result"
+DICTIONARY_SOURCE_LOADED = "dictionary.source.loaded"
+DICTIONARY_LEARNED_WORD = "dictionary.learned_word"
+
+# ── InferenceStack events (always-on SOTA 2026 RTX-optimized inference) ─────
+INFERENCE_GENERATE_REQUEST = "inference.generate.request"
+INFERENCE_GENERATE_RESULT = "inference.generate.result"
+INFERENCE_EMBED_REQUEST = "inference.embed.request"
+INFERENCE_EMBED_RESULT = "inference.embed.result"
+INFERENCE_BACKEND_SWITCH = "inference.backend.switch"
+INFERENCE_HEALTH_REPORT = "inference.health.report"
+
+# ── UnifiedBrainRouter events ──────────────────────────────────────────────
+# Every inbound query flows through one router:
+#   dictionary enrichment → mempalace recall → language hub →
+#   inference stack → writeback. Consumers publish BRAIN_ASK_REQUEST and
+#   receive BRAIN_ASK_RESULT with the full trace attached.
+BRAIN_ASK_REQUEST = "brain.ask.request"
+BRAIN_ASK_RESULT = "brain.ask.result"
+BRAIN_WRITEBACK = "brain.writeback"
+BRAIN_TOOL_CALL = "brain.tool.call"
+BRAIN_TOOL_RESULT = "brain.tool.result"

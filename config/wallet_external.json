@@ -1,0 +1,457 @@
+{
+  "XMR": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XMR_RPC_USER:-}:${XMR_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XMR_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "ZEN": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ZEN_RPC_USER:-}:${ZEN_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[]}'  \"${ZEN_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "ERG": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ERG_RPC_USER:-}:${ERG_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_erg\"]}'  \"${ERG_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "FLUX": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${FLUX_RPC_USER:-}:${FLUX_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[]}' \"${FLUX_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "KAS": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${KAS_RPC_USER:-}:${KAS_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_kas\"]}'  \"${KAS_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "ALPH": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ALPH_RPC_USER:-}:${ALPH_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_alph\"]}' \"${ALPH_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "NEXA": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${NEXA_RPC_USER:-}:${NEXA_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_nexa\"]}' \"${NEXA_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "CFX": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${CFX_RPC_USER:-}:${CFX_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_cfx\"]}'  \"${CFX_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "FIRO": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${FIRO_RPC_USER:-}:${FIRO_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_firo\"]}' \"${FIRO_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "BTG": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BTG_RPC_USER:-}:${BTG_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_btg\"]}'  \"${BTG_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "CKB": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${CKB_RPC_USER:-}:${CKB_RPC_PASSWORD:-}\"   --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_ckb\"]}'   \"${CKB_RPC_URL}\"   | jq -r '.result'"
+    ]
+  },
+  "CLORE": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${CLORE_RPC_USER:-}:${CLORE_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_clore\"]}' \"${CLORE_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "NEOX": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${NEOX_RPC_USER:-}:${NEOX_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_neox\"]}'  \"${NEOX_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "SERO": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${SERO_RPC_USER:-}:${SERO_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_sero\"]}'  \"${SERO_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "VTC": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${VTC_RPC_USER:-}:${VTC_RPC_PASSWORD:-}\"   --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_vtc\"]}'   \"${VTC_RPC_URL}\"   | jq -r '.result'"
+    ]
+  },
+  "RXD": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${RXD_RPC_USER:-}:${RXD_RPC_PASSWORD:-}\"   --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_rxd\"]}'   \"${RXD_RPC_URL}\"   | jq -r '.result'"
+    ]
+  },
+  "DNX": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${DNX_RPC_USER:-}:${DNX_RPC_PASSWORD:-}\"   --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_dnx\"]}'   \"${DNX_RPC_URL}\"   | jq -r '.result'"
+    ]
+  },
+  "BEAM": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BEAM_RPC_USER:-}:${BEAM_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_beam\"]}'  \"${BEAM_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "GRIN": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${GRIN_RPC_USER:-}:${GRIN_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_grin\"]}'  \"${GRIN_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "AION": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${AION_RPC_USER:-}:${AION_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_aion\"]}'  \"${AION_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "AE": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${AE_RPC_USER:-}:${AE_RPC_PASSWORD:-}\"   --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_ae\"]}'   \"${AE_RPC_URL}\"   | jq -r '.result'"
+    ]
+  },
+  "BTM": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BTM_RPC_USER:-}:${BTM_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_btm\"]}'  \"${BTM_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "SBTC": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${SBTC_RPC_USER:-}:${SBTC_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_sbtc\"]}' \"${SBTC_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "PPC": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${PPC_RPC_USER:-}:${PPC_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_ppc\"]}'  \"${PPC_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "NMC": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${NMC_RPC_USER:-}:${NMC_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_nmc\"]}'  \"${NMC_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "SYS": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${SYS_RPC_USER:-}:${SYS_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_sys\"]}'  \"${SYS_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "DGB": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${DGB_RPC_USER:-}:${DGB_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_dgb\"]}'  \"${DGB_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "VIA": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${VIA_RPC_USER:-}:${VIA_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_via\"]}'  \"${VIA_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "XVG": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XVG_RPC_USER:-}:${XVG_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_xvg\"]}'  \"${XVG_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "GRS": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${GRS_RPC_USER:-}:${GRS_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_grs\"]}'  \"${GRS_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "MWC": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${MWC_RPC_USER:-}:${MWC_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_mwc\"]}'  \"${MWC_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "ARRR": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ARRR_RPC_USER:-}:${ARRR_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_arrr\"]}' \"${ARRR_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "NULS": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${NULS_RPC_USER:-}:${NULS_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_nuls\"]}' \"${NULS_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "MONA": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${MONA_RPC_USER:-}:${MONA_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_mona\"]}' \"${MONA_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "XZC": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XZC_RPC_USER:-}:${XZC_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_xzc\"]}'  \"${XZC_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "ZEL": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ZEL_RPC_USER:-}:${ZEL_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_zel\"]}'  \"${ZEL_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "BTCP": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BTCP_RPC_USER:-}:${BTCP_RPC_PASSWORD:-}\" --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_btcp\"]}' \"${BTCP_RPC_URL}\" | jq -r '.result'"
+    ]
+  },
+  "ZANO": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ZANO_RPC_USER:-}:${ZANO_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"getaddress\",\"params\":{}}' \"${ZANO_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "XHV": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XHV_RPC_USER:-}:${XHV_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XHV_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "WOW": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${WOW_RPC_USER:-}:${WOW_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${WOW_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "SUMO": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${SUMO_RPC_USER:-}:${SUMO_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${SUMO_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "TUBE": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${TUBE_RPC_USER:-}:${TUBE_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${TUBE_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "MSR": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${MSR_RPC_USER:-}:${MSR_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${MSR_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "ARQ": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ARQ_RPC_USER:-}:${ARQ_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${ARQ_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "DERO": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${DERO_RPC_USER:-}:${DERO_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${DERO_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "XEQ": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XEQ_RPC_USER:-}:${XEQ_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XEQ_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "LOKI": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${LOKI_RPC_USER:-}:${LOKI_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${LOKI_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "TRTL": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${TRTL_RPC_USER:-}:${TRTL_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${TRTL_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "XTA": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XTA_RPC_USER:-}:${XTA_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XTA_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "XLA": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XLA_RPC_USER:-}:${XLA_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XLA_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "CCX": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${CCX_RPC_USER:-}:${CCX_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${CCX_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "XMV": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XMV_RPC_USER:-}:${XMV_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XMV_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "RYO": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${RYO_RPC_USER:-}:${RYO_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${RYO_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "XWP": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XWP_RPC_USER:-}:${XWP_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_xwp\"]}'  \"${XWP_RPC_URL}\"  | jq -r '.result'"
+    ]
+  },
+  "AEON": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${AEON_RPC_USER:-}:${AEON_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${AEON_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "KRB": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${KRB_RPC_USER:-}:${KRB_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${KRB_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "XDN": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XDN_RPC_USER:-}:${XDN_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${XDN_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "BCN": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BCN_RPC_USER:-}:${BCN_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${BCN_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "QRL": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${QRL_RPC_USER:-}:${QRL_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${QRL_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "ETN": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${ETN_RPC_USER:-}:${ETN_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}'  \"${ETN_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "XUN": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${XUN_RPC_USER:-}:${XUN_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"createAddress\",\"params\":{}}'  \"${XUN_RPC_URL}\"  | jq -r '.result.address'"
+    ]
+  },
+  "BBR": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BBR_RPC_USER:-}:${BBR_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"getAddresses\",\"params\":{}}'  \"${BBR_RPC_URL}\"  | jq -r '.result.addresses[0]'"
+    ]
+  },
+  "IRL": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${IRL_RPC_USER:-}:${IRL_RPC_PASSWORD:-}\"  -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"getAddresses\",\"params\":{}}'  \"${IRL_RPC_URL}\"  | jq -r '.result.addresses[0]'"
+    ]
+  },
+  "GRFT": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${GRFT_RPC_USER:-}:${GRFT_RPC_PASSWORD:-}\" -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":\"addr\",\"method\":\"get_address\",\"params\":{\"account_index\":0}}' \"${GRFT_RPC_URL}\" | jq -r '.result.address'"
+    ]
+  },
+  "BCD": {
+    "command": [
+      "bash",
+      "-lc",
+      "curl -sS --user \"${BCD_RPC_USER:-}:${BCD_RPC_PASSWORD:-}\"  --data-binary '{\"jsonrpc\":\"1.0\",\"id\":\"addr\",\"method\":\"getnewaddress\",\"params\":[\"kingdom_ai_bcd\"]}'  \"${BCD_RPC_URL}\"  | jq -r '.result'"
+    ]
+  }
+}

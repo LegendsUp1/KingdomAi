@@ -451,7 +451,7 @@ class CreationOrchestrator:
         # Load Medical Reconstruction
         try:
             from core.medical_reconstruction_engine import MedicalReconstructionEngine
-            self._engines[EngineType.MEDICAL] = MedicalReconstructionEngine()
+            self._engines[EngineType.MEDICAL] = MedicalReconstructionEngine(event_bus=getattr(self, 'event_bus', None))
             logger.info("✅ Medical Engine loaded")
         except Exception as e:
             logger.warning(f"⚠️ Medical Engine failed: {e}")
@@ -888,7 +888,7 @@ class CreationOrchestrator:
         logger.info("🏥 Medical task: 3D reconstruction")
         try:
             from core.medical_reconstruction_engine import MedicalReconstructionEngine
-            med = MedicalReconstructionEngine()
+            med = MedicalReconstructionEngine(event_bus=getattr(self, 'event_bus', None))
             scan_data = task.params.get('scan_data') or (input_data if isinstance(input_data, dict) else {})
             if hasattr(med, 'reconstruct'):
                 result = med.reconstruct(scan_data)

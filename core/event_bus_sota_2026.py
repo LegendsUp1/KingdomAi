@@ -36,18 +36,43 @@ _QT_DISPATCHER_LOCK = threading.Lock()
 
 
 def _get_qt_dispatcher():
+    """Return a Qt queued-invocation dispatcher only when a Qt event loop is
+    genuinely ready to process queued signals. If no QCoreApplication exists,
+    or if the application is not running its event loop, return None so the
+    bus falls back to inline sync dispatch on the calling thread. Without this
+    guard, signals emit into a Qt queue that never drains (e.g. in CLI tests,
+    subprocess probes, or before exec_() is called) and subscribers silently
+    never fire."""
     global _QT_DISPATCHER
+    try:
+        from PyQt6.QtCore import QCoreApplication
+    except Exception:
+        return None
+    app = QCoreApplication.instance()
+    if app is None:
+        return None
+    # Only use the dispatcher if the Qt loop is actually spinning. `closingDown`
+    # indicates the loop is tearing down; in tests the loop may never have started.
+    try:
+        if app.closingDown():
+            return None
+    except Exception:
+        pass
+    # Heuristic: if the main thread is different from ours AND the app has not
+    # started its event loop, queued signals will not fire. There's no perfect
+    # public API for "is the loop running", but we can detect the common CLI
+    # case where no event loop thread has been started by checking for a
+    # ``_event_loop_started`` attribute we set when users run the studio.
+    if not getattr(app, "_kingdom_event_loop_live", False):
+        return None
     if _QT_DISPATCHER is not None:
         return _QT_DISPATCHER
     with _QT_DISPATCHER_LOCK:
         if _QT_DISPATCHER is not None:
             return _QT_DISPATCHER
         try:
-            from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, Qt, QCoreApplication
+            from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, Qt
         except Exception:
-            return None
-        app = QCoreApplication.instance()
-        if app is None:
             return None
 
         class _QtDispatcher(QObject):
@@ -520,7 +545,40 @@ class EventBusSOTA2026:
             return False
 
     def publish_sync(self, event_type: str, data: Any = None) -> bool:
-        return self.publish(event_type, data)
+        """Publish and dispatch all sync handlers INLINE on the calling thread.
+
+        Async handlers are still scheduled on the loop. This guarantees that
+        by the time this call returns, every sync subscriber has been
+        invoked — crucial for test harnesses and deterministic GUI flows.
+        """
+        if self._shutting_down:
+            return False
+        try:
+            self._record_event(event_type, data)
+            self._metrics.events_published += 1
+            handlers = self._collect_matching_handlers(event_type)
+            loop = self._get_loop()
+            for hi in handlers:
+                try:
+                    cb = hi.get('callback') if isinstance(hi, dict) else hi
+                    is_async = hi.get('is_async', False) if isinstance(hi, dict) else False
+                    if is_async:
+                        if loop is not None and loop.is_running():
+                            try:
+                                loop.call_soon_threadsafe(
+                                    lambda h=cb, d=data: asyncio.ensure_future(
+                                        h(d), loop=loop))
+                            except Exception:
+                                pass
+                    else:
+                        self._safe_sync_handler(cb, data, event_type)
+                except Exception as e:
+                    self.logger.debug("publish_sync handler error %s: %s",
+                                      event_type, e)
+        except Exception as e:
+            self.logger.error("publish_sync failed for %s: %s", event_type, e)
+            return False
+        return True
 
     def emit(self, event_type: str, data: Any = None) -> bool:
         return self.publish(event_type, data)
@@ -660,9 +718,9 @@ class EventBusSOTA2026:
                         try:
                             qt_disp.invoke.emit(handler, (data,), {})
                         except Exception:
-                            self._executor.submit(self._safe_sync_handler, handler, data, event_type)
+                            self._submit_or_inline(handler, data, event_type)
                     else:
-                        self._executor.submit(self._safe_sync_handler, handler, data, event_type)
+                        self._submit_or_inline(handler, data, event_type)
             except Exception as e:
                 self.logger.error("Handler dispatch error for '%s': %s", event_type, e)
                 self._metrics.events_failed += 1
@@ -680,6 +738,15 @@ class EventBusSOTA2026:
         if channel is None:
             channel = get_event_channel(event_type)
         self._metrics.channel_counts[channel] = self._metrics.channel_counts.get(channel, 0) + 1
+
+    def _submit_or_inline(self, handler: Callable, data: Any, event_type: str) -> None:
+        """Dispatch a sync handler. We run it INLINE on the publishing
+        thread — this gives deterministic delivery (every subscriber has
+        been invoked before publish() returns) and matches the guarantees
+        users expect from a reactive event bus. For slow or long-running
+        subscribers, the subscriber itself should offload to a thread.
+        """
+        self._safe_sync_handler(handler, data, event_type)
 
     def _safe_sync_handler(self, handler: Callable, data: Any, event_type: str) -> None:
         try:

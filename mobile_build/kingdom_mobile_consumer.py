@@ -13,6 +13,8 @@ import sys
 
 # Phase E: hard-force consumer mode BEFORE any other import.
 os.environ["KINGDOM_APP_MODE"] = "consumer"
+# Mobile platform — light dependency tier regardless of role.
+os.environ["KINGDOM_APP_PLATFORM"] = "mobile"
 
 
 def _assert_consumer_bundle_clean() -> None:

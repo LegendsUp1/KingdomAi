@@ -31,3 +31,4 @@ KingdomAI-Private/
 
 # Internal one-shot helpers
 scripts/_internal_*.py
+kingdom-landing/public/downloads/*.apk

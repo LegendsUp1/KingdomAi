@@ -29,6 +29,12 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 os.environ["KINGDOM_APP_MODE"] = "consumer"
+# Consumer DESKTOP — full dependency tier, hardware-adaptive.
+# Consumer-desktop users get the same TRT-LLM / vLLM / CUDA /
+# sentence-transformers stack the creator gets, provided their machine
+# supports it. Role "consumer" only redacts keys, secrets, and proprietary
+# data. Only KINGDOM_APP_PLATFORM=mobile triggers the light tier.
+os.environ["KINGDOM_APP_PLATFORM"] = "desktop"
 
 # Configure logging before anything else
 logging.basicConfig(
@@ -441,6 +447,128 @@ def main():
             logger.debug("Web MCP (non-fatal): %s", wmcp_err)
 
         logger.info("[OK] All consumer protection modules loaded (dormant)")
+
+        # ──────────────────────────────────────────────────────────────
+        #  UNIFIED BRAIN (consumer desktop = full stack, minus keys/data)
+        # ──────────────────────────────────────────────────────────────
+        # Consumer desktop users get the exact same always-on SOTA 2026
+        # inference stack, MemPalace, Ollama memory integration, Dictionary
+        # Brain, Language Learning Hub, Harmonic Orchestrator, and
+        # Neuroprotection Layer that the creator desktop runs — the only
+        # difference is no owner keys, no proprietary data, and the
+        # creator-only UI is hidden. The light-tier skip lives on the
+        # PLATFORM axis (KINGDOM_APP_PLATFORM=mobile), never on role.
+        _inference_stack = None
+        try:
+            from core.inference_stack import get_inference_stack
+            _inference_stack = get_inference_stack(event_bus=event_bus)
+            register_component("inference_stack", _inference_stack)
+            _info = _inference_stack.get_system_info()
+            logger.info(
+                "[OK] InferenceStack v%s role=%s platform=%s tier=%s cuda=%s "
+                "gpu=%s ollama=%s",
+                _info["version"], _info["role"], _info["platform"],
+                _info["tier"], _info["torch"]["cuda"],
+                _info["torch"]["device_name"] or "-",
+                _info["ollama"]["reachable"],
+            )
+        except Exception as _isx:
+            logger.debug("InferenceStack init skipped (non-fatal): %s", _isx)
+
+        _mp = None
+        _omi = None
+        try:
+            from components.mempalace_setup import initialize_mempalace
+            _mp = initialize_mempalace(event_bus)
+            if isinstance(_mp, dict):
+                register_component("mempalace_bridge", _mp.get("bridge"))
+                register_component("memory_palace_manager", _mp.get("palace"))
+                register_component("memory_persistence", _mp.get("persistence"))
+
+            from components.ollama_memory_integration import OllamaMemoryIntegration
+            _omi = OllamaMemoryIntegration(
+                event_bus=event_bus,
+                persistence_layer=(_mp or {}).get("persistence"),
+                inference_stack=_inference_stack,
+            )
+            register_component("ollama_memory_integration", _omi)
+            logger.info("[OK] MemPalace + Ollama memory integration initialised")
+        except Exception as _mpx:
+            logger.debug("MemPalace init skipped (non-fatal): %s", _mpx)
+
+        _ho = None
+        _npl = None
+        _llh = None
+        try:
+            from components.harmonic_orchestrator_v3 import HarmonicOrchestratorV3
+            _ho = HarmonicOrchestratorV3(event_bus=event_bus)
+            register_component("harmonic_orchestrator", _ho)
+
+            from components.neuroprotection_layer import NeuroprotectionLayer
+            _npl = NeuroprotectionLayer(event_bus=event_bus)
+            register_component("neuroprotection_layer", _npl)
+
+            from components.language_learning_hub import LanguageLearningHub
+            _llh = LanguageLearningHub(event_bus=event_bus)
+            register_component("language_learning_hub", _llh)
+            logger.info("[OK] AI orchestrator subsystems initialised")
+        except Exception as _orx:
+            logger.debug("AI orchestrator subsystems skipped (non-fatal): %s", _orx)
+
+        _dbrain = None
+        try:
+            from components.dictionary_brain import DictionaryBrain
+            _mp_persistence = (_mp or {}).get("persistence") if _mp else None
+            _mp_palace = (_mp or {}).get("palace") if _mp else None
+            _dbrain = DictionaryBrain(
+                event_bus=event_bus,
+                data_dir="~/.kingdom_ai/dictionaries",
+                persistence_layer=_mp_persistence,
+                palace_manager=_mp_palace,
+                ollama_integration=_omi,
+                language_hub=_llh,
+                harmonic_orchestrator=_ho,
+                neuroprotection=_npl,
+                inference_stack=_inference_stack,
+            )
+            register_component("dictionary_brain", _dbrain)
+            _status = _dbrain.get_status()
+            logger.info(
+                "[OK] DictionaryBrain v%s (webster=%d britannica=%d early=%d "
+                "indexed=%d stack=%s)",
+                _status["version"],
+                _status["webster_1828_entries"],
+                _status["britannica_entries"],
+                _status["early_english_entries"],
+                _status["indexed_entries"],
+                _status["linked"]["inference_stack"],
+            )
+        except Exception as _dbx:
+            logger.debug("DictionaryBrain init skipped (non-fatal): %s", _dbx)
+
+        # UnifiedBrainRouter — funnels every inbound query through Dictionary
+        # enrichment → MemPalace recall → Language Hub → InferenceStack →
+        # writeback, giving the consumer desktop a single coherent brain path
+        # instead of parallel subsystems.
+        try:
+            from core.unified_brain_router import UnifiedBrainRouter
+            _ubr = UnifiedBrainRouter(
+                event_bus=event_bus,
+                inference_stack=_inference_stack,
+                dictionary_brain=_dbrain,
+                ollama_memory_integration=_omi,
+                mempalace_bridge=(_mp or {}).get("bridge") if _mp else None,
+                language_hub=_llh,
+                harmonic_orchestrator=_ho,
+                neuroprotection=_npl,
+            )
+            register_component("unified_brain_router", _ubr)
+            logger.info(
+                "[OK] UnifiedBrainRouter wired (dictionary→mempalace→"
+                "language→inference) — consumer desktop brain is unified"
+            )
+        except Exception as _ubrx:
+            logger.debug("UnifiedBrainRouter init skipped (non-fatal): %s", _ubrx)
 
         # Mobile Sync Server — desktop ↔ mobile WebSocket bridge
         try:

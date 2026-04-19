@@ -49,9 +49,12 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 # Phase E: hard-force consumer mode on the mobile build. This entry point is
-# ONLY used to build the public consumer APK / iOS PWA, so we lock the mode
+# ONLY used to build the public consumer APK / iOS PWA, so we lock the role
 # here before any other import can read os.environ.
 os.environ["KINGDOM_APP_MODE"] = "consumer"
+# Mobile platform — light dependency tier. Skips torch/TRT-LLM/vLLM/
+# sentence-transformers entirely so the APK stays under the P/Y size budget.
+os.environ["KINGDOM_APP_PLATFORM"] = "mobile"
 
 # Phase E: refuse to start if any *_creator*.json leaked into the asset tree.
 def _assert_consumer_bundle_clean() -> None:

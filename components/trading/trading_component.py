@@ -146,6 +146,7 @@ class TradingComponent(BaseComponentV2):
         self._last_canary_result: Dict[str, Any] = {}
         self._autonomous_orchestrator: Optional[Any] = None
         self._capital_flow_processor: Optional[Any] = None
+        self._botsofwallstreet: Optional[Any] = None
         self._autonomous_task: Optional[asyncio.Task] = None
 
     async def _initialize(self) -> None:
@@ -278,6 +279,16 @@ class TradingComponent(BaseComponentV2):
                     api_keys=api_keys,
                     config=at_cfg.get("capital_flow") or {},
                 )
+                bots_cfg = at_cfg.get("botsofwallstreet") or {}
+                if bots_cfg.get("enabled"):
+                    try:
+                        from components.botsofwallstreet import BotsofWallStreetAgent
+                        self._botsofwallstreet = BotsofWallStreetAgent(config=bots_cfg)
+                        if bots_cfg.get("auto_register"):
+                            asyncio.ensure_future(self._botsofwallstreet.register())
+                        self.logger.info("BotsofWallStreetAgent initialized (auto_post=%s)", bots_cfg.get("auto_post_ideas"))
+                    except Exception as bots_err:
+                        self.logger.debug("BotsofWallStreetAgent skipped: %s", bots_err)
                 if self.event_bus:
                     self.event_bus.subscribe(METACOGNITION_UPDATE, self._on_metacognition_capital_flow)
                 self._autonomous_task = asyncio.create_task(self._run_autonomous_cycles())
@@ -302,10 +313,24 @@ class TradingComponent(BaseComponentV2):
     async def _run_autonomous_cycles(self) -> None:
         at_cfg = self.config.get("autonomous_trading") or {}
         interval = float(at_cfg.get("cycle_interval_seconds", 300))
+        bots_cfg = at_cfg.get("botsofwallstreet") or {}
+        auto_post = bots_cfg.get("auto_post_ideas", False)
         while True:
             try:
                 if self._autonomous_orchestrator is not None:
-                    await self._autonomous_orchestrator.run_trading_cycle()
+                    result = await self._autonomous_orchestrator.run_trading_cycle()
+                    if (
+                        auto_post
+                        and self._botsofwallstreet is not None
+                        and isinstance(result, dict)
+                        and result.get("status") == "completed"
+                    ):
+                        exec_data = result.get("execution") or {}
+                        for trade in exec_data.get("trades") or []:
+                            try:
+                                await self._botsofwallstreet.post_idea(trade)
+                            except Exception as bots_err:
+                                self.logger.debug("BotsofWallStreet post_idea: %s", bots_err)
             except asyncio.CancelledError:
                 break
             except Exception as e:

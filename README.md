@@ -1,139 +1,338 @@
-# Kingdom AI — Consumer Edition
+# Kingdom AI System
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
-[![Release](https://img.shields.io/badge/release-v2.2.0-brightgreen)](https://github.com/LegendsUp1/KingdomAi/releases)
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20Desktop-lightgrey)](#install)
+## Overview
 
-Kingdom AI is a privacy-first, self-custodial AI + crypto assistant that runs
-**on your device, not on a server**. This repository is the public **consumer
-edition** source tree — the exact code that builds the app shipped on
-[kingdom-ai.netlify.app](https://kingdom-ai.netlify.app).
+This repository contains the Kingdom AI System, an advanced cryptocurrency trading and mining platform with self-modifying capabilities.
 
-> **No account required. No tracking. No cloud storage of your keys.**
-> Your seed phrase is generated and stored only on your device.
+## Features
 
----
+- Advanced trading algorithms with real-time optimization
+- Self-modifying AI system with code generation
+- Dynamic code injection and runtime modifications
+- Quantum computing integration
+- Comprehensive security features
+- Real-time system adaptation
+- Advanced mining system with GPU optimization and real-time monitoring
+- Real-time market data integration with websocket support
+- Blockchain integration with Web3 support
+- Event-driven architecture with async communication
+- Voice interface with natural language processing
+- VR integration for immersive trading experience
+- Secure wallet management and transaction handling
 
-## Install
+## Installation
 
-| Platform | How to install                                                                                              |
-| -------- | ----------------------------------------------------------------------------------------------------------- |
-| Android  | Download [`KingdomAI.apk`](https://github.com/LegendsUp1/KingdomAi/releases/latest) or from the [landing page](https://kingdom-ai.netlify.app) |
-| iOS      | Open [kingdom-ai.netlify.app](https://kingdom-ai.netlify.app) in Safari → Share → **Add to Home Screen**     |
-| Desktop  | Clone this repo and run `python kingdom_ai_consumer.py` (see [Build from source](#build-from-source))       |
-
-The landing page auto-detects your OS and shows the right installer. If you
-prefer sideloading the APK directly, grab it from the
-[Releases](https://github.com/LegendsUp1/KingdomAi/releases) page on GitHub —
-every release ships with a matching `.sha256` file so you can verify integrity:
+1. Clone the repository:
 
 ```bash
-sha256sum -c KingdomAI.apk.sha256
+git clone https://github.com/yourusername/kingdom-ai.git
+cd kingdom-ai
 ```
 
----
-
-## Cross-device account sync (no server)
-
-Kingdom AI uses a **BIP-39 seed phrase** (12 or 24 words) as the only source
-of truth for your account. The flow:
-
-1. First launch → app generates a seed on-device and shows it to you once.
-2. Back it up (paper, metal plate, password manager — your choice).
-3. On any other phone or computer, tap **Recover** and type the same seed.
-4. Your entire local vault — settings, watchlists, encrypted notes — is
-   derived deterministically from that seed.
-
-Because the seed never leaves your device and we run no account server, you
-get perfect portability without a login.
-
-Secrets in the local vault are encrypted with **AES-256-GCM**, keyed by
-**PBKDF2-HMAC-SHA256** (600 000 iterations, tunable up to 1 000 000). See
-[`SECURITY.md`](./SECURITY.md) for the full threat model.
-
----
-
-## Build from source
-
-You need Python 3.11+, and for mobile builds, the [Flet](https://flet.dev)
-CLI + a Flutter / Android SDK.
-
-### Desktop (Linux / macOS / Windows)
+2. Install dependencies:
 
 ```bash
-git clone https://github.com/LegendsUp1/KingdomAi.git
-cd KingdomAi
-python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python kingdom_ai_consumer.py
 ```
 
-### Android APK
+3. Configure API keys and settings:
 
 ```bash
-cd mobile_build
-flet build apk --yes --module-name kingdom_mobile_consumer
-# APK lands in mobile_build/build/apk/
+# Copy the example config files
+cp config/api_keys.example.json config/api_keys.json
+
+# Edit the API keys file with your credentials
+# Add your Infura project ID, Alchemy API key, or other blockchain provider credentials
+nano config/api_keys.json
 ```
 
-### iOS PWA
+## Blockchain Configuration
 
-The iOS experience is a Progressive Web App served from
-[`kingdom-landing/`](./kingdom-landing). To build it locally:
+### 1. Set Up Blockchain Connection
+
+Use the interactive setup script to configure your blockchain connection:
 
 ```bash
-cd kingdom-landing
-# static site — no build step; serve the public/ directory
-python -m http.server --directory public 8080
+python scripts/setup_blockchain.py
 ```
 
----
+Follow the prompts to configure:
+- Network (Mainnet/Testnet/Custom RPC)
+- RPC endpoint URL
+- Chain ID (for custom RPC)
+- SSL settings
 
-## Verify the bundle yourself
+### 2. Verify Blockchain Connection
 
-Every tree under this repo can be scanned for secret-leak patterns with the
-included verifier:
+After configuration, verify your blockchain connection:
 
 ```bash
-./scripts/verify_consumer_bundle.sh .
+python scripts/verify_blockchain.py
 ```
 
-It should print `all targets clean`. If it doesn't, open an issue — that is
-a security bug.
+This will test the connection and provide troubleshooting tips if needed.
 
----
+### 3. Configuration Files
 
-## What's NOT in this repo
+- `config/blockchain/ethereum.json`: Main blockchain configuration
+- `config/api_keys.json`: API keys for blockchain providers and other services
 
-By design, the consumer edition **does not contain**:
+### 4. Environment Variables (Optional)
 
-- Any real API keys, wallets, or seed phrases
-- Creator-only features (private mining pools, admin tooling)
-- Release signing keys
-- The creator's personal desktop configuration
+For advanced configuration, you can set these environment variables:
 
-A separate, private creator edition exists for the developer's own devices.
-The public tree you're reading has been scrubbed and is verified leak-free on
-every release.
+```bash
+# For Infura
+INFURA_PROJECT_ID=your_infura_project_id
 
----
+# For custom RPC
+BLOCKCHAIN_RPC_URL=http://your-node:8545
+BLOCKCHAIN_CHAIN_ID=1  # 1 for Ethereum Mainnet, 11155111 for Sepolia, etc.
+```
+
+## Usage
+
+Basic usage example with self-modifying capabilities:
+
+```python
+from kingdom_ai import KingdomAI
+from kingdom_ai.code_generator import CodeGenerator
+from kingdom_ai.system_modifier import SystemModifier
+
+# Initialize the system
+system = KingdomAI()
+
+# Enable real-time code generation and injection
+code_generator = CodeGenerator()
+system_modifier = SystemModifier()
+
+# Start trading with self-modification enabled
+system.start_trading(
+    allow_self_modification=True,
+    code_generator=code_generator,
+    system_modifier=system_modifier
+)
+
+# System will now:
+# 1. Monitor performance metrics
+# 2. Generate optimized code
+# 3. Test generated code in sandbox
+# 4. Inject verified improvements
+# 5. Adapt in real-time
+```
+
+### Mining System Usage
+
+The Kingdom AI Mining System provides powerful cryptocurrency mining capabilities with intelligent optimization:
+
+```python
+from kingdom_ai import KingdomAI
+from kingdom_ai.core.mining_system import MiningSystem, MiningConfig
+from kingdom_ai.core.event_bus import EventBus
+
+# Initialize the system
+system = KingdomAI()
+event_bus = EventBus.get_instance()
+
+# Configure mining system
+config = MiningConfig(
+    algorithm="SHA-256",
+    threads=4,
+    target_difficulty=4,
+    wallet_address="your_wallet_address"
+)
+
+# Initialize mining system
+mining = MiningSystem(config, event_bus)
+
+# Start mining with automatic optimization
+async def start_mining():
+    # Initialize mining system
+    if not mining.initialize():
+        raise Exception("Failed to initialize mining system")
+    
+    # Subscribe to mining events
+    await event_bus.subscribe("mining.block_mined", handle_block_mined)
+    await event_bus.subscribe("mining.stats", handle_mining_stats)
+    
+    # Start mining
+    if not await mining.start():
+        raise Exception("Failed to start mining")
+    
+    # Monitor mining stats
+    while True:
+        stats = await mining.get_stats()
+        print(f"Mining stats: {stats}")
+        await asyncio.sleep(10)
+
+async def handle_block_mined(event):
+    """Handle block mined event."""
+    print(f"Block mined: {event}")
+
+async def handle_mining_stats(event):
+    """Handle mining stats event."""
+    print(f"Mining stats update: {event}")
+```
+
+### Market Data Integration
+
+Example of using the market data API:
+
+```python
+from kingdom_ai import KingdomAI
+from kingdom_ai.core.market_api import MarketAPI
+from kingdom_ai.core.event_bus import EventBus
+
+# Initialize the system
+system = KingdomAI()
+event_bus = EventBus.get_instance()
+
+# Initialize market API
+market = MarketAPI(
+    api_key="your_api_key",
+    api_secret="your_api_secret",
+    event_bus=event_bus
+)
+
+# Start market data streaming
+async def start_market_data():
+    # Initialize API
+    if not await market.initialize():
+        raise Exception("Failed to initialize market API")
+    
+    # Connect to websocket
+    if not await market.connect_websocket():
+        raise Exception("Failed to connect to websocket")
+    
+    # Subscribe to market data
+    await market.subscribe("BTCUSDT", ["trade", "kline_1m"])
+    
+    # Monitor market data
+    while True:
+        data = market.get_market_data("BTCUSDT")
+        print(f"Market data: {data}")
+        await asyncio.sleep(1)
+```
+
+### Blockchain Integration
+
+Example of using the blockchain connector:
+
+```python
+from kingdom_ai import KingdomAI
+from kingdom_ai.core.blockchain import BlockchainConnector, BlockchainConfig
+
+# Initialize the system
+system = KingdomAI()
+
+# Configure blockchain connector
+config = BlockchainConfig(
+    network="mainnet",
+    node_url="https://mainnet.infura.io/v3/your-project-id",
+    chain_id=1,
+    contracts={
+        "token": "0x123...",
+        "exchange": "0x456..."
+    }
+)
+
+# Initialize blockchain connector
+blockchain = BlockchainConnector(config)
+
+# Use blockchain features
+async def use_blockchain():
+    # Connect to network
+    if not await blockchain.connect():
+        raise Exception("Failed to connect to blockchain")
+    
+    # Get balance
+    balance = await blockchain.get_balance("0x789...")
+    print(f"Balance: {balance}")
+    
+    # Send transaction
+    tx_hash = await blockchain.send_transaction(
+        from_address="0x123...",
+        to_address="0x456...",
+        value=1000000000000000000  # 1 ETH in wei
+    )
+    print(f"Transaction sent: {tx_hash}")
+    
+    # Get transaction details
+    tx = await blockchain.get_transaction(tx_hash)
+    print(f"Transaction details: {tx}")
+```
+
+## Architecture
+
+The Kingdom AI System uses an event-driven architecture with the following key components:
+
+1. Core Components:
+   - Event Bus: Central communication system
+   - Component Manager: Lifecycle management
+   - Security Manager: Access control and validation
+   - Configuration Manager: System settings
+   
+2. Trading Components:
+   - Market API: Real-time market data
+   - Trading Engine: Order execution
+   - Strategy Engine: Trading algorithms
+   - Risk Manager: Position management
+   
+3. Mining Components:
+   - Mining System: Proof of work mining
+   - Block Manager: Blockchain operations
+   - Hash Power Manager: Resource optimization
+   - Mining Pool Connector: Pool integration
+   
+4. AI Components:
+   - Thoth AI: Advanced reasoning
+   - Code Generator: Self-modification
+   - System Modifier: Runtime adaptation
+   - Model Manager: AI model handling
+   
+5. Interface Components:
+   - Voice Manager: Speech processing
+   - VR Manager: Virtual reality
+   - GUI Manager: User interface
+   - API Server: External access
 
 ## Security
 
-- **Threat model and hardening details:** see [`SECURITY.md`](./SECURITY.md).
-- **Report vulnerabilities:** please open a private security advisory on
-  GitHub rather than a public issue.
-- **Web security headers** (HSTS, CSP, X-Frame-Options, etc.) are enforced on
-  the hosted landing page. You can verify with:
-  ```bash
-  curl -sI https://kingdom-ai.netlify.app/ | grep -iE 'strict-transport|content-security|x-frame'
-  ```
+The system implements comprehensive security measures:
 
----
+1. Code Validation:
+   - Runtime code verification
+   - Sandbox testing
+   - Security policy enforcement
+   
+2. Access Control:
+   - Role-based permissions
+   - API key management
+   - Request validation
+   
+3. Data Protection:
+   - Encryption at rest
+   - Secure communication
+   - Key management
+   
+4. System Security:
+   - Process isolation
+   - Resource limits
+   - Error handling
+   
+5. Monitoring:
+   - Activity logging
+   - Anomaly detection
+   - Performance tracking
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a pull request
 
 ## License
 
-Licensed under the **Apache License, Version 2.0** — see [`LICENSE`](./LICENSE).
-
-You are free to use, modify, and distribute this code, including for
-commercial purposes, provided you retain the license and attribution.
+This project is licensed under the MIT License - see the LICENSE file for details.

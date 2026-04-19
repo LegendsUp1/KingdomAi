@@ -498,7 +498,7 @@ class MiningTab(QWidget):
                 
                 def publish_log():
                     try:
-                        self.event_bus.publish('gui_update', {
+                        self.event_bus.publish('gui.update', {
                             'component': 'mining_tab',
                             'message': message,
                             'level': level,

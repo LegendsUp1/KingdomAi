@@ -418,6 +418,29 @@ You are protected by and enforce a multi-layer security system:
             return rid.strip()
         return f"thoth-{uuid.uuid4().hex}"
 
+    def _build_registry_awareness_block(self) -> str:
+        """Inject the Kingdom System Registry catalog so Ollama knows every
+        tool and component the system operates. Cached per-process."""
+        try:
+            cached = getattr(self, "_registry_block_cache", None)
+            if cached:
+                return cached
+            from core.kingdom_system_registry import get_registry
+            reg = get_registry(event_bus=self.event_bus)
+            summary = reg.summary_for_prompt()
+            block = (
+                "## KINGDOM AI SYSTEM AWARENESS\n"
+                "You have direct access to every tool below. When the user "
+                "asks for something, match it to the closest capability "
+                "(by name/triggers) and call or publish its events.\n\n"
+                f"{summary}"
+            )
+            setattr(self, "_registry_block_cache", block)
+            return block
+        except Exception as e:
+            self.logger.debug("registry awareness block unavailable: %s", e)
+            return "## KINGDOM AI SYSTEM AWARENESS\n(registry offline)"
+
     def _emit_pipeline_telemetry(
         self,
         stage: str,
@@ -889,7 +912,11 @@ You are protected by and enforce a multi-layer security system:
                     return
                 prompt = processed
             elif include_system_prompt:
-                prompt = f"{self.KINGDOM_AI_SYSTEM_PROMPT}\n\n## USER REQUEST:\n{user_prompt}"
+                registry_block = self._build_registry_awareness_block()
+                prompt = (
+                    f"{self.KINGDOM_AI_SYSTEM_PROMPT}\n\n"
+                    f"{registry_block}\n\n## USER REQUEST:\n{user_prompt}"
+                )
             else:
                 prompt = user_prompt
             

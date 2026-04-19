@@ -9,6 +9,10 @@ Usage:
 """
 import os
 os.environ["KINGDOM_APP_MODE"] = "creator"
+# Mobile platform — light dependency tier (no torch, no TRT-LLM, no vLLM,
+# no sentence-transformers). Generation routes through Ollama HTTP with a
+# tiny default model; embeddings fall back to SHA pseudo-vectors.
+os.environ["KINGDOM_APP_PLATFORM"] = "mobile"
 
 # Import and run the shared app engine
 from kingdom_mobile import main

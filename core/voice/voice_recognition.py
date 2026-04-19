@@ -234,6 +234,30 @@ class VoiceRecognition:
     def __init__(self, config=None, event_bus=None):
         self.config = config or {}
         self.event_bus = event_bus
-        logger.info("VoiceRecognition initialized")
+        self._engine = WhisperVoiceRecognition(config) if config else VoiceRecognitionBase(config)
+        self._subscribe_events()
+        logger.info("VoiceRecognition initialized (event_bus=%s)", "active" if event_bus else "none")
+
+    def _subscribe_events(self):
+        if not self.event_bus:
+            return
+        self.event_bus.subscribe("voice.recognize.request", self._handle_recognize_request)
+        logger.info("VoiceRecognition subscribed to voice.recognize.request")
+
+    async def _handle_recognize_request(self, data):
+        """Handle an inbound recognition request from the event bus."""
+        audio_data = data.get("audio_data", b"") if isinstance(data, dict) else b""
+        request_id = data.get("request_id", "") if isinstance(data, dict) else ""
+        try:
+            result = await self._engine.recognize_audio(audio_data)
+            result["request_id"] = request_id
+            if self.event_bus:
+                self.event_bus.publish("voice.recognition.result", result)
+        except Exception as e:
+            logger.error("Recognition request failed: %s", e)
+            if self.event_bus:
+                self.event_bus.publish("voice.recognition.result", {
+                    "success": False, "error": str(e), "request_id": request_id,
+                })
 
 __all__ = ["VoiceRecognition", "WhisperVoiceRecognition"]

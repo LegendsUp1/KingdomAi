@@ -1,0 +1,85 @@
+{
+  "history": [
+    {
+      "timestamp": "2025-03-21T13:02:02.510120",
+      "overall": 0.0,
+      "modules": {
+        "blockchain": {
+          "total": 10,
+          "completed": 0,
+          "percentage": 0.0
+        },
+        "mining": {
+          "total": 5,
+          "completed": 0,
+          "percentage": 0.0
+        },
+        "ai": {
+          "total": 4,
+          "completed": 0,
+          "percentage": 0.0
+        },
+        "tests": {
+          "total": 2,
+          "completed": 0,
+          "percentage": 0.0
+        }
+      },
+      "remaining_hours": 26.5
+    },
+    {
+      "timestamp": "2025-03-21T13:03:38.197722",
+      "overall": 0.0,
+      "modules": {
+        "blockchain": {
+          "total": 10,
+          "completed": 0,
+          "percentage": 0.0
+        },
+        "mining": {
+          "total": 5,
+          "completed": 0,
+          "percentage": 0.0
+        },
+        "ai": {
+          "total": 4,
+          "completed": 0,
+          "percentage": 0.0
+        },
+        "tests": {
+          "total": 2,
+          "completed": 0,
+          "percentage": 0.0
+        }
+      },
+      "remaining_hours": 26.5
+    }
+  ],
+  "current": {
+    "timestamp": "2025-03-21T13:03:38.197722",
+    "overall": 0.0,
+    "modules": {
+      "blockchain": {
+        "total": 10,
+        "completed": 0,
+        "percentage": 0.0
+      },
+      "mining": {
+        "total": 5,
+        "completed": 0,
+        "percentage": 0.0
+      },
+      "ai": {
+        "total": 4,
+        "completed": 0,
+        "percentage": 0.0
+      },
+      "tests": {
+        "total": 2,
+        "completed": 0,
+        "percentage": 0.0
+      }
+    },
+    "remaining_hours": 26.5
+  }
+}

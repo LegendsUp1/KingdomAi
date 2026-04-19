@@ -9,6 +9,8 @@ Usage:
 """
 import os
 os.environ["KINGDOM_APP_MODE"] = "creator"
+# Mobile platform — light dependency tier.
+os.environ["KINGDOM_APP_PLATFORM"] = "mobile"
 
 # Import and run the shared app engine
 from kingdom_mobile import main

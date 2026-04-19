@@ -252,7 +252,7 @@ class MiningTab(QWidget):
         logger.log(level, message)
         if hasattr(self, 'event_bus') and self.event_bus:
             try:
-                self.event_bus.publish('gui_update', {
+                self.event_bus.publish('gui.update', {
                     'component': 'mining_tab',
                     'message': message,
                     'level': level,

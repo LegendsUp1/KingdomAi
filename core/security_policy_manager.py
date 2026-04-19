@@ -17,10 +17,35 @@ import json
 logger = logging.getLogger('kingdom_ai.security_policy_manager')
 
 class SecurityLevel(Enum):
-    """Security levels for AI requests"""
+    """Security levels for AI requests (ordered ascending)"""
     STANDARD = "standard"
     HIGH = "high"
     CRITICAL = "critical"
+
+    @property
+    def rank(self) -> int:
+        """Numeric severity rank (higher = more restrictive)."""
+        return {"standard": 0, "high": 1, "critical": 2}[self.value]
+
+    def __ge__(self, other):
+        if isinstance(other, SecurityLevel):
+            return self.rank >= other.rank
+        return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, SecurityLevel):
+            return self.rank > other.rank
+        return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, SecurityLevel):
+            return self.rank <= other.rank
+        return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, SecurityLevel):
+            return self.rank < other.rank
+        return NotImplemented
 
 class TaskCategory(Enum):
     """Categories of tasks for security classification"""
@@ -185,7 +210,7 @@ class SecurityPolicyManager:
             # Check keywords
             for keyword in policy.keywords:
                 if keyword.lower() in prompt_lower:
-                    if policy.required_level.value > max_security.value:
+                    if policy.required_level.rank > max_security.rank:
                         max_security = policy.required_level
                         detected_category = category
             

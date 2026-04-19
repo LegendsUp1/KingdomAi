@@ -31,3 +31,90 @@ python-dotenv>=1.0.0
 # opencv-python>=4.8.0
 # ray[default]>=2.9.0
 # PyYAML>=6.0
+
+# --- DictionaryBrain accelerators (components/dictionary_brain.py) ---
+# The brain ships a seed of famous multi-era definitions and works with
+# ZERO of these. These are enabled in the kingdom-venv (see
+# requirements-kingdom-venv-frozen.txt for exact pinned versions).
+
+# Faster semantic index:
+faiss-cpu>=1.7.4
+sentence-transformers>=3.0,<4     # 4.x+ requires torch>=2.4
+tf-keras>=2.20                    # keras-3 compat shim for transformers
+
+# Etymology (Wiktionary-derived Etymological Wordnet):
+ety>=1.4
+# ety depends on pkg_resources which was removed in setuptools 81; pin:
+# setuptools<81
+
+# Modern Merriam-Webster / Oxford-style lookups:
+PyMultiDictionary>=1.3
+
+# Wikisource / Archive.org bulk parsing for Britannica 1911 and earlier:
+mwparserfromhell>=0.6
+internetarchive>=5.0
+
+# Vector stores (ChromaDB for persistence, LanceDB for local-first):
+chromadb>=1.0
+lancedb>=0.20
+
+# Fast data (Polars, DuckDB, PyArrow — 2026 SOTA over pandas for big dumps):
+polars>=1.0
+duckdb>=1.0
+pyarrow>=20.0
+
+# Topic modeling + historical word-usage comparison across eras:
+gensim>=4.3
+
+# Extraction from raw PDFs / scanned historical texts:
+langextract>=1.0
+markitdown>=0.1
+
+# RAG framework for feeding dictionaries into Ollama:
+llama-index-core>=0.14
+
+# NLP (already part of core; listed for completeness):
+# spacy>=3.7.0
+# then: python -m spacy download en_core_web_md
+
+
+# --- InferenceStack accelerators (core/inference_stack.py) ---
+# The stack is always-on and ships with a universally-working fallback
+# chain: TensorRT-LLM -> vLLM -> Ollama HTTP -> offline stub. It needs
+# ZERO of the libraries below to function; every one of them is a pure
+# "go faster" upgrade used when present.
+#
+# The three runtime tiers the stack picks between:
+#
+# 1. **TensorRT-LLM** (sub-100 ms on RTX 40/50):
+#    - Requires CUDA 12.4+, NVIDIA driver >= 550.xx, and a compiled
+#      engine per model. Install on bare-metal only; it will not work
+#      inside WSL without CUDA-in-WSL support.
+#    - Install:  pip install tensorrt-llm==0.12.*  --extra-index-url https://pypi.nvidia.com
+#
+# 2. **vLLM** (excellent for concurrent / RAG workloads):
+#    - Requires CUDA 11.8+ and torch >= 2.4. Consumer builds should
+#      NEVER ship vLLM (multi-GB CUDA libs).
+#    - Install:  pip install vllm>=0.6
+#
+# 3. **Ollama HTTP** (always-on default on the creator desktop):
+#    - The `ollama` Python SDK is NOT required — the stack uses urllib
+#      directly so the consumer APK stays minimal. The only requirement
+#      is a running `ollama serve` on localhost:11434.
+#
+# Optional speed-ups for the stack itself:
+
+# tensorrt-llm>=0.12                 # Tier-1 RTX runtime; cite extra index above
+# vllm>=0.6                          # Tier-2 concurrent/throughput runtime
+# flash-attn>=2.6 --no-build-isolation  # FlashAttention-3 on SM 8.9+ (Hopper/Ada/Blackwell)
+
+# The embedding half of the stack reuses sentence-transformers (pinned above
+# in the DictionaryBrain block) on CUDA when torch + CUDA are detected. No
+# extra install is needed beyond that.
+
+# NOTE on consumer builds:
+# The mobile APK and PWA set KINGDOM_APP_MODE=consumer. In that mode the
+# stack skips TensorRT-LLM / vLLM / sentence-transformers entirely and only
+# ever speaks to Ollama via HTTP (falling through to the offline stub if
+# Ollama is unreachable). No heavy CUDA libraries are pulled into the
+# consumer build even if they happen to be installed on the host.

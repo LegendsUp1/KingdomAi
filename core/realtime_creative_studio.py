@@ -988,43 +988,73 @@ class RealtimeCreativeStudio(QMainWindow):  # type: ignore[misc]
         self.chat_display.append(f'<span style="color: {color};">[{timestamp}] {sender}:</span> {message}')
     
     def _on_chat_send(self):
-        """Handle chat message send."""
+        """Handle chat message send.
+
+        Every prompt is routed through the UnifiedCreationOrchestrator so that
+        ANY creation engine in the Kingdom AI registry (image, video, CAD,
+        chemistry, PCB, fashion, music, code, world-gen, etc.) is reachable
+        via natural language. Local UI-only commands (webcam/record/unity)
+        still run directly for immediate feedback.
+        """
         text = self.chat_input.text().strip()
         if not text:
             return
-        
+
         self.chat_input.clear()
         self._add_chat_message("You", text)
-        
-        # Parse command
+
         text_lower = text.lower()
-        
-        # Creation commands - UNLIMITED - create ANYTHING user asks for
-        if any(word in text_lower for word in ["create", "generate", "make", "build", "draw", "paint", "design"]):
-            self._create_from_prompt(text)
-        
-        # Edit commands
-        elif any(word in text_lower for word in ["add", "remove", "edit", "change", "more"]):
-            self._edit_from_prompt(text)
-        
-        # Webcam commands
-        elif "webcam" in text_lower or "camera" in text_lower:
+
+        # Local UI-only side-effects (keep instant feedback)
+        if "webcam" in text_lower or "camera" in text_lower:
             if "start" in text_lower or "on" in text_lower:
                 self._toggle_webcam()
-            elif "stop" in text_lower or "off" in text_lower:
-                if self._webcam_thread:
+                return
+            if "stop" in text_lower or "off" in text_lower:
+                if getattr(self, "_webcam_thread", None):
                     self._toggle_webcam()
-        
-        # Record commands
-        elif "record" in text_lower:
+                    return
+        if "record" in text_lower:
             self._toggle_recording()
-
-        elif "export" in text_lower and "unity" in text_lower:
+            return
+        if "export" in text_lower and "unity" in text_lower:
             self._export_to_unity()
-
-        elif "unity" in text_lower and ("send" in text_lower or "runtime" in text_lower):
+            return
+        if "unity" in text_lower and ("send" in text_lower or "runtime" in text_lower):
             self._send_terrain_to_unity_runtime()
-        
+            return
+
+        # Route through the unified NL orchestrator so every creation engine
+        # in the Kingdom registry is reachable (image, video, CAD, chemistry,
+        # PCB, fashion, architecture, music, world-gen, code, ...).
+        try:
+            from core.unified_creation_orchestrator import (
+                get_unified_creation_orchestrator,
+            )
+            uco = get_unified_creation_orchestrator(event_bus=self.event_bus)
+            outcome = uco.handle_natural_language(text)
+            if outcome and outcome.success:
+                self._add_chat_message(
+                    "System",
+                    f"🧠 Routed to {outcome.primary}  "
+                    f"({outcome.execution_time:.1f}s)"
+                )
+            else:
+                errs = (outcome.errors[0] if outcome and outcome.errors
+                        else "no engine could satisfy request")
+                self._add_chat_message("System", f"⚠️ {errs}")
+        except Exception as e:
+            logger.debug("UnifiedCreationOrchestrator unavailable: %s", e)
+
+        # Also drive the existing visual/edit pipelines so the canvas and
+        # live preview stay populated. This is additive — the unified
+        # orchestrator has already dispatched to the correct engine(s).
+        if any(w in text_lower for w in
+               ["create", "generate", "make", "build", "draw", "paint", "design"]):
+            self._create_from_prompt(text)
+        elif any(w in text_lower for w in
+                 ["add", "remove", "edit", "change", "more"]):
+            self._edit_from_prompt(text)
         else:
             self._create_from_prompt(text)
     
@@ -2474,29 +2504,55 @@ class CreativeStudioWidget(QWidget):  # type: ignore[misc]
         return False
     
     def _on_chat_send(self):
-        """Handle chat message send."""
+        """Handle chat message send.
+
+        Routes through UnifiedCreationOrchestrator so every registered creation
+        engine is reachable via natural language, then continues the existing
+        visual pipeline for live canvas feedback.
+        """
         text = self.chat_input.text().strip()
         if not text:
             return
-        
+
         self.chat_input.clear()
         self._add_chat_message("You", text)
-        
+
         text_lower = text.lower()
-        
-        # Creation commands
-        if any(word in text_lower for word in ["create", "generate", "make", "build"]):
-            self._create_from_prompt(text)
-        # Edit commands
-        elif any(word in text_lower for word in ["add", "remove", "edit", "change"]):
-            self._edit_from_prompt(text)
-        # Unity commands
-        elif "unity" in text_lower and ("send" in text_lower or "runtime" in text_lower):
+
+        # Immediate UI side-effects
+        if "unity" in text_lower and ("send" in text_lower or "runtime" in text_lower):
             self._send_terrain_to_unity_runtime()
-        elif "export" in text_lower and "unity" in text_lower:
+            return
+        if "export" in text_lower and "unity" in text_lower:
             self._export_to_unity()
+            return
+
+        # Route through the unified NL orchestrator (covers every engine)
+        try:
+            from core.unified_creation_orchestrator import (
+                get_unified_creation_orchestrator,
+            )
+            uco = get_unified_creation_orchestrator(event_bus=self.event_bus)
+            outcome = uco.handle_natural_language(text)
+            if outcome and outcome.success:
+                self._add_chat_message(
+                    "System",
+                    f"🧠 Routed to {outcome.primary}  "
+                    f"({outcome.execution_time:.1f}s)"
+                )
+            else:
+                errs = (outcome.errors[0] if outcome and outcome.errors
+                        else "no engine satisfied the request")
+                self._add_chat_message("System", f"⚠️ {errs}")
+        except Exception as e:
+            logger.debug("UnifiedCreationOrchestrator unavailable: %s", e)
+
+        # Keep the existing canvas pipeline running for visual feedback
+        if any(w in text_lower for w in ["create", "generate", "make", "build"]):
+            self._create_from_prompt(text)
+        elif any(w in text_lower for w in ["add", "remove", "edit", "change"]):
+            self._edit_from_prompt(text)
         else:
-            # Default to creation for direct natural prompts (no command syntax required).
             self._create_from_prompt(text)
 
     def _create_from_prompt(self, prompt: str, vision_payload: Optional[Dict[str, Any]] = None):
