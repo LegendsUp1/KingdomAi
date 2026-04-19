@@ -214,6 +214,27 @@ def main():
     logger.info("License: %s...%s", license_key[:8], license_key[-4:])
 
     # ──────────────────────────────────────────────
+    # Per-install identity (fresh user_id for every new install)
+    # Every consumer computer generates its OWN installation_id + user_id
+    # on first launch. Nothing is shared with the creator or any other
+    # install; every device, every VR session, every memory is tagged
+    # with this id only.
+    # ──────────────────────────────────────────────
+    try:
+        from core.install_identity import get_install_identity
+        install_identity = get_install_identity()
+        logger.info(
+            "[OK] Install identity: user_id=%s installation_id=%s",
+            install_identity.user_id,
+            install_identity.installation_id[:8] + "…",
+        )
+        os.environ.setdefault("KINGDOM_USER_ID", install_identity.user_id)
+        os.environ.setdefault("KINGDOM_INSTALLATION_ID", install_identity.installation_id)
+    except Exception as e:
+        logger.warning("Install identity bootstrap failed: %s", e)
+        install_identity = None
+
+    # ──────────────────────────────────────────────
     # Initialize core systems (same as kingdom_ai_perfect.py but lighter)
     # ──────────────────────────────────────────────
 
@@ -225,6 +246,50 @@ def main():
     except Exception as e:
         logger.critical("EventBus initialization failed: %s", e)
         sys.exit(1)
+
+    # ──────────────────────────────────────────────
+    # Host device manager + first-run auto-discovery
+    # This is what makes "turn on your headset, hit Scan, done" work
+    # with zero code. It detects USB / Bluetooth / webcam / VR / audio
+    # / serial / SDR / microcontroller / automotive / LiDAR / lab /
+    # imaging / drones on THIS machine only.
+    # ──────────────────────────────────────────────
+    host_device_mgr = None
+    onboarding_engine = None
+    try:
+        from core.host_device_manager import get_host_device_manager
+        from core.device_onboarding import get_device_onboarding_engine
+        from core.component_registry import register_component
+
+        host_device_mgr = get_host_device_manager(event_bus=event_bus)
+        register_component("host_device_manager", host_device_mgr)
+
+        onboarding_engine = get_device_onboarding_engine(event_bus=event_bus)
+        register_component("device_onboarding", onboarding_engine)
+
+        existing_inventory = onboarding_engine.list_inventory()
+        logger.info(
+            "[OK] Device systems ready (inventory: %d known devices)",
+            len(existing_inventory),
+        )
+
+        # First-run auto-scan. If this install has never seen a device,
+        # kick off a discovery pass. The GUI, if shown, will present the
+        # wizard; headless mode just populates the cache silently.
+        if not existing_inventory:
+            if args.headless:
+                logger.info("First-run device scan (headless)…")
+                try:
+                    onboarding_engine.run_initial_scan(force=True)
+                except Exception as e:
+                    logger.warning("Headless device scan failed: %s", e)
+            else:
+                # Defer to the GUI wizard — launched just before the main
+                # window comes up (see below). We just note the intent here.
+                os.environ["KINGDOM_FIRST_RUN_ONBOARDING"] = "1"
+                logger.info("First-run device onboarding will show on GUI launch.")
+    except Exception as e:
+        logger.warning("Device subsystem unavailable: %s", e)
 
     # Redis (optional for consumer)
     redis_client = None
@@ -815,6 +880,19 @@ def main():
             app = QApplication.instance()
             if not app:
                 app = QApplication(sys.argv)
+
+            # First-run "find my devices" wizard. Runs once per install
+            # (guarded by KINGDOM_FIRST_RUN_ONBOARDING env flag set above
+            # when the inventory was empty). The user taps Scan, picks
+            # their gear, and every paired device is tagged with THIS
+            # install's user_id — no cross-install leakage possible.
+            if os.environ.pop("KINGDOM_FIRST_RUN_ONBOARDING", None):
+                try:
+                    from gui.qt_frames.device_onboarding_dialog import run_qt_wizard
+                    run_qt_wizard(event_bus=event_bus)
+                    logger.info("[OK] Device onboarding wizard completed")
+                except Exception as e:
+                    logger.warning("Device onboarding wizard failed: %s", e)
 
             # Check if first launch — show manifesto welcome
             show_welcome = True

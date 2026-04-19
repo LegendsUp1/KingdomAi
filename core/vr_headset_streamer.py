@@ -388,11 +388,20 @@ class VRHeadsetStreamer:
 
         async def handler(websocket, path=None):
             client_id = uuid.uuid4().hex
-            # user_id defaults to the client_id so two anonymous headsets on
-            # the same LAN never share a session by accident. Clients should
-            # send a `hello` message with their real user_id right after
-            # connecting; see _handle_client_message below.
-            session = VRClientSession(client_id=client_id, user_id=client_id)
+            # Default user_id: THIS install's user_id (from install_identity)
+            # so a consumer who just turned on their headset on their own
+            # laptop is paired to their own install automatically. Two
+            # anonymous headsets on the same LAN will never share a session
+            # because the server is local-only by default and the client_id
+            # is still a fresh UUID. Clients can still override with a
+            # `hello` message; see _handle_client_message below.
+            default_user_id = client_id
+            try:
+                from core.install_identity import current_user_id
+                default_user_id = current_user_id()
+            except Exception:
+                pass
+            session = VRClientSession(client_id=client_id, user_id=default_user_id)
             with self._sessions_lock:
                 self._sessions[client_id] = session
             logger.info("🥽 WebXR client connected: client_id=%s remote=%s",
